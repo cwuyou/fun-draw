@@ -129,6 +129,9 @@
 
 
 
+
+
+
   - Add proper shuffling animation to CardDeck component that shows all uploaded cards
   - Implement realistic card movement patterns during shuffle phase
   - Add minimum duration for shuffling animation to be visually perceptible
