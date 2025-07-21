@@ -1,11 +1,19 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, AlertCircle, Info } from 'lucide-react'
 import { PlayingCard } from './playing-card'
 import { CardDeck } from './card-deck'
 import { soundManager } from '@/lib/sound-manager'
 import { useAnimationPerformance } from '@/lib/animation-performance'
+import { 
+  validateCompleteGameSetup, 
+  validateGameConfig, 
+  validatePositionCalculation,
+  ValidationResult,
+  QuantityValidationError,
+  PositionCalculationError
+} from '@/lib/card-game-validation'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -50,6 +58,7 @@ export function CardFlipGame({
   
   const [cardStyle] = useState<CardStyle>(DEFAULT_CARD_STYLE)
   const [error, setError] = useState<string | null>(null)
+  const [warnings, setWarnings] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const dealTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const dealIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -75,87 +84,191 @@ export function CardFlipGame({
 
   // 计算卡牌布局位置（响应式）
   const calculateCardPositions = useCallback((totalCards: number) => {
-    const positions = []
-    
-    // 添加适当的边距以防止与UI文本重叠
-    const UI_TEXT_HEIGHT = 60 // 为游戏信息文本预留空间
-    const CARD_MARGIN_TOP = 20 // 距离状态文本的额外边距
-    const CARD_MARGIN_BOTTOM = 80 // 距离游戏信息的边距
-    
-    // 响应式卡牌尺寸和间距
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-    const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024
-    
-    // 根据设备类型调整卡牌尺寸和间距
-    let cardWidth, cardHeight, spacing, cardsPerRow
-    
-    if (isMobile) {
-      // 移动端：较小的卡牌，2张一行
-      cardWidth = 80  // w-20 = 80px
-      cardHeight = 120 // h-30 = 120px
-      spacing = 12
-      cardsPerRow = Math.min(2, totalCards)
-    } else if (isTablet) {
-      // 平板端：中等卡牌，3张一行
-      cardWidth = 88  // w-22 = 88px
-      cardHeight = 132 // h-33 = 132px
-      spacing = 14
-      cardsPerRow = Math.min(3, totalCards)
-    } else {
-      // 桌面端：标准卡牌，最多5张一行
-      cardWidth = 96  // w-24 = 96px
-      cardHeight = 144 // h-36 = 144px
-      spacing = 16
-      cardsPerRow = Math.min(5, totalCards)
-    }
-    
-    const rows = Math.ceil(totalCards / cardsPerRow)
-    
-    let cardIndex = 0
-    for (let row = 0; row < rows; row++) {
-      const cardsInThisRow = Math.min(cardsPerRow, totalCards - row * cardsPerRow)
-      const rowWidth = cardsInThisRow * cardWidth + (cardsInThisRow - 1) * spacing
-      const startX = -rowWidth / 2 + cardWidth / 2
-      
-      for (let col = 0; col < cardsInThisRow; col++) {
-        positions.push({
-          x: startX + col * (cardWidth + spacing),
-          // 调整Y位置以考虑UI文本间距
-          y: CARD_MARGIN_TOP + row * (cardHeight + spacing) - (rows - 1) * (cardHeight + spacing) / 2,
-          rotation: (Math.random() - 0.5) * 4, // 轻微随机旋转
-          cardWidth,
-          cardHeight
-        })
-        cardIndex++
+    try {
+      // 验证位置计算参数
+      const deviceType = typeof window !== 'undefined' 
+        ? (window.innerWidth < 768 ? 'mobile' : 
+           window.innerWidth < 1024 ? 'tablet' : 'desktop')
+        : 'desktop'
+
+      const containerDimensions = typeof window !== 'undefined' ? {
+        width: window.innerWidth,
+        height: window.innerHeight
+      } : undefined
+
+      const positionValidation = validatePositionCalculation({
+        totalCards,
+        containerWidth: containerDimensions?.width,
+        containerHeight: containerDimensions?.height,
+        deviceType
+      })
+
+      if (!positionValidation.isValid) {
+        console.error('Position calculation validation failed:', positionValidation.error)
+        // 降级到安全的默认布局
+        return [{
+          x: 0,
+          y: 0,
+          rotation: 0,
+          cardWidth: 96,
+          cardHeight: 144
+        }]
       }
+
+      const positions = []
+      
+      // 添加适当的边距以防止与UI文本重叠
+      const UI_TEXT_HEIGHT = 60 // 为游戏信息文本预留空间
+      const CARD_MARGIN_TOP = 20 // 距离状态文本的额外边距
+      const CARD_MARGIN_BOTTOM = 80 // 距离游戏信息的边距
+      
+      // 响应式卡牌尺寸和间距
+      const isMobile = deviceType === 'mobile'
+      const isTablet = deviceType === 'tablet'
+      
+      // 根据设备类型调整卡牌尺寸和间距
+      let cardWidth, cardHeight, spacing, cardsPerRow
+      
+      if (isMobile) {
+        // 移动端：较小的卡牌，2张一行
+        cardWidth = 80  // w-20 = 80px
+        cardHeight = 120 // h-30 = 120px
+        spacing = 12
+        cardsPerRow = Math.min(2, totalCards)
+      } else if (isTablet) {
+        // 平板端：中等卡牌，3张一行
+        cardWidth = 88  // w-22 = 88px
+        cardHeight = 132 // h-33 = 132px
+        spacing = 14
+        cardsPerRow = Math.min(3, totalCards)
+      } else {
+        // 桌面端：标准卡牌，最多5张一行
+        cardWidth = 96  // w-24 = 96px
+        cardHeight = 144 // h-36 = 144px
+        spacing = 16
+        cardsPerRow = Math.min(5, totalCards)
+      }
+      
+      const rows = Math.ceil(totalCards / cardsPerRow)
+      
+      // 验证布局是否会溢出容器
+      const totalWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * spacing
+      const totalHeight = rows * cardHeight + (rows - 1) * spacing + CARD_MARGIN_TOP + CARD_MARGIN_BOTTOM
+      
+      if (containerDimensions) {
+        const availableWidth = containerDimensions.width - 32 // 减去padding
+        const availableHeight = containerDimensions.height - 200 // 减去UI元素高度
+        
+        if (totalWidth > availableWidth || totalHeight > availableHeight) {
+          console.warn('Layout may overflow container, adjusting card size')
+          // 自动调整卡牌尺寸以适应容器
+          const scaleX = availableWidth / totalWidth
+          const scaleY = availableHeight / totalHeight
+          const scale = Math.min(scaleX, scaleY, 1) // 不放大，只缩小
+          
+          cardWidth *= scale
+          cardHeight *= scale
+          spacing *= scale
+        }
+      }
+      
+      let cardIndex = 0
+      for (let row = 0; row < rows; row++) {
+        const cardsInThisRow = Math.min(cardsPerRow, totalCards - row * cardsPerRow)
+        const rowWidth = cardsInThisRow * cardWidth + (cardsInThisRow - 1) * spacing
+        const startX = -rowWidth / 2 + cardWidth / 2
+        
+        for (let col = 0; col < cardsInThisRow; col++) {
+          positions.push({
+            x: startX + col * (cardWidth + spacing),
+            // 调整Y位置以考虑UI文本间距
+            y: CARD_MARGIN_TOP + row * (cardHeight + spacing) - (rows - 1) * (cardHeight + spacing) / 2,
+            rotation: (Math.random() - 0.5) * 4, // 轻微随机旋转
+            cardWidth,
+            cardHeight
+          })
+          cardIndex++
+        }
+      }
+      
+      return positions
+    } catch (error) {
+      console.error('Error calculating card positions:', error)
+      // 返回安全的默认位置
+      return Array.from({ length: totalCards }, (_, index) => ({
+        x: (index % 3 - 1) * 100, // 简单的3列布局
+        y: Math.floor(index / 3) * 150,
+        rotation: 0,
+        cardWidth: 96,
+        cardHeight: 144
+      }))
     }
-    
-    return positions
   }, [])
 
   // 选择中奖者
   const selectWinners = useCallback((items: ListItem[], quantity: number, allowRepeat: boolean): ListItem[] => {
     try {
-      if (!items || items.length === 0) {
+      // 增强的输入验证
+      if (!Array.isArray(items)) {
+        throw new Error('项目列表必须是数组格式')
+      }
+      
+      if (items.length === 0) {
         throw new Error('项目列表为空')
       }
       
-      if (quantity <= 0) {
-        throw new Error('抽取数量必须大于0')
+      if (!Number.isInteger(quantity) || quantity <= 0) {
+        throw new Error('抽取数量必须是大于0的整数')
+      }
+      
+      if (quantity > gameConfig.maxCards) {
+        throw new Error(`抽取数量不能超过${gameConfig.maxCards}张卡牌`)
       }
       
       if (!allowRepeat && quantity > items.length) {
         throw new Error('在不允许重复的情况下，抽取数量不能超过项目总数')
       }
+
+      // 验证项目格式
+      const invalidItems = items.filter(item => 
+        !item || 
+        typeof item.name !== 'string' || 
+        item.name.trim().length === 0
+      )
+      
+      if (invalidItems.length > 0) {
+        throw new Error(`发现${invalidItems.length}个无效项目，请检查项目名称`)
+      }
       
       const winners: ListItem[] = []
       const availableItems = [...items]
       
+      // 添加随机种子以确保真正的随机性
+      const shuffleArray = (array: ListItem[]) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]]
+        }
+        return array
+      }
+      
+      // 预先打乱数组以提高随机性
+      shuffleArray(availableItems)
+      
       for (let i = 0; i < quantity; i++) {
-        if (availableItems.length === 0) break
+        if (availableItems.length === 0) {
+          console.warn(`只能选择${i}个中奖者，少于配置的${quantity}个`)
+          break
+        }
         
         const randomIndex = Math.floor(Math.random() * availableItems.length)
         const winner = availableItems[randomIndex]
+        
+        if (!winner) {
+          console.error(`选择中奖者时遇到空项目，索引: ${randomIndex}`)
+          continue
+        }
+        
         winners.push(winner)
         
         if (!allowRepeat) {
@@ -163,13 +276,22 @@ export function CardFlipGame({
         }
       }
       
+      if (winners.length === 0) {
+        throw new Error('未能选择任何中奖者，请检查项目列表')
+      }
+      
+      if (winners.length < quantity) {
+        console.warn(`实际选择了${winners.length}个中奖者，少于配置的${quantity}个`)
+      }
+      
       return winners
     } catch (err) {
-      setError(`选择中奖者失败: ${err instanceof Error ? err.message : '未知错误'}`)
+      const errorMessage = err instanceof Error ? err.message : '选择中奖者时发生未知错误'
+      setError(`选择中奖者失败: ${errorMessage}`)
       console.error('Select winners error:', err)
       return []
     }
-  }, [])
+  }, [gameConfig.maxCards])
 
   // 创建游戏卡牌
   const createGameCards = useCallback((winners: ListItem[], totalCards: number): GameCard[] => {
@@ -202,8 +324,37 @@ export function CardFlipGame({
   // 开始游戏
   const startGame = useCallback(() => {
     try {
+      // 预先验证游戏状态
+      if (gameState.gamePhase !== 'idle' && gameState.gamePhase !== 'finished') {
+        console.warn('游戏正在进行中，无法重新开始')
+        return
+      }
+
+      // 验证必要的游戏参数
+      if (!items || items.length === 0) {
+        setError('项目列表为空，无法开始游戏')
+        return
+      }
+
+      if (actualQuantity <= 0) {
+        setError('抽取数量必须大于0')
+        return
+      }
+
       setError(null)
+      setWarnings([])
       setIsLoading(true)
+      
+      // 清理之前的状态
+      if (dealTimeoutRef.current) {
+        clearTimeout(dealTimeoutRef.current)
+        dealTimeoutRef.current = null
+      }
+      if (dealIntervalRef.current) {
+        clearInterval(dealIntervalRef.current)
+        dealIntervalRef.current = null
+      }
+
       setGameState(prev => ({
         ...prev,
         gamePhase: 'shuffling',
@@ -212,20 +363,32 @@ export function CardFlipGame({
         winners: []
       }))
       
+      setDealtCards(0)
+      
       // 播放洗牌音效
       if (soundEnabled) {
-        soundManager.play('card-shuffle').catch(() => {
-          // 忽略播放错误
+        soundManager.play('card-shuffle').catch((audioError) => {
+          console.warn('洗牌音效播放失败:', audioError)
+          // 音效失败不应该阻止游戏继续
         })
       }
       
       setIsLoading(false)
     } catch (err) {
-      setError('游戏启动失败，请重试')
+      const errorMessage = err instanceof Error ? err.message : '游戏启动时发生未知错误'
+      setError(`游戏启动失败: ${errorMessage}`)
       console.error('Game start error:', err)
       setIsLoading(false)
+      
+      // 重置游戏状态到安全状态
+      setGameState({
+        gamePhase: 'idle',
+        cards: [],
+        revealedCards: new Set(),
+        winners: []
+      })
     }
-  }, [soundEnabled])
+  }, [soundEnabled, items, actualQuantity, gameState.gamePhase])
 
   // 洗牌完成，开始发牌
   const handleShuffleComplete = useCallback(() => {
@@ -369,6 +532,31 @@ export function CardFlipGame({
     return () => window.removeEventListener('resize', handleResize)
   }, [gameState.cards.length, calculateCardPositions])
 
+  // 验证游戏配置
+  useEffect(() => {
+    const containerDimensions = typeof window !== 'undefined' ? {
+      width: window.innerWidth,
+      height: window.innerHeight
+    } : undefined
+
+    const validation = validateCompleteGameSetup(
+      items,
+      quantity,
+      allowRepeat,
+      soundEnabled,
+      containerDimensions
+    )
+
+    if (!validation.isValid) {
+      setError(validation.error || '配置验证失败')
+      setWarnings([])
+      return
+    }
+
+    setError(null)
+    setWarnings(validation.warnings || [])
+  }, [items, quantity, allowRepeat, soundEnabled])
+
   // 初始化游戏
   useEffect(() => {
     if (items.length === 0) {
@@ -376,8 +564,10 @@ export function CardFlipGame({
       return
     }
     
-    startGame()
-  }, [items, quantity, allowRepeat, startGame])
+    if (!error) {
+      startGame()
+    }
+  }, [items, quantity, allowRepeat, startGame, error])
 
   // 清理定时器和动画
   useEffect(() => {
@@ -476,6 +666,18 @@ export function CardFlipGame({
       <div className="text-center">
         {renderGameStatus()}
       </div>
+
+      {/* 警告信息显示 */}
+      {warnings.length > 0 && (
+        <div className="w-full max-w-md space-y-2">
+          {warnings.map((warning, index) => (
+            <div key={index} className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Info className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+              <span className="text-sm text-yellow-800">{warning}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 卡牌区域 - 响应式容器 */}
       <div className="relative min-h-[200px] w-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
