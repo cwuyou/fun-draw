@@ -24,6 +24,7 @@ interface CardFlipGameProps {
   onComplete: (winners: ListItem[]) => void
   soundEnabled: boolean
   className?: string
+  autoStart?: boolean // 新增：控制是否自动开始
 }
 
 // 默认卡牌样式
@@ -45,7 +46,8 @@ export function CardFlipGame({
   allowRepeat,
   onComplete,
   soundEnabled,
-  className
+  className,
+  autoStart = false
 }: CardFlipGameProps) {
   const [gameState, setGameState] = useState<CardFlipGameState>({
     gamePhase: 'idle',
@@ -75,7 +77,8 @@ export function CardFlipGame({
   const gameConfig = {
     maxCards: 10,
     shuffleDuration: getOptimizedDuration(3000), // 增加洗牌时间
-    dealInterval: getOptimizedDuration(600), // 增加发牌间隔，让用户能看清逐张发牌
+    dealInterval: getOptimizedDuration(300), // 发牌间隔 - 300ms between each card
+    cardAppearDuration: getOptimizedDuration(400), // 每张卡片出现动画时长 - 400ms for each card to appear
     flipDuration: getOptimizedDuration(600)
   }
 
@@ -118,9 +121,8 @@ export function CardFlipGame({
       const positions = []
       
       // 添加适当的边距以防止与UI文本重叠
-      const UI_TEXT_HEIGHT = 60 // 为游戏信息文本预留空间
-      const CARD_MARGIN_TOP = 20 // 距离状态文本的额外边距
-      const CARD_MARGIN_BOTTOM = 80 // 距离游戏信息的边距
+      const CARD_MARGIN_TOP = 40 // 距离状态文本的额外边距，增加到40px
+      const CARD_MARGIN_BOTTOM = 120 // 距离游戏信息的边距，增加到120px
       
       // 响应式卡牌尺寸和间距
       const isMobile = deviceType === 'mobile'
@@ -226,7 +228,7 @@ export function CardFlipGame({
       }
       
       if (!allowRepeat && quantity > items.length) {
-        throw new Error('在不允许重复的情况下，抽取数量不能超过项目总数')
+        throw new Error('Quantity exceeds available items when repeat is disabled')
       }
 
       // 验证项目格式
@@ -324,6 +326,10 @@ export function CardFlipGame({
   // 开始游戏
   const startGame = useCallback(() => {
     try {
+      // 清除之前的错误状态
+      setError(null)
+      setWarnings([])
+      
       // 预先验证游戏状态
       if (gameState.gamePhase !== 'idle' && gameState.gamePhase !== 'finished') {
         console.warn('游戏正在进行中，无法重新开始')
@@ -341,8 +347,12 @@ export function CardFlipGame({
         return
       }
 
-      setError(null)
-      setWarnings([])
+      // 验证不允许重复时的项目数量
+      if (!allowRepeat && quantity > items.length) {
+        setError('Quantity exceeds available items when repeat is disabled')
+        return
+      }
+
       setIsLoading(true)
       
       // 清理之前的状态
@@ -390,81 +400,122 @@ export function CardFlipGame({
     }
   }, [soundEnabled, items, actualQuantity, gameState.gamePhase])
 
-  // 洗牌完成，开始发牌
-  const handleShuffleComplete = useCallback(() => {
-    setGameState(prev => ({ ...prev, gamePhase: 'dealing' }))
-    setDealtCards(0) // 重置发牌计数
-    
-    // 延迟一点开始发牌动画
-    dealTimeoutRef.current = setTimeout(() => {
-      try {
-        // 准备卡牌数据
-        const winners = selectWinners(items, actualQuantity, allowRepeat)
-        const gameCards = createGameCards(winners, actualQuantity)
-        
-        setGameState(prev => ({
-          ...prev,
-          cards: gameCards,
-          winners
-        }))
-
-        // 逐张发牌动画 - 改进为更明显的动画效果
-        let currentCard = 0
-        
-        // 先设置所有卡片为不可见状态
-        setGameState(prev => ({
-          ...prev,
-          cards: gameCards.map(card => ({
-            ...card,
-            style: {
-              opacity: 0,
-              transform: 'translateY(-50px) scale(0.8)',
-              transition: 'all 0.4s ease-out'
-            }
-          }))
-        }))
-        
-        dealIntervalRef.current = setInterval(() => {
-          if (soundEnabled) {
-            soundManager.play('card-deal').catch(() => {
-              // 忽略播放错误
-            })
+  // Enhanced dealing animation system
+  const dealCardsWithAnimation = useCallback(async (gameCards: GameCard[]) => {
+    try {
+      setGameState(prev => ({ ...prev, gamePhase: 'dealing' }))
+      setDealtCards(0)
+      
+      // Initialize all cards as invisible with starting position
+      setGameState(prev => ({
+        ...prev,
+        cards: gameCards.map(card => ({
+          ...card,
+          style: {
+            opacity: 0,
+            transform: 'translateY(-100px) scale(0.5) rotateX(90deg)',
+            transition: `all ${gameConfig.cardAppearDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+            zIndex: 1000 // Start with high z-index for dealing effect
           }
-          
-          // 显示当前卡片
+        }))
+      }))
+      
+      // Deal cards one by one with staggered timing
+      for (let i = 0; i < gameCards.length; i++) {
+        // Wait for the interval before dealing next card
+        await new Promise(resolve => setTimeout(resolve, gameConfig.dealInterval))
+        
+        // Play dealing sound effect for each card
+        if (soundEnabled) {
+          soundManager.play('card-deal').catch(() => {
+            // Ignore audio errors
+          })
+        }
+        
+        // Animate current card into position
+        setGameState(prev => ({
+          ...prev,
+          cards: prev.cards.map((card, index) => 
+            index === i 
+              ? {
+                  ...card,
+                  style: {
+                    opacity: 1,
+                    transform: 'translateY(0) scale(1) rotateX(0deg)',
+                    transition: `all ${gameConfig.cardAppearDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+                    zIndex: Math.min(50, gameCards.length - i) // 限制z-index最大值，防止遮挡UI
+                  }
+                }
+              : card
+          )
+        }))
+        
+        // Update dealt cards counter
+        setDealtCards(i + 1)
+        
+        // 移除跳动效果，避免位置问题
+        setTimeout(() => {
           setGameState(prev => ({
             ...prev,
             cards: prev.cards.map((card, index) => 
-              index === currentCard 
+              index === i 
                 ? {
                     ...card,
                     style: {
-                      opacity: 1,
-                      transform: 'translateY(0) scale(1)',
-                      transition: 'all 0.4s ease-out'
+                      ...card.style,
+                      transform: 'translateY(0) scale(1) rotateX(0deg)',
+                      transition: `all 150ms ease-out`
                     }
                   }
                 : card
             )
           }))
-          
-          currentCard++
-          setDealtCards(currentCard)
-          
-          if (currentCard >= actualQuantity) {
-            clearInterval(dealIntervalRef.current!)
-            // 发牌完成，进入等待翻牌状态
-            setTimeout(() => {
-              setGameState(prev => ({ ...prev, gamePhase: 'waiting' }))
-            }, 500) // 增加等待时间让最后一张卡片动画完成
-          }
-        }, gameConfig.dealInterval)
+        }, gameConfig.cardAppearDuration - 50)
+      }
+      
+      // Wait for last card animation to complete, then transition to waiting phase
+      setTimeout(() => {
+        // Clear all inline styles to let CSS take over
+        setGameState(prev => ({
+          ...prev,
+          gamePhase: 'waiting',
+          cards: prev.cards.map(card => ({
+            ...card,
+            style: undefined // Remove inline styles
+          }))
+        }))
+      }, gameConfig.cardAppearDuration + 200)
+      
+    } catch (err) {
+      setError('发牌失败，请重试')
+      console.error('Deal cards error:', err)
+    }
+  }, [soundEnabled, gameConfig.dealInterval, gameConfig.cardAppearDuration])
+
+  // 洗牌完成，开始发牌
+  const handleShuffleComplete = useCallback(() => {
+    // 延迟一点开始发牌动画，让洗牌动画完全结束
+    dealTimeoutRef.current = setTimeout(async () => {
+      try {
+        // 准备卡牌数据
+        const winners = selectWinners(items, actualQuantity, allowRepeat)
+        const gameCards = createGameCards(winners, actualQuantity)
+        
+        // 设置基础游戏状态
+        setGameState(prev => ({
+          ...prev,
+          winners
+        }))
+
+        // 开始发牌动画
+        await dealCardsWithAnimation(gameCards)
+        
       } catch (err) {
         setError('发牌失败，请重试')
         console.error('Deal cards error:', err)
       }
-    }, 500)
-  }, [items, actualQuantity, allowRepeat, soundEnabled, selectWinners, createGameCards, gameConfig.dealInterval])
+    }, 300) // Reduced delay for smoother transition
+  }, [items, actualQuantity, allowRepeat, selectWinners, createGameCards, dealCardsWithAnimation])
 
   // 处理卡牌翻转
   const handleCardFlip = useCallback((cardId: string) => {
@@ -501,11 +552,12 @@ export function CardFlipGame({
       
       // 检查是否所有卡牌都已翻开
       if (newRevealedCards.size === gameState.cards.length) {
-        // 游戏结束
+        // 游戏结束 - 不自动重新开始
+        setGameState(prev => ({ ...prev, gamePhase: 'finished' }))
+        // 延迟调用完成回调，让用户看到最终状态
         setTimeout(() => {
-          setGameState(prev => ({ ...prev, gamePhase: 'finished' }))
           onComplete(gameState.winners)
-        }, 1000)
+        }, 500)
       } else {
         // 继续等待翻牌
         setGameState(prev => ({ ...prev, gamePhase: 'waiting' }))
@@ -557,17 +609,21 @@ export function CardFlipGame({
     setWarnings(validation.warnings || [])
   }, [items, quantity, allowRepeat, soundEnabled])
 
-  // 初始化游戏
+  // 初始化游戏 - 只在autoStart为true时自动开始
   useEffect(() => {
     if (items.length === 0) {
       console.warn('项目列表为空')
       return
     }
     
-    if (!error) {
+    // 重置错误状态，确保每次组件重新挂载时都清除之前的错误
+    setError(null)
+    setWarnings([])
+    
+    if (autoStart) {
       startGame()
     }
-  }, [items, quantity, allowRepeat, startGame, error])
+  }, [items, quantity, allowRepeat, startGame, autoStart])
 
   // 清理定时器和动画
   useEffect(() => {
@@ -662,10 +718,41 @@ export function CardFlipGame({
 
   return (
     <div className={cn("flex flex-col items-center space-y-4 sm:space-y-6 lg:space-y-8 p-4 sm:p-6 lg:p-8", className)}>
+      {/* 游戏信息 - 移到顶部，避免被卡牌遮挡 */}
+      <div className="text-center space-y-2 w-full max-w-md bg-gray-50 rounded-lg p-4">
+        <div className="flex justify-between text-sm text-gray-600 px-2">
+          <span>抽取数量: {quantity}</span>
+          <span>总项目: {items.length}</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600 px-2">
+          <span>总卡牌: {actualQuantity}</span>
+          <span>已翻开: {gameState.revealedCards.size}</span>
+        </div>
+        <div className="flex justify-center text-sm text-gray-600 px-2">
+          <span>剩余: {gameState.cards.length - gameState.revealedCards.size}</span>
+        </div>
+      </div>
+
       {/* 游戏状态提示 */}
       <div className="text-center">
         {renderGameStatus()}
       </div>
+
+      {/* 开始抽奖按钮 - 只在idle状态显示 */}
+      {gameState.gamePhase === 'idle' && (
+        <div className="text-center">
+          <button
+            onClick={startGame}
+            disabled={isLoading || items.length === 0}
+            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+          >
+            🎲 开始抽奖
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            点击按钮开始卡牌抽奖
+          </p>
+        </div>
+      )}
 
       {/* 警告信息显示 */}
       {warnings.length > 0 && (
@@ -679,8 +766,8 @@ export function CardFlipGame({
         </div>
       )}
 
-      {/* 卡牌区域 - 响应式容器 */}
-      <div className="relative min-h-[200px] w-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      {/* 卡牌区域 - 响应式容器，增加底部空间 */}
+      <div className="relative min-h-[300px] w-full flex items-center justify-center px-4 sm:px-6 lg:px-8 mb-8">
         {/* 洗牌阶段显示卡牌堆 */}
         {gameState.gamePhase === 'shuffling' && (
           <CardDeck
@@ -714,28 +801,17 @@ export function CardFlipGame({
         )}
       </div>
 
-      {/* 游戏信息 - 响应式布局 */}
-      <div className="text-center space-y-2 w-full max-w-md">
-        <div className="flex justify-between text-sm text-gray-600 px-4">
-          <span>抽取数量: {quantity}</span>
-          <span>总项目: {items.length}</span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-600 px-4">
-          <span>总卡牌: {actualQuantity}</span>
-          <span>已翻开: {gameState.revealedCards.size}</span>
-        </div>
-        <div className="flex justify-center text-sm text-gray-600 px-4">
-          <span>剩余: {gameState.cards.length - gameState.revealedCards.size}</span>
-        </div>
-        {gameState.gamePhase === 'finished' && (
-          <div className="text-sm text-green-600 font-medium mt-4 p-3 bg-green-50 rounded-lg">
-            <div className="font-semibold mb-1">🎉 中奖者</div>
+      {/* 中奖结果显示 - 只在游戏结束时显示，位置固定避免遮挡 */}
+      {gameState.gamePhase === 'finished' && (
+        <div className="text-center w-full max-w-md">
+          <div className="text-sm text-green-600 font-medium p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="font-semibold mb-2">🎉 中奖者</div>
             <div className="break-words">
               {gameState.winners.map(w => w.name).join(', ')}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -36,6 +36,7 @@ export interface GameCard {
   content: ListItem | null
   position: { x: number; y: number; rotation: number; cardWidth?: number; cardHeight?: number }
   isWinner: boolean
+  style?: React.CSSProperties // Optional inline styles for animations
 }
 
 export interface CardStyle {

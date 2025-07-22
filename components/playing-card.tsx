@@ -91,11 +91,16 @@ export function PlayingCard({
       tabIndex={disabled ? -1 : 0}
       role="button"
       aria-label={isRevealed ? `已翻开: ${card.content?.name || '空卡'}` : '点击翻牌'}
+      data-testid={card.id}
       style={{
         width: `${touchWidth}px`,
         height: `${touchHeight}px`,
         transform: `translate(${card.position.x}px, ${card.position.y}px) rotate(${card.position.rotation}deg)`,
-        transition: 'transform 0.3s ease-out'
+        transition: 'transform 0.3s ease-out',
+        // Apply dealing animation styles if present
+        ...(card.style || {}),
+        // Ensure proper z-index to prevent text overlap
+        zIndex: card.style?.zIndex || 10
       }}
     >
       {/* 卡牌内容区域 - 使用实际卡牌尺寸 */}

@@ -170,10 +170,10 @@ export default function CardFlipDrawPage() {
       })
     }
     
-    // 延迟显示结果弹窗，让用户有时间看到最终状态
+    // 适当延迟显示结果弹窗，让用户有时间看到最终状态
     setTimeout(() => {
       setShowResult(true)
-    }, 1500)
+    }, 800) // 减少延迟时间，提升用户体验
   }
 
   const handleDrawAgain = () => {
@@ -192,7 +192,7 @@ export default function CardFlipDrawPage() {
     
     setShowResult(false)
     setWinners([])
-    // 通过改变key来重置游戏组件
+    // 通过改变key来重置游戏组件到idle状态，等待用户手动开始
     setGameKey(prev => prev + 1)
   }
 
@@ -396,6 +396,7 @@ export default function CardFlipDrawPage() {
               allowRepeat={config.allowRepeat}
               onComplete={handleGameComplete}
               soundEnabled={soundEnabled}
+              autoStart={false}
               className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg"
             />
           </div>

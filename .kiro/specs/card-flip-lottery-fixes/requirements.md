@@ -100,3 +100,15 @@ This feature addresses critical bugs in the card flip lottery system where the c
 3. WHEN sound effects play THEN they SHALL be synchronized with the visual animations
 4. WHEN user has sound enabled THEN all game phase transitions SHALL have appropriate audio feedback
 5. WHEN user has sound disabled THEN the game SHALL function normally without audio
+
+### Requirement 9
+
+**User Story:** As a user navigating to the card flip lottery page, I want to control when the lottery starts instead of having it auto-start, so that I can prepare and start the lottery at my own pace.
+
+#### Acceptance Criteria
+
+1. WHEN I navigate to the card flip lottery page THEN the system SHALL NOT automatically start shuffling
+2. WHEN the page loads THEN I SHALL see a "开始抽奖" button to manually start the lottery
+3. WHEN I complete a round of card flipping THEN the system SHALL NOT automatically start shuffling again
+4. WHEN all cards are flipped and winners are determined THEN there SHALL be a proper delay before showing the result modal
+5. WHEN I close the result modal THEN the system SHALL NOT automatically start a new round of shuffling
