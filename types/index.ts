@@ -88,3 +88,98 @@ export interface CardGameErrorHandler {
   showErrorToast: (message: string) => void
   recoverFromError: () => void
 }
+
+// 布局管理相关类型
+export type DeviceType = 'mobile' | 'tablet' | 'desktop'
+
+export interface DeviceConfig {
+  type: DeviceType
+  breakpoint: number
+  maxCards: number
+  cardSize: {
+    width: number
+    height: number
+  }
+  spacing: number
+  cardsPerRow: number
+  minContainerWidth: number
+  minContainerHeight: number
+}
+
+export interface ContainerDimensions {
+  width: number
+  height: number
+  availableWidth: number
+  availableHeight: number
+}
+
+export interface SafeMargins {
+  top: number
+  bottom: number
+  left: number
+  right: number
+  horizontal: number
+  vertical: number
+}
+
+export interface LayoutCalculationResult {
+  deviceConfig: DeviceConfig
+  containerDimensions: ContainerDimensions
+  safeMargins: SafeMargins
+  maxSafeCards: number
+  recommendedCards: number
+}
+
+// 动态间距系统相关类型
+export interface SpacingConfig {
+  baseUnit: number
+  componentSpacing: {
+    xs: number
+    sm: number
+    md: number
+    lg: number
+    xl: number
+    xxl: number
+  }
+  containerPadding: {
+    x: number
+    y: number
+  }
+  uiElementSpacing: {
+    gameInfo: number
+    gameStatus: number
+    startButton: number
+    warnings: number
+    resultDisplay: number
+    cardArea: number
+  }
+}
+
+export interface SpacingValidationResult {
+  isValid: boolean
+  warnings: string[]
+  errors: string[]
+  recommendations: string[]
+}
+
+// 布局验证相关类型
+export interface CardPosition {
+  x: number
+  y: number
+}
+
+export interface LayoutConfig {
+  cardWidth: number
+  cardHeight: number
+  spacing: SpacingConfig & {
+    horizontal: number
+    vertical: number
+    tolerance: number
+  }
+  padding: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
+}

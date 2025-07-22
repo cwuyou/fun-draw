@@ -14,6 +14,11 @@ import {
   QuantityValidationError,
   PositionCalculationError
 } from '@/lib/card-game-validation'
+import { 
+  calculateLayout,
+  getLayoutDebugInfo
+} from '@/lib/layout-manager'
+import { useDynamicSpacing } from '@/hooks/use-dynamic-spacing'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -85,127 +90,156 @@ export function CardFlipGame({
   // 确保发牌数量在合理范围内，但尊重用户配置的数量
   const actualQuantity = Math.max(1, Math.min(gameConfig.maxCards, quantity))
 
-  // 计算卡牌布局位置（响应式）
+  // 使用动态间距系统
+  const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
+  const containerHeight = typeof window !== 'undefined' ? window.innerHeight : 768
+  
+  const dynamicSpacing = useDynamicSpacing({
+    containerWidth,
+    containerHeight,
+    uiElements: {
+      hasGameInfo: true,
+      hasWarnings: warnings.length > 0,
+      hasStartButton: gameState.gamePhase === 'idle',
+      hasResultDisplay: gameState.gamePhase === 'finished',
+      cardAreaMinHeight: 300
+    },
+    enableValidation: process.env.NODE_ENV === 'development',
+    enableDebug: process.env.NODE_ENV === 'development'
+  })
+
+  // 优化的卡牌布局位置计算（使用统一的布局管理系统）
   const calculateCardPositions = useCallback((totalCards: number) => {
     try {
-      // 验证位置计算参数
-      const deviceType = typeof window !== 'undefined' 
-        ? (window.innerWidth < 768 ? 'mobile' : 
-           window.innerWidth < 1024 ? 'tablet' : 'desktop')
-        : 'desktop'
-
-      const containerDimensions = typeof window !== 'undefined' ? {
-        width: window.innerWidth,
-        height: window.innerHeight
-      } : undefined
-
-      const positionValidation = validatePositionCalculation({
+      // 获取容器尺寸
+      const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
+      const containerHeight = typeof window !== 'undefined' ? window.innerHeight : 768
+      
+      // 确定当前UI状态
+      const uiOptions = {
+        hasGameInfo: true,
+        hasWarnings: warnings.length > 0,
+        hasStartButton: gameState.gamePhase === 'idle',
+        hasResultDisplay: gameState.gamePhase === 'finished'
+      }
+      
+      // 使用统一的布局计算系统
+      const layoutResult = calculateLayout(
+        containerWidth,
+        containerHeight,
         totalCards,
-        containerWidth: containerDimensions?.width,
-        containerHeight: containerDimensions?.height,
-        deviceType
-      })
-
-      if (!positionValidation.isValid) {
-        console.error('Position calculation validation failed:', positionValidation.error)
-        // 降级到安全的默认布局
+        items.length,
+        uiOptions
+      )
+      
+      // 输出调试信息
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Layout calculation:', getLayoutDebugInfo(layoutResult))
+      }
+      
+      // 验证布局是否可行
+      if (layoutResult.maxSafeCards === 0) {
+        console.warn('Container too small for cards, using fallback layout')
         return [{
           x: 0,
           y: 0,
           rotation: 0,
-          cardWidth: 96,
-          cardHeight: 144
+          cardWidth: layoutResult.deviceConfig.cardSize.width,
+          cardHeight: layoutResult.deviceConfig.cardSize.height
         }]
       }
-
+      
+      // 使用推荐的卡牌数量（如果小于请求数量，会自动调整）
+      const actualCards = Math.min(totalCards, layoutResult.maxSafeCards)
+      
+      // 获取设备配置
+      const { deviceConfig, containerDimensions } = layoutResult
+      const { cardSize, spacing, cardsPerRow } = deviceConfig
+      
+      // 计算实际的每行卡牌数（基于可用空间）
+      const actualCardsPerRow = Math.min(
+        cardsPerRow,
+        Math.floor((containerDimensions.availableWidth + spacing) / (cardSize.width + spacing))
+      )
+      
+      // 计算行数
+      const rows = Math.ceil(actualCards / actualCardsPerRow)
+      
+      // 建立统一的位置计算基准点系统
       const positions = []
       
-      // 添加适当的边距以防止与UI文本重叠
-      const CARD_MARGIN_TOP = 40 // 距离状态文本的额外边距，增加到40px
-      const CARD_MARGIN_BOTTOM = 120 // 距离游戏信息的边距，增加到120px
+      // 基准点：容器中心点作为坐标原点
+      const originX = 0
+      const originY = 0
       
-      // 响应式卡牌尺寸和间距
-      const isMobile = deviceType === 'mobile'
-      const isTablet = deviceType === 'tablet'
+      // 计算整个卡牌网格的尺寸
+      const gridWidth = actualCardsPerRow * cardSize.width + (actualCardsPerRow - 1) * spacing
+      const gridHeight = rows * cardSize.height + (rows - 1) * spacing
       
-      // 根据设备类型调整卡牌尺寸和间距
-      let cardWidth, cardHeight, spacing, cardsPerRow
+      // 计算网格起始位置（相对于中心点）
+      const gridStartX = originX - gridWidth / 2
+      const gridStartY = originY - gridHeight / 2
       
-      if (isMobile) {
-        // 移动端：较小的卡牌，2张一行
-        cardWidth = 80  // w-20 = 80px
-        cardHeight = 120 // h-30 = 120px
-        spacing = 12
-        cardsPerRow = Math.min(2, totalCards)
-      } else if (isTablet) {
-        // 平板端：中等卡牌，3张一行
-        cardWidth = 88  // w-22 = 88px
-        cardHeight = 132 // h-33 = 132px
-        spacing = 14
-        cardsPerRow = Math.min(3, totalCards)
-      } else {
-        // 桌面端：标准卡牌，最多5张一行
-        cardWidth = 96  // w-24 = 96px
-        cardHeight = 144 // h-36 = 144px
-        spacing = 16
-        cardsPerRow = Math.min(5, totalCards)
-      }
-      
-      const rows = Math.ceil(totalCards / cardsPerRow)
-      
-      // 验证布局是否会溢出容器
-      const totalWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * spacing
-      const totalHeight = rows * cardHeight + (rows - 1) * spacing + CARD_MARGIN_TOP + CARD_MARGIN_BOTTOM
-      
-      if (containerDimensions) {
-        const availableWidth = containerDimensions.width - 32 // 减去padding
-        const availableHeight = containerDimensions.height - 200 // 减去UI元素高度
-        
-        if (totalWidth > availableWidth || totalHeight > availableHeight) {
-          console.warn('Layout may overflow container, adjusting card size')
-          // 自动调整卡牌尺寸以适应容器
-          const scaleX = availableWidth / totalWidth
-          const scaleY = availableHeight / totalHeight
-          const scale = Math.min(scaleX, scaleY, 1) // 不放大，只缩小
-          
-          cardWidth *= scale
-          cardHeight *= scale
-          spacing *= scale
-        }
-      }
-      
+      // 生成每张卡牌的位置
       let cardIndex = 0
-      for (let row = 0; row < rows; row++) {
-        const cardsInThisRow = Math.min(cardsPerRow, totalCards - row * cardsPerRow)
-        const rowWidth = cardsInThisRow * cardWidth + (cardsInThisRow - 1) * spacing
-        const startX = -rowWidth / 2 + cardWidth / 2
+      for (let row = 0; row < rows && cardIndex < actualCards; row++) {
+        const cardsInThisRow = Math.min(actualCardsPerRow, actualCards - row * actualCardsPerRow)
         
-        for (let col = 0; col < cardsInThisRow; col++) {
-          positions.push({
-            x: startX + col * (cardWidth + spacing),
-            // 调整Y位置以考虑UI文本间距
-            y: CARD_MARGIN_TOP + row * (cardHeight + spacing) - (rows - 1) * (cardHeight + spacing) / 2,
-            rotation: (Math.random() - 0.5) * 4, // 轻微随机旋转
-            cardWidth,
-            cardHeight
-          })
+        // 计算当前行的宽度和起始X位置（用于居中对齐）
+        const rowWidth = cardsInThisRow * cardSize.width + (cardsInThisRow - 1) * spacing
+        const rowStartX = originX - rowWidth / 2
+        
+        for (let col = 0; col < cardsInThisRow && cardIndex < actualCards; col++) {
+          // 计算卡牌中心位置
+          const cardCenterX = rowStartX + col * (cardSize.width + spacing) + cardSize.width / 2
+          const cardCenterY = gridStartY + row * (cardSize.height + spacing) + cardSize.height / 2
+          
+          // 添加位置验证机制防止跳跃
+          const position = {
+            x: cardCenterX,
+            y: cardCenterY,
+            rotation: (Math.random() - 0.5) * 4, // 轻微随机旋转，保持一致性
+            cardWidth: cardSize.width,
+            cardHeight: cardSize.height
+          }
+          
+          // 验证位置是否在安全范围内
+          const isPositionSafe = (
+            Math.abs(position.x) <= containerDimensions.availableWidth / 2 &&
+            Math.abs(position.y) <= containerDimensions.availableHeight / 2
+          )
+          
+          if (!isPositionSafe) {
+            console.warn(`Card ${cardIndex} position may be outside safe area:`, position)
+          }
+          
+          positions.push(position)
           cardIndex++
         }
       }
       
+      // 确保洗牌和发牌阶段使用相同的位置计算逻辑
+      // 通过缓存位置信息来保证一致性
+      if (positions.length !== totalCards && totalCards <= layoutResult.maxSafeCards) {
+        console.warn(`Position count mismatch: generated ${positions.length}, requested ${totalCards}`)
+      }
+      
       return positions
+      
     } catch (error) {
-      console.error('Error calculating card positions:', error)
-      // 返回安全的默认位置
-      return Array.from({ length: totalCards }, (_, index) => ({
-        x: (index % 3 - 1) * 100, // 简单的3列布局
-        y: Math.floor(index / 3) * 150,
+      console.error('Error in optimized card position calculation:', error)
+      
+      // 安全降级机制
+      const fallbackCardSize = { width: 96, height: 144 }
+      return Array.from({ length: Math.min(totalCards, 6) }, (_, index) => ({
+        x: (index % 3 - 1) * (fallbackCardSize.width + 16),
+        y: Math.floor(index / 3) * (fallbackCardSize.height + 16) - 50,
         rotation: 0,
-        cardWidth: 96,
-        cardHeight: 144
+        cardWidth: fallbackCardSize.width,
+        cardHeight: fallbackCardSize.height
       }))
     }
-  }, [])
+  }, [warnings.length, gameState.gamePhase, items.length])
 
   // 选择中奖者
   const selectWinners = useCallback((items: ListItem[], quantity: number, allowRepeat: boolean): ListItem[] => {
@@ -400,30 +434,62 @@ export function CardFlipGame({
     }
   }, [soundEnabled, items, actualQuantity, gameState.gamePhase])
 
-  // Enhanced dealing animation system
+  // Enhanced dealing animation system with pre-calculated positions
   const dealCardsWithAnimation = useCallback(async (gameCards: GameCard[]) => {
     try {
       setGameState(prev => ({ ...prev, gamePhase: 'dealing' }))
       setDealtCards(0)
       
-      // Initialize all cards as invisible with starting position
+      // 在动画开始前预计算所有最终位置
+      const finalPositions = gameCards.map(card => ({
+        x: card.position.x,
+        y: card.position.y,
+        rotation: card.position.rotation,
+        cardWidth: card.position.cardWidth,
+        cardHeight: card.position.cardHeight
+      }))
+      
+      // 定义统一的动画起始位置（从卡牌堆位置开始）
+      const startingPosition = {
+        x: 0, // 中心位置
+        y: -150, // 从上方开始
+        rotation: 0,
+        scale: 0.8
+      }
+      
+      // Initialize all cards with pre-calculated final positions but invisible
       setGameState(prev => ({
         ...prev,
-        cards: gameCards.map(card => ({
+        cards: gameCards.map((card, index) => ({
           ...card,
+          // 确保position对象包含最终位置信息
+          position: finalPositions[index],
           style: {
             opacity: 0,
-            transform: 'translateY(-100px) scale(0.5) rotateX(90deg)',
-            transition: `all ${gameConfig.cardAppearDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
-            zIndex: 1000 // Start with high z-index for dealing effect
+            // 使用统一的起始位置，避免位置跳跃
+            transform: `translate(${startingPosition.x}px, ${startingPosition.y}px) scale(${startingPosition.scale}) rotateX(90deg) rotate(${startingPosition.rotation}deg)`,
+            transition: 'none', // 初始化时不使用过渡
+            zIndex: 1000 + index, // 确保发牌顺序的层级
+            position: 'absolute' as const,
+            left: '50%',
+            top: '50%',
+            marginLeft: `-${finalPositions[index].cardWidth / 2}px`,
+            marginTop: `-${finalPositions[index].cardHeight / 2}px`,
+            width: `${finalPositions[index].cardWidth}px`,
+            height: `${finalPositions[index].cardHeight}px`
           }
         }))
       }))
       
+      // 短暂延迟确保DOM更新完成
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
       // Deal cards one by one with staggered timing
       for (let i = 0; i < gameCards.length; i++) {
         // Wait for the interval before dealing next card
-        await new Promise(resolve => setTimeout(resolve, gameConfig.dealInterval))
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, gameConfig.dealInterval))
+        }
         
         // Play dealing sound effect for each card
         if (soundEnabled) {
@@ -432,7 +498,7 @@ export function CardFlipGame({
           })
         }
         
-        // Animate current card into position
+        // Animate current card to its final position
         setGameState(prev => ({
           ...prev,
           cards: prev.cards.map((card, index) => 
@@ -440,9 +506,11 @@ export function CardFlipGame({
               ? {
                   ...card,
                   style: {
+                    ...card.style,
                     opacity: 1,
-                    transform: 'translateY(0) scale(1) rotateX(0deg)',
-                    transition: `all ${gameConfig.cardAppearDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+                    // 动画到预计算的最终位置，确保位置保持稳定
+                    transform: `translate(${finalPositions[i].x}px, ${finalPositions[i].y}px) scale(1) rotateX(0deg) rotate(${finalPositions[i].rotation}deg)`,
+                    transition: `all ${gameConfig.cardAppearDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`, // 使用更平滑的缓动函数
                     zIndex: Math.min(50, gameCards.length - i) // 限制z-index最大值，防止遮挡UI
                   }
                 }
@@ -452,39 +520,32 @@ export function CardFlipGame({
         
         // Update dealt cards counter
         setDealtCards(i + 1)
-        
-        // 移除跳动效果，避免位置问题
-        setTimeout(() => {
-          setGameState(prev => ({
-            ...prev,
-            cards: prev.cards.map((card, index) => 
-              index === i 
-                ? {
-                    ...card,
-                    style: {
-                      ...card.style,
-                      transform: 'translateY(0) scale(1) rotateX(0deg)',
-                      transition: `all 150ms ease-out`
-                    }
-                  }
-                : card
-            )
-          }))
-        }, gameConfig.cardAppearDuration - 50)
       }
       
       // Wait for last card animation to complete, then transition to waiting phase
       setTimeout(() => {
-        // Clear all inline styles to let CSS take over
+        // 移除内联样式，让CSS接管，确保位置一致性
         setGameState(prev => ({
           ...prev,
           gamePhase: 'waiting',
           cards: prev.cards.map(card => ({
             ...card,
-            style: undefined // Remove inline styles
+            style: {
+              // 保留关键的位置信息，确保动画结束后位置不变
+              position: 'absolute' as const,
+              left: '50%',
+              top: '50%',
+              marginLeft: `-${card.position.cardWidth / 2}px`,
+              marginTop: `-${card.position.cardHeight / 2}px`,
+              width: `${card.position.cardWidth}px`,
+              height: `${card.position.cardHeight}px`,
+              transform: `translate(${card.position.x}px, ${card.position.y}px) rotate(${card.position.rotation}deg)`,
+              transition: 'transform 0.3s ease-out, opacity 0.2s ease-out', // 保留平滑的交互过渡
+              zIndex: 10
+            }
           }))
         }))
-      }, gameConfig.cardAppearDuration + 200)
+      }, gameConfig.cardAppearDuration + 100) // 减少延迟，提高响应性
       
     } catch (err) {
       setError('发牌失败，请重试')
@@ -565,24 +626,105 @@ export function CardFlipGame({
     }, gameConfig.flipDuration)
   }, [gameState, soundEnabled, onComplete, gameConfig.flipDuration])
 
-  // 监听窗口大小变化，重新计算卡牌位置
+  // 监听窗口大小变化，实现平滑的位置重新计算和调整
   useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout | null = null
+    let isResizing = false
+    
     const handleResize = () => {
-      if (gameState.cards.length > 0) {
-        const newPositions = calculateCardPositions(gameState.cards.length)
-        setGameState(prev => ({
-          ...prev,
-          cards: prev.cards.map((card, index) => ({
-            ...card,
-            position: newPositions[index]
-          }))
-        }))
+      // 防抖处理，优化resize事件的处理性能
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
       }
+      
+      // 标记正在调整大小状态
+      if (!isResizing) {
+        isResizing = true
+        // 在调整开始时添加过渡效果
+        if (gameState.cards.length > 0) {
+          setGameState(prev => ({
+            ...prev,
+            cards: prev.cards.map(card => ({
+              ...card,
+              style: {
+                ...card.style,
+                transition: 'transform 0.3s ease-out, opacity 0.2s ease-out'
+              }
+            }))
+          }))
+        }
+      }
+      
+      resizeTimeout = setTimeout(() => {
+        if (gameState.cards.length > 0) {
+          // 重新计算容器尺寸和卡牌位置
+          const containerWidth = window.innerWidth
+          const containerHeight = window.innerHeight
+          
+          // 确定当前UI状态
+          const uiOptions = {
+            hasGameInfo: true,
+            hasWarnings: warnings.length > 0,
+            hasStartButton: gameState.gamePhase === 'idle',
+            hasResultDisplay: gameState.gamePhase === 'finished'
+          }
+          
+          // 使用统一的布局计算系统重新计算位置
+          const layoutResult = calculateLayout(
+            containerWidth,
+            containerHeight,
+            gameState.cards.length,
+            items.length,
+            uiOptions
+          )
+          
+          const newPositions = calculateCardPositions(gameState.cards.length)
+          
+          // 平滑地重新计算和调整卡牌位置
+          setGameState(prev => ({
+            ...prev,
+            cards: prev.cards.map((card, index) => {
+              const newPosition = newPositions[index]
+              return {
+                ...card,
+                position: newPosition,
+                style: {
+                  ...card.style,
+                  // 确保动画过程中的位置准确性
+                  transform: `translate(${newPosition.x}px, ${newPosition.y}px) rotate(${newPosition.rotation}deg)`,
+                  width: `${newPosition.cardWidth}px`,
+                  height: `${newPosition.cardHeight}px`,
+                  marginLeft: `-${newPosition.cardWidth / 2}px`,
+                  marginTop: `-${newPosition.cardHeight / 2}px`,
+                  transition: 'transform 0.3s ease-out, width 0.3s ease-out, height 0.3s ease-out, margin 0.3s ease-out'
+                }
+              }
+            })
+          }))
+          
+          // 调试信息
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Window resized - Layout recalculated:', getLayoutDebugInfo(layoutResult))
+          }
+        }
+        
+        // 重置调整状态
+        isResizing = false
+        resizeTimeout = null
+      }, 150) // 150ms防抖延迟，平衡性能和响应性
     }
 
+    // 添加resize事件监听器
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [gameState.cards.length, calculateCardPositions])
+    
+    // 清理函数
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
+      }
+    }
+  }, [gameState.cards.length, gameState.gamePhase, calculateCardPositions, warnings.length, items.length])
 
   // 验证游戏配置
   useEffect(() => {
@@ -662,15 +804,15 @@ export function CardFlipGame({
   // 错误状态显示
   if (error) {
     return (
-      <div className={cn("flex flex-col items-center justify-center p-8", className)}>
+      <div className={cn("flex flex-col items-center justify-center", dynamicSpacing.cssClasses.container.padding, className)}>
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className={cn("w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
             <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
-          <div className="text-xl font-semibold text-red-700 mb-2">
+          <div className={cn("text-xl font-semibold text-red-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
             游戏出错了
           </div>
-          <div className="text-red-600 mb-4">
+          <div className={cn("text-red-600", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
             {error}
           </div>
           <button
@@ -678,7 +820,7 @@ export function CardFlipGame({
               setError(null)
               startGame()
             }}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className={cn("bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors", `px-[${dynamicSpacing.spacing.responsive('md')}px] py-[${dynamicSpacing.spacing.responsive('sm')}px]`)}
           >
             重新开始
           </button>
@@ -689,9 +831,9 @@ export function CardFlipGame({
 
   if (items.length === 0) {
     return (
-      <div className={cn("flex flex-col items-center justify-center p-8", className)}>
+      <div className={cn("flex flex-col items-center justify-center", dynamicSpacing.cssClasses.container.padding, className)}>
         <div className="text-center">
-          <div className="text-xl font-semibold text-gray-700 mb-2">
+          <div className={cn("text-xl font-semibold text-gray-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
             项目列表为空
           </div>
           <div className="text-gray-500">
@@ -705,9 +847,9 @@ export function CardFlipGame({
   // 加载状态显示
   if (isLoading) {
     return (
-      <div className={cn("flex flex-col items-center justify-center p-8", className)}>
+      <div className={cn("flex flex-col items-center justify-center", dynamicSpacing.cssClasses.container.padding, className)}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className={cn("animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}></div>
           <div className="text-lg text-gray-600">
             正在准备游戏...
           </div>
@@ -717,38 +859,67 @@ export function CardFlipGame({
   }
 
   return (
-    <div className={cn("flex flex-col items-center space-y-4 sm:space-y-6 lg:space-y-8 p-4 sm:p-6 lg:p-8", className)}>
-      {/* 游戏信息 - 移到顶部，避免被卡牌遮挡 */}
-      <div className="text-center space-y-2 w-full max-w-md bg-gray-50 rounded-lg p-4">
-        <div className="flex justify-between text-sm text-gray-600 px-2">
-          <span>抽取数量: {quantity}</span>
-          <span>总项目: {items.length}</span>
+    <div className={cn("flex flex-col items-center", dynamicSpacing.cssClasses.component.spaceY, dynamicSpacing.cssClasses.container.padding, className)}>
+      {/* 游戏信息面板 - 优化视觉层次和间距 */}
+      <div className={cn(
+        "text-center w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100", 
+        dynamicSpacing.cssClasses.uiElement.gameInfo,
+        `p-[${dynamicSpacing.spacing.responsive('lg')}px]`
+      )}>
+        {/* 面板标题 */}
+        <div className={cn("text-base font-semibold text-gray-800", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
+          游戏信息
         </div>
-        <div className="flex justify-between text-sm text-gray-600 px-2">
-          <span>总卡牌: {actualQuantity}</span>
-          <span>已翻开: {gameState.revealedCards.size}</span>
+        
+        {/* 信息网格 - 优化布局层次 */}
+        <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
+          <div className="bg-blue-50 rounded-lg p-3">
+            <div className="text-xs text-blue-600 font-medium mb-1">抽取数量</div>
+            <div className="text-lg font-bold text-blue-800">{quantity}</div>
+          </div>
+          <div className="bg-green-50 rounded-lg p-3">
+            <div className="text-xs text-green-600 font-medium mb-1">总项目</div>
+            <div className="text-lg font-bold text-green-800">{items.length}</div>
+          </div>
         </div>
-        <div className="flex justify-center text-sm text-gray-600 px-2">
-          <span>剩余: {gameState.cards.length - gameState.revealedCards.size}</span>
+        
+        {/* 游戏进度信息 */}
+        <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
+          <div className="bg-purple-50 rounded-lg p-3">
+            <div className="text-xs text-purple-600 font-medium mb-1">总卡牌</div>
+            <div className="text-lg font-bold text-purple-800">{actualQuantity}</div>
+          </div>
+          <div className="bg-orange-50 rounded-lg p-3">
+            <div className="text-xs text-orange-600 font-medium mb-1">已翻开</div>
+            <div className="text-lg font-bold text-orange-800">{gameState.revealedCards.size}</div>
+          </div>
+        </div>
+        
+        {/* 剩余卡牌指示器 */}
+        <div className="bg-gray-50 rounded-lg p-2">
+          <div className="text-xs text-gray-600 font-medium mb-1">剩余卡牌</div>
+          <div className="text-sm font-semibold text-gray-800">
+            {gameState.cards.length - gameState.revealedCards.size}
+          </div>
         </div>
       </div>
 
       {/* 游戏状态提示 */}
-      <div className="text-center">
+      <div className={cn("text-center", dynamicSpacing.cssClasses.uiElement.gameStatus)}>
         {renderGameStatus()}
       </div>
 
       {/* 开始抽奖按钮 - 只在idle状态显示 */}
       {gameState.gamePhase === 'idle' && (
-        <div className="text-center">
+        <div className={cn("text-center", dynamicSpacing.cssClasses.uiElement.startButton)}>
           <button
             onClick={startGame}
             disabled={isLoading || items.length === 0}
-            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+            className={cn("bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105", `px-[${dynamicSpacing.spacing.responsive('xl')}px] py-[${dynamicSpacing.spacing.responsive('md')}px]`)}
           >
             🎲 开始抽奖
           </button>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className={cn("text-sm text-gray-500", `mt-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
             点击按钮开始卡牌抽奖
           </p>
         </div>
@@ -756,9 +927,9 @@ export function CardFlipGame({
 
       {/* 警告信息显示 */}
       {warnings.length > 0 && (
-        <div className="w-full max-w-md space-y-2">
+        <div className={cn("w-full max-w-md", dynamicSpacing.cssClasses.uiElement.warnings, `space-y-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
           {warnings.map((warning, index) => (
-            <div key={index} className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div key={index} className={cn("flex items-center bg-yellow-50 border border-yellow-200 rounded-lg", `gap-[${dynamicSpacing.spacing.responsive('xs')}px] p-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
               <Info className="w-4 h-4 text-yellow-600 flex-shrink-0" />
               <span className="text-sm text-yellow-800">{warning}</span>
             </div>
@@ -766,15 +937,28 @@ export function CardFlipGame({
         </div>
       )}
 
-      {/* 卡牌区域 - 响应式容器，增加底部空间 */}
-      <div className="relative min-h-[300px] w-full flex items-center justify-center px-4 sm:px-6 lg:px-8 mb-8">
+      {/* 卡牌区域 - 视觉焦点区域，增强层次感 */}
+      <div className={cn(
+        "relative min-h-[300px] w-full flex items-center justify-center",
+        "bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl border border-gray-200",
+        "shadow-inner transition-all duration-300",
+        gameState.gamePhase === 'waiting' && "shadow-lg ring-2 ring-blue-200 ring-opacity-50",
+        dynamicSpacing.cssClasses.uiElement.cardArea,
+        dynamicSpacing.cssClasses.container.paddingX,
+        `p-[${dynamicSpacing.spacing.responsive('lg')}px]`
+      )}>
+        {/* 背景装饰 - 增强视觉层次 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl pointer-events-none" />
+        
         {/* 洗牌阶段显示卡牌堆 */}
         {gameState.gamePhase === 'shuffling' && (
-          <CardDeck
-            totalCards={items.length}
-            isShuffling={true}
-            onShuffleComplete={handleShuffleComplete}
-          />
+          <div className="relative z-10">
+            <CardDeck
+              totalCards={items.length}
+              isShuffling={true}
+              onShuffleComplete={handleShuffleComplete}
+            />
+          </div>
         )}
 
         {/* 发牌和游戏阶段显示游戏卡牌 */}
@@ -782,7 +966,7 @@ export function CardFlipGame({
           gameState.gamePhase === 'waiting' || 
           gameState.gamePhase === 'revealing' || 
           gameState.gamePhase === 'finished') && (
-          <div className="relative">
+          <div className="relative z-10">
             {gameState.cards.map((card, index) => (
               <PlayingCard
                 key={card.id}
@@ -793,21 +977,71 @@ export function CardFlipGame({
                 disabled={gameState.gamePhase !== 'waiting'}
                 className={cn(
                   "absolute transition-all duration-500 ease-out",
+                  "hover:z-20 focus:z-20", // 确保交互时卡牌在最前面
                   gameState.gamePhase === 'dealing' && index >= dealtCards && "opacity-0 scale-95"
                 )}
               />
             ))}
           </div>
         )}
+        
+        {/* 空状态提示 */}
+        {gameState.gamePhase === 'idle' && (
+          <div className="text-center text-gray-400 z-10">
+            <div className="text-4xl mb-2">🎴</div>
+            <div className="text-sm">卡牌将在这里显示</div>
+          </div>
+        )}
       </div>
 
-      {/* 中奖结果显示 - 只在游戏结束时显示，位置固定避免遮挡 */}
+      {/* 中奖结果显示 - 优化间距和自适应扩展 */}
       {gameState.gamePhase === 'finished' && (
-        <div className="text-center w-full max-w-md">
-          <div className="text-sm text-green-600 font-medium p-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="font-semibold mb-2">🎉 中奖者</div>
-            <div className="break-words">
-              {gameState.winners.map(w => w.name).join(', ')}
+        <div className={cn(
+          "text-center w-full max-w-md sticky bottom-4 z-10", 
+          dynamicSpacing.cssClasses.uiElement.resultDisplay
+        )}>
+          <div className={cn(
+            "bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-lg backdrop-blur-sm",
+            `p-[${dynamicSpacing.spacing.responsive('lg')}px]`
+          )}>
+            {/* 结果标题 */}
+            <div className={cn(
+              "flex items-center justify-center text-lg font-bold text-green-700",
+              `mb-[${dynamicSpacing.spacing.responsive('md')}px]`
+            )}>
+              <span className="mr-2">🎉</span>
+              <span>抽奖结果</span>
+            </div>
+            
+            {/* 中奖者列表 - 自适应扩展 */}
+            <div className={cn(
+              "bg-white rounded-lg border border-green-100 max-h-32 overflow-y-auto",
+              `p-[${dynamicSpacing.spacing.responsive('md')}px]`
+            )}>
+              <div className={cn("text-xs text-green-600 font-medium", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
+                中奖者名单 ({gameState.winners.length}人)
+              </div>
+              <div className="space-y-1">
+                {gameState.winners.map((winner, index) => (
+                  <div 
+                    key={`winner-${index}`}
+                    className="flex items-center justify-between bg-green-50 rounded px-3 py-2"
+                  >
+                    <span className="text-sm font-medium text-green-800 break-words flex-1">
+                      {winner.name}
+                    </span>
+                    <span className="text-xs text-green-600 ml-2">#{index + 1}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* 统计信息 */}
+            <div className={cn(
+              "flex justify-center text-xs text-green-600",
+              `mt-[${dynamicSpacing.spacing.responsive('sm')}px]`
+            )}>
+              共翻开 {gameState.revealedCards.size} 张卡牌，找到 {gameState.winners.length} 位中奖者
             </div>
           </div>
         </div>
