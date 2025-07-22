@@ -23,6 +23,7 @@ export function PlayingCard({
   className 
 }: PlayingCardProps) {
   const [isFlipping, setIsFlipping] = useState(false)
+  const [showInstantFeedback, setShowInstantFeedback] = useState(false)
 
   // 使用动画性能管理器
   const {
@@ -47,6 +48,15 @@ export function PlayingCard({
     }
     
     setIsFlipping(true)
+    
+    // 显示瞬间反馈（在翻牌开始时短暂显示结果）
+    if (card.content && card.isWinner) {
+      setShowInstantFeedback(true)
+      setTimeout(() => {
+        setShowInstantFeedback(false)
+      }, 800) // 短暂显示800ms
+    }
+    
     onFlip(card.id)
     
     // Reset flipping state after animation completes
@@ -172,6 +182,15 @@ export function PlayingCard({
           )}
         </div>
       </div>
+
+      {/* 瞬间反馈提示 - 翻牌时短暂显示结果 */}
+      {showInstantFeedback && card.content && card.isWinner && (
+        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce">
+            🎉 {card.content.name}
+          </div>
+        </div>
+      )}
 
       {/* 悬停效果 */}
       {!disabled && !isRevealed && !shouldSkipAnimation && (

@@ -613,12 +613,12 @@ export function CardFlipGame({
       
       // 检查是否所有卡牌都已翻开
       if (newRevealedCards.size === gameState.cards.length) {
-        // 游戏结束 - 不自动重新开始
+        // 游戏结束 - 直接调用完成回调，不显示卡牌下方结果
         setGameState(prev => ({ ...prev, gamePhase: 'finished' }))
-        // 延迟调用完成回调，让用户看到最终状态
+        // 立即调用完成回调，让对话框成为唯一的结果展示
         setTimeout(() => {
           onComplete(gameState.winners)
-        }, 500)
+        }, 300) // 缩短延迟，快速显示对话框
       } else {
         // 继续等待翻牌
         setGameState(prev => ({ ...prev, gamePhase: 'waiting' }))
@@ -994,58 +994,7 @@ export function CardFlipGame({
         )}
       </div>
 
-      {/* 中奖结果显示 - 优化间距和自适应扩展 */}
-      {gameState.gamePhase === 'finished' && (
-        <div className={cn(
-          "text-center w-full max-w-md sticky bottom-4 z-10", 
-          dynamicSpacing.cssClasses.uiElement.resultDisplay
-        )}>
-          <div className={cn(
-            "bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-lg backdrop-blur-sm",
-            `p-[${dynamicSpacing.spacing.responsive('lg')}px]`
-          )}>
-            {/* 结果标题 */}
-            <div className={cn(
-              "flex items-center justify-center text-lg font-bold text-green-700",
-              `mb-[${dynamicSpacing.spacing.responsive('md')}px]`
-            )}>
-              <span className="mr-2">🎉</span>
-              <span>抽奖结果</span>
-            </div>
-            
-            {/* 中奖者列表 - 自适应扩展 */}
-            <div className={cn(
-              "bg-white rounded-lg border border-green-100 max-h-32 overflow-y-auto",
-              `p-[${dynamicSpacing.spacing.responsive('md')}px]`
-            )}>
-              <div className={cn("text-xs text-green-600 font-medium", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
-                中奖者名单 ({gameState.winners.length}人)
-              </div>
-              <div className="space-y-1">
-                {gameState.winners.map((winner, index) => (
-                  <div 
-                    key={`winner-${index}`}
-                    className="flex items-center justify-between bg-green-50 rounded px-3 py-2"
-                  >
-                    <span className="text-sm font-medium text-green-800 break-words flex-1">
-                      {winner.name}
-                    </span>
-                    <span className="text-xs text-green-600 ml-2">#{index + 1}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* 统计信息 */}
-            <div className={cn(
-              "flex justify-center text-xs text-green-600",
-              `mt-[${dynamicSpacing.spacing.responsive('sm')}px]`
-            )}>
-              共翻开 {gameState.revealedCards.size} 张卡牌，找到 {gameState.winners.length} 位中奖者
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

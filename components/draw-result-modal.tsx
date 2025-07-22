@@ -143,16 +143,18 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={onDrawAgain}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              size="lg"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg py-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              再抽一次
+              <RotateCcw className="w-5 h-5 mr-2" />
+              🎲 再抽一次
             </Button>
 
             <Button
               onClick={onGoHome}
               variant="outline"
-              className="flex-1 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent"
+              size="lg"
+              className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50 bg-transparent py-3 font-medium"
             >
               <Home className="w-4 h-4 mr-2" />
               返回首页
