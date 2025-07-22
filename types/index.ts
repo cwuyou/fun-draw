@@ -166,6 +166,49 @@ export interface SpacingValidationResult {
 export interface CardPosition {
   x: number
   y: number
+  rotation: number
+  cardWidth: number
+  cardHeight: number
+  // Add validation metadata
+  isValidated?: boolean
+  isFallback?: boolean
+  validationError?: string
+}
+
+export interface PositionValidationResult {
+  isValid: boolean
+  position?: CardPosition
+  error?: string
+  fallbackApplied?: boolean
+}
+
+export interface PositionCalculationContext {
+  containerWidth: number
+  containerHeight: number
+  cardCount: number
+  deviceType: DeviceType
+  timestamp: number
+  fallbackApplied: boolean
+}
+
+export interface ResizeError {
+  timestamp: number
+  error: Error
+  context: {
+    containerWidth: number
+    containerHeight: number
+    cardCount: number
+    gamePhase: string
+  }
+  recovery: 'fallback' | 'retry' | 'ignore'
+}
+
+export enum PositionError {
+  UNDEFINED_POSITION = 'Position object is undefined',
+  MISSING_PROPERTIES = 'Position missing required properties',
+  INVALID_VALUES = 'Position contains invalid numeric values',
+  ARRAY_BOUNDS = 'Position array index out of bounds',
+  CALCULATION_FAILED = 'Position calculation encountered an error'
 }
 
 export interface LayoutConfig {

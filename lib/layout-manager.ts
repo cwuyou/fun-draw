@@ -618,17 +618,112 @@ export function calculateLayout(
     hasResultDisplay?: boolean
   } = {}
 ): LayoutCalculationResult {
+  try {
+    // 增强的输入验证
+    if (!isValidContainerDimension(containerWidth, containerHeight)) {
+      console.warn(`Invalid container dimensions: ${containerWidth}x${containerHeight}`)
+      throw new Error(`Invalid container dimensions: ${containerWidth}x${containerHeight}`)
+    }
+
+    if (!Number.isInteger(requestedQuantity) || requestedQuantity < 0) {
+      console.warn(`Invalid requested quantity: ${requestedQuantity}`)
+      throw new Error(`Invalid requested quantity: ${requestedQuantity}`)
+    }
+
+    if (!Number.isInteger(itemCount) || itemCount < 0) {
+      console.warn(`Invalid item count: ${itemCount}`)
+      throw new Error(`Invalid item count: ${itemCount}`)
+    }
+
+    // 验证UI选项
+    if (uiOptions && typeof uiOptions !== 'object') {
+      console.warn('Invalid UI options, using defaults')
+      uiOptions = {}
+    }
+
+    const deviceType = detectDeviceType(containerWidth)
+    
+    return calculateLayoutWithPerformance(
+      calculateLayoutInternal,
+      containerWidth,
+      containerHeight,
+      requestedQuantity,
+      itemCount,
+      uiOptions,
+      deviceType
+    )
+    
+  } catch (error) {
+    console.error('Layout calculation failed, using fallback:', error)
+    return createFallbackLayout(containerWidth, containerHeight, requestedQuantity)
+  }
+}
+
+/**
+ * 创建降级布局配置
+ * @param containerWidth - 容器宽度
+ * @param containerHeight - 容器高度
+ * @param cardCount - 卡牌数量
+ * @returns 降级布局结果
+ */
+export function createFallbackLayout(
+  containerWidth: number, 
+  containerHeight: number, 
+  cardCount: number
+): LayoutCalculationResult {
   const deviceType = detectDeviceType(containerWidth)
+  const deviceConfig = getDeviceConfig(deviceType)
   
-  return calculateLayoutWithPerformance(
-    calculateLayoutInternal,
-    containerWidth,
-    containerHeight,
-    requestedQuantity,
-    itemCount,
-    uiOptions,
-    deviceType
-  )
+  // 使用保守的边距
+  const safeMargins = {
+    top: 100,
+    bottom: 100,
+    left: 50,
+    right: 50,
+    horizontal: 100,
+    vertical: 200
+  }
+  
+  const containerDimensions = {
+    width: containerWidth,
+    height: containerHeight,
+    availableWidth: Math.max(200, containerWidth - 100),
+    availableHeight: Math.max(200, containerHeight - 200)
+  }
+  
+  return {
+    deviceConfig,
+    containerDimensions,
+    safeMargins,
+    maxSafeCards: Math.max(1, cardCount),
+    recommendedCards: cardCount,
+    fallbackApplied: true,
+    warnings: [{
+      code: 'FALLBACK_LAYOUT_APPLIED',
+      message: 'Using fallback layout due to calculation error',
+      recommendation: 'Check container dimensions and card count',
+      timestamp: Date.now()
+    }]
+  }
+}
+
+/**
+ * 验证容器尺寸是否有效
+ * @param width - 容器宽度
+ * @param height - 容器高度
+ * @returns 是否有效
+ */
+export function isValidContainerDimension(width: number, height: number): boolean {
+  return typeof width === 'number' && 
+         typeof height === 'number' &&
+         !isNaN(width) && 
+         !isNaN(height) &&
+         isFinite(width) && 
+         isFinite(height) &&
+         width > 0 && 
+         height > 0 &&
+         width < 50000 && 
+         height < 50000 // 合理的上限
 }
 
 /**

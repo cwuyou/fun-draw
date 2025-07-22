@@ -16,8 +16,17 @@ import {
 } from '@/lib/card-game-validation'
 import { 
   calculateLayout,
-  getLayoutDebugInfo
+  getLayoutDebugInfo,
+  createFallbackLayout,
+  isValidContainerDimension
 } from '@/lib/layout-manager'
+import {
+  getSafeCardPosition,
+  createSingleFallbackPosition,
+  normalizePositionArray,
+  validatePositionArray,
+  isValidDimension
+} from '@/lib/position-validation'
 import { useDynamicSpacing } from '@/hooks/use-dynamic-spacing'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
@@ -656,10 +665,26 @@ export function CardFlipGame({
       }
       
       resizeTimeout = setTimeout(() => {
-        if (gameState.cards.length > 0) {
-          // 重新计算容器尺寸和卡牌位置
+        // 只有在有卡牌需要重新定位时才进行处理
+        if (!gameState.cards || gameState.cards.length === 0) {
+          console.log('No cards to reposition during resize')
+          isResizing = false
+          resizeTimeout = null
+          return
+        }
+
+        try {
+          // 获取当前容器尺寸
           const containerWidth = window.innerWidth
           const containerHeight = window.innerHeight
+          
+          console.log(`Resize detected: ${containerWidth}x${containerHeight}`)
+          
+          // 验证容器尺寸
+          if (!isValidDimension(containerWidth, containerHeight)) {
+            console.warn(`Invalid container dimensions during resize: ${containerWidth}x${containerHeight}`)
+            return
+          }
           
           // 确定当前UI状态
           const uiOptions = {
@@ -669,22 +694,51 @@ export function CardFlipGame({
             hasResultDisplay: gameState.gamePhase === 'finished'
           }
           
-          // 使用统一的布局计算系统重新计算位置
-          const layoutResult = calculateLayout(
-            containerWidth,
-            containerHeight,
-            gameState.cards.length,
-            items.length,
-            uiOptions
-          )
+          // 使用统一的布局计算系统重新计算位置，带错误处理
+          let layoutResult
+          try {
+            layoutResult = calculateLayout(
+              containerWidth,
+              containerHeight,
+              gameState.cards.length,
+              items.length,
+              uiOptions
+            )
+          } catch (layoutError) {
+            console.error('Layout calculation failed during resize:', layoutError)
+            // 使用降级布局
+            layoutResult = createFallbackLayout(containerWidth, containerHeight, gameState.cards.length)
+          }
           
-          const newPositions = calculateCardPositions(gameState.cards.length)
+          // 计算新位置，带错误处理
+          let newPositions
+          try {
+            newPositions = calculateCardPositions(gameState.cards.length)
+          } catch (positionError) {
+            console.error('Position calculation failed during resize:', positionError)
+            // 创建降级位置 - 直接使用已导入的函数
+            const { createFallbackPositions } = require('@/lib/position-validation')
+            newPositions = createFallbackPositions(gameState.cards.length, layoutResult.deviceConfig)
+          }
           
-          // 平滑地重新计算和调整卡牌位置
+          // 验证位置数组
+          const validation = validatePositionArray(newPositions, gameState.cards.length)
+          if (!validation.isValid) {
+            console.warn(`Position validation failed: ${validation.errors.join(', ')}`)
+            // 标准化位置数组
+            newPositions = normalizePositionArray(newPositions, gameState.cards.length, layoutResult.deviceConfig)
+          }
+          
+          // 安全地应用新位置
           setGameState(prev => ({
             ...prev,
             cards: prev.cards.map((card, index) => {
-              const newPosition = newPositions[index]
+              // 创建降级位置
+              const fallbackPosition = createSingleFallbackPosition(index, layoutResult.deviceConfig)
+              
+              // 安全地获取新位置
+              const newPosition = getSafeCardPosition(newPositions, index, fallbackPosition)
+              
               return {
                 ...card,
                 position: newPosition,
@@ -705,7 +759,34 @@ export function CardFlipGame({
           // 调试信息
           if (process.env.NODE_ENV === 'development') {
             console.log('Window resized - Layout recalculated:', getLayoutDebugInfo(layoutResult))
+            console.log(`Applied ${validation.validPositions}/${gameState.cards.length} valid positions`)
           }
+          
+        } catch (error) {
+          console.error('Critical error during window resize handling:', error)
+          // 应用紧急降级 - 重置到中心位置
+          setGameState(prev => ({
+            ...prev,
+            cards: prev.cards.map((card, index) => ({
+              ...card,
+              position: {
+                x: 0,
+                y: index * 20 - (prev.cards.length - 1) * 10, // 垂直堆叠在中心
+                rotation: 0,
+                cardWidth: 96,
+                cardHeight: 144
+              },
+              style: {
+                ...card.style,
+                transform: `translate(0px, ${index * 20 - (prev.cards.length - 1) * 10}px) rotate(0deg)`,
+                width: '96px',
+                height: '144px',
+                marginLeft: '-48px',
+                marginTop: '-72px',
+                transition: 'transform 0.3s ease-out'
+              }
+            }))
+          }))
         }
         
         // 重置调整状态
