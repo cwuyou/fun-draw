@@ -27,6 +27,10 @@ import {
   validatePositionArray,
   isValidDimension
 } from '@/lib/position-validation'
+import { 
+  resizePerformanceManager,
+  withPerformanceMonitoring 
+} from '@/lib/resize-performance'
 import { useDynamicSpacing } from '@/hooks/use-dynamic-spacing'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
@@ -635,41 +639,14 @@ export function CardFlipGame({
     }, gameConfig.flipDuration)
   }, [gameState, soundEnabled, onComplete, gameConfig.flipDuration])
 
-  // 监听窗口大小变化，实现平滑的位置重新计算和调整
+  // 监听窗口大小变化，实现平滑的位置重新计算和调整（使用性能优化）
   useEffect(() => {
-    let resizeTimeout: NodeJS.Timeout | null = null
-    let isResizing = false
-    
-    const handleResize = () => {
-      // 防抖处理，优化resize事件的处理性能
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout)
-      }
-      
-      // 标记正在调整大小状态
-      if (!isResizing) {
-        isResizing = true
-        // 在调整开始时添加过渡效果
-        if (gameState.cards.length > 0) {
-          setGameState(prev => ({
-            ...prev,
-            cards: prev.cards.map(card => ({
-              ...card,
-              style: {
-                ...card.style,
-                transition: 'transform 0.3s ease-out, opacity 0.2s ease-out'
-              }
-            }))
-          }))
-        }
-      }
-      
-      resizeTimeout = setTimeout(() => {
+    // 创建优化的防抖resize处理函数
+    const debouncedResizeHandler = resizePerformanceManager.debounce(
+      withPerformanceMonitoring(() => {
         // 只有在有卡牌需要重新定位时才进行处理
         if (!gameState.cards || gameState.cards.length === 0) {
           console.log('No cards to reposition during resize')
-          isResizing = false
-          resizeTimeout = null
           return
         }
 
@@ -789,20 +766,26 @@ export function CardFlipGame({
           }))
         }
         
-        // 重置调整状态
-        isResizing = false
-        resizeTimeout = null
-      }, 150) // 150ms防抖延迟，平衡性能和响应性
-    }
+      }, 'resize-operation')
+    )
 
     // 添加resize事件监听器
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', debouncedResizeHandler)
+    
+    // 定期清理性能数据
+    const cleanupInterval = setInterval(() => {
+      resizePerformanceManager.cleanup()
+    }, 30000) // 每30秒清理一次
     
     // 清理函数
     return () => {
-      window.removeEventListener('resize', handleResize)
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', debouncedResizeHandler)
+      clearInterval(cleanupInterval)
+      
+      // 在组件卸载时获取性能报告
+      if (process.env.NODE_ENV === 'development') {
+        const report = resizePerformanceManager.getPerformanceReport()
+        console.log('Resize Performance Report:', report)
       }
     }
   }, [gameState.cards.length, gameState.gamePhase, calculateCardPositions, warnings.length, items.length])

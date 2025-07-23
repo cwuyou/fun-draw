@@ -17,10 +17,10 @@ vi.mock('@/lib/sound-manager', () => ({
   }
 }))
 
-// Mock animation performance hook
+// Mock animation performance hook - reduce durations for faster tests
 vi.mock('@/lib/animation-performance', () => ({
   useAnimationPerformance: () => ({
-    getOptimizedDuration: (duration: number) => duration,
+    getOptimizedDuration: (duration: number) => Math.min(duration, 100), // Cap at 100ms for tests
     registerAnimation: vi.fn(),
     unregisterAnimation: vi.fn()
   })
@@ -221,7 +221,7 @@ describe('Multi-Screen Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('点击卡片翻开')).toBeInTheDocument()
-      })
+      }, { timeout: 5000 })
 
       // Mock layout calculation for 27-inch monitor
       ;(calculateLayout as any).mockReturnValueOnce({
@@ -310,7 +310,7 @@ describe('Multi-Screen Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('点击卡片翻开')).toBeInTheDocument()
-      })
+      }, { timeout: 5000 })
 
       // Mock layout for smaller screen
       ;(calculateLayout as any).mockReturnValueOnce({

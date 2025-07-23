@@ -288,3 +288,62 @@ export function validatePositionArray(
     validPositions
   }
 }
+
+/**
+ * 优化的位置验证 - 减少性能影响
+ * @param positions - 位置数组
+ * @param expectedCount - 期望数量
+ * @returns 快速验证结果
+ */
+export function optimizePositionValidation(
+  positions: CardPosition[], 
+  expectedCount: number
+): { isValid: boolean; quickCheck: boolean } {
+  // 快速检查 - 只验证关键属性
+  if (!Array.isArray(positions) || positions.length !== expectedCount) {
+    return { isValid: false, quickCheck: true }
+  }
+
+  // 抽样验证 - 只检查前几个和最后几个位置
+  const sampleIndices = expectedCount <= 5 
+    ? Array.from({ length: expectedCount }, (_, i) => i)
+    : [0, 1, Math.floor(expectedCount / 2), expectedCount - 2, expectedCount - 1]
+
+  for (const i of sampleIndices) {
+    const pos = positions[i]
+    if (!pos || typeof pos.x !== 'number' || typeof pos.y !== 'number') {
+      return { isValid: false, quickCheck: true }
+    }
+  }
+
+  return { isValid: true, quickCheck: true }
+}
+
+/**
+ * 批量位置验证 - 优化大量位置的验证性能
+ * @param positionBatches - 位置批次数组
+ * @returns 批量验证结果
+ */
+export function batchValidatePositions(
+  positionBatches: CardPosition[][]
+): { validBatches: number; totalBatches: number; errors: string[] } {
+  let validBatches = 0
+  const errors: string[] = []
+
+  for (let i = 0; i < positionBatches.length; i++) {
+    const batch = positionBatches[i]
+    const result = optimizePositionValidation(batch, batch.length)
+    
+    if (result.isValid) {
+      validBatches++
+    } else {
+      errors.push(`Batch ${i} validation failed`)
+    }
+  }
+
+  return {
+    validBatches,
+    totalBatches: positionBatches.length,
+    errors
+  }
+}

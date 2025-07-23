@@ -128,6 +128,7 @@ export interface LayoutCalculationResult {
   safeMargins: SafeMargins
   maxSafeCards: number
   recommendedCards: number
+  fallbackApplied?: boolean
 }
 
 // 动态间距系统相关类型
