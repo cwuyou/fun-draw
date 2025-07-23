@@ -32,6 +32,18 @@ import {
   validatePositionArray,
   isValidDimension
 } from '@/lib/position-validation'
+import {
+  calculateAvailableCardSpace,
+  validateSpaceForCards,
+  getAvailableSpaceDebugInfo,
+  type AvailableCardSpace
+} from '@/lib/card-space-calculator'
+import {
+  calculateBoundaryAwarePositions,
+  validatePositionBoundaries,
+  validateAndCorrectPositions,
+  createContainerAwareFallback
+} from '@/lib/boundary-aware-positioning'
 import { 
   resizePerformanceManager,
   withPerformanceMonitoring 
@@ -172,80 +184,69 @@ export function CardFlipGame({
     enableDebug: process.env.NODE_ENV === 'development'
   })
 
-  // 增强的卡牌布局位置计算（使用新的增强布局系统）
+  // 修复的卡牌布局位置计算（使用正确的可用空间计算）
   const calculateCardPositions = useCallback((totalCards: number) => {
     try {
-      // 获取容器尺寸
+      // 获取容器尺寸并验证
       const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
       const containerHeight = typeof window !== 'undefined' ? window.innerHeight : 768
+      
+      // 验证容器尺寸
+      if (!isValidDimension(containerWidth, containerHeight)) {
+        throw new Error(`Invalid container dimensions: ${containerWidth}x${containerHeight}`)
+      }
       
       // 检测设备类型
       const deviceType = detectDeviceType(containerWidth)
       
-      // 使用响应式间距适配
-      const adaptedSpacing = require('@/lib/layout-manager').adaptiveCardAreaSpacing(
+      // 计算可用卡牌空间（替换缺失的adaptiveCardAreaSpacing函数）
+      const availableSpace = calculateAvailableCardSpace(
         containerWidth,
         containerHeight,
-        deviceType,
-        totalCards
+        {
+          hasGameInfo: true,
+          hasWarnings: warnings.length > 0,
+          hasStartButton: gameState.gamePhase === 'idle',
+          hasResultDisplay: gameState.gamePhase === 'finished'
+        }
       )
       
-      // 使用增强的卡牌布局计算（带响应式适配）
-      const enhancedLayout = calculateEnhancedCardLayout(
-        containerWidth,
-        containerHeight,
-        totalCards,
-        deviceType
-      )
+      // 验证空间是否足够容纳卡牌
+      const spaceValidation = validateSpaceForCards(availableSpace, totalCards)
+      if (!spaceValidation.isValid) {
+        console.warn('Insufficient space for cards:', spaceValidation.issues)
+        console.log('Recommendations:', spaceValidation.recommendations)
+      }
       
-      // 应用响应式间距适配
-      enhancedLayout.spacing = adaptedSpacing
+      // 使用边界感知的位置计算
+      const positions = calculateBoundaryAwarePositions(totalCards, availableSpace)
+      
+      // 验证所有位置都在边界内
+      const boundaryCheck = validatePositionBoundaries(positions, availableSpace)
+      if (!boundaryCheck.isValid) {
+        console.warn('Position boundary violations detected:', boundaryCheck.violations)
+        // 自动修正违规位置
+        return validateAndCorrectPositions(positions, availableSpace)
+      }
       
       // 输出调试信息
       if (process.env.NODE_ENV === 'development') {
-        console.log('Enhanced layout calculation:', enhancedLayout)
-      }
-      
-      // 验证布局是否可行
-      if (!enhancedLayout.isOptimal && enhancedLayout.fallbackApplied) {
-        console.warn('Using fallback layout due to space constraints')
-      }
-      
-      // 使用多行卡牌定位计算
-      const enhancedPositions = calculateMultiRowCardPositions(totalCards, enhancedLayout)
-      
-      // 转换为兼容的位置格式
-      const positions = enhancedPositions.map(pos => ({
-        x: pos.x,
-        y: pos.y,
-        rotation: pos.rotation,
-        cardWidth: pos.cardWidth,
-        cardHeight: pos.cardHeight
-      }))
-      
-      // 验证位置平衡性
-      if (process.env.NODE_ENV === 'development') {
-        const balanceValidation = require('@/lib/layout-manager').validateMultiRowBalance(enhancedPositions, enhancedLayout)
-        if (!balanceValidation.isBalanced) {
-          console.warn('Layout balance issues:', balanceValidation.issues)
-          console.log('Recommendations:', balanceValidation.recommendations)
-        }
+        console.group('🎯 Card Position Calculation')
+        console.log('Container:', { width: containerWidth, height: containerHeight })
+        console.log('Available Space:', getAvailableSpaceDebugInfo(availableSpace))
+        console.log('Total Cards:', totalCards)
+        console.log('Generated Positions:', positions.length)
+        console.log('Boundary Check:', boundaryCheck.isValid ? 'PASSED' : 'FAILED')
+        console.groupEnd()
       }
       
       return positions
       
     } catch (error) {
-      console.error('Error in enhanced card position calculation:', error)
+      console.error('Error in card position calculation:', error)
       
-      // 安全降级机制
-      const fallbackCardSize = { width: 96, height: 144 }
-      return Array.from({ length: Math.min(totalCards, 6) }, (_, index) => ({
-        x: (index % 3 - 1) * (fallbackCardSize.width + 16),
-        y: Math.floor(index / 3) * (fallbackCardSize.height + 16) - 50,
-        rotation: 0,
-        cardWidth: fallbackCardSize.width,
-        cardHeight: fallbackCardSize.height
-      }))
+      // 增强的容器感知降级机制
+      return createContainerAwareFallback(totalCards, containerWidth, containerHeight)
     }
   }, [warnings.length, gameState.gamePhase, items.length])
 
