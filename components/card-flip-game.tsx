@@ -18,7 +18,12 @@ import {
   calculateLayout,
   getLayoutDebugInfo,
   createFallbackLayout,
-  isValidContainerDimension
+  isValidContainerDimension,
+  calculateEnhancedCardLayout,
+  calculateMultiRowCardPositions,
+  detectDeviceType,
+  type EnhancedLayoutResult,
+  type EnhancedCardPosition
 } from '@/lib/layout-manager'
 import {
   getSafeCardPosition,
@@ -34,6 +39,52 @@ import {
 import { useDynamicSpacing } from '@/hooks/use-dynamic-spacing'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
+
+// 优化的游戏信息显示接口
+interface OptimizedGameInfo {
+  essential: {
+    drawQuantity: number      // Keep - shows what user requested
+    totalItems: number        // Keep - shows available pool size
+    currentPhase: CardGamePhase   // Keep - shows current game state
+  }
+  
+  optional: {
+    remainingCards?: number   // Remove - not essential during gameplay
+    wonCount?: number         // Simplify - only show after completion
+    notWonCount?: number      // Remove - can be calculated
+  }
+  
+  displayMode: 'minimal' | 'detailed'
+}
+
+// 条件显示逻辑
+function shouldShowRemainingCards(gamePhase: CardGamePhase, cardCount: number): boolean {
+  // 只在特定阶段和有价值时显示
+  return gamePhase === 'finished' && cardCount > 6
+}
+
+function getOptimizedGameInfoDisplay(
+  gameState: CardFlipGameState,
+  quantity: number,
+  itemsLength: number,
+  deviceType: 'mobile' | 'tablet' | 'desktop'
+): OptimizedGameInfo {
+  const isMinimalMode = deviceType === 'mobile' || gameState.gamePhase === 'waiting'
+  
+  return {
+    essential: {
+      drawQuantity: quantity,
+      totalItems: itemsLength,
+      currentPhase: gameState.gamePhase
+    },
+    optional: {
+      remainingCards: shouldShowRemainingCards(gameState.gamePhase, gameState.cards.length) 
+        ? gameState.cards.length - gameState.revealedCards.size 
+        : undefined
+    },
+    displayMode: isMinimalMode ? 'minimal' : 'detailed'
+  }
+}
 
 interface CardFlipGameProps {
   items: ListItem[]
@@ -121,126 +172,70 @@ export function CardFlipGame({
     enableDebug: process.env.NODE_ENV === 'development'
   })
 
-  // 优化的卡牌布局位置计算（使用统一的布局管理系统）
+  // 增强的卡牌布局位置计算（使用新的增强布局系统）
   const calculateCardPositions = useCallback((totalCards: number) => {
     try {
       // 获取容器尺寸
       const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
       const containerHeight = typeof window !== 'undefined' ? window.innerHeight : 768
       
-      // 确定当前UI状态
-      const uiOptions = {
-        hasGameInfo: true,
-        hasWarnings: warnings.length > 0,
-        hasStartButton: gameState.gamePhase === 'idle',
-        hasResultDisplay: gameState.gamePhase === 'finished'
-      }
+      // 检测设备类型
+      const deviceType = detectDeviceType(containerWidth)
       
-      // 使用统一的布局计算系统
-      const layoutResult = calculateLayout(
+      // 使用响应式间距适配
+      const adaptedSpacing = require('@/lib/layout-manager').adaptiveCardAreaSpacing(
+        containerWidth,
+        containerHeight,
+        deviceType,
+        totalCards
+      )
+      
+      // 使用增强的卡牌布局计算（带响应式适配）
+      const enhancedLayout = calculateEnhancedCardLayout(
         containerWidth,
         containerHeight,
         totalCards,
-        items.length,
-        uiOptions
+        deviceType
       )
+      
+      // 应用响应式间距适配
+      enhancedLayout.spacing = adaptedSpacing
       
       // 输出调试信息
       if (process.env.NODE_ENV === 'development') {
-        console.log('Layout calculation:', getLayoutDebugInfo(layoutResult))
+        console.log('Enhanced layout calculation:', enhancedLayout)
       }
       
       // 验证布局是否可行
-      if (layoutResult.maxSafeCards === 0) {
-        console.warn('Container too small for cards, using fallback layout')
-        return [{
-          x: 0,
-          y: 0,
-          rotation: 0,
-          cardWidth: layoutResult.deviceConfig.cardSize.width,
-          cardHeight: layoutResult.deviceConfig.cardSize.height
-        }]
+      if (!enhancedLayout.isOptimal && enhancedLayout.fallbackApplied) {
+        console.warn('Using fallback layout due to space constraints')
       }
       
-      // 使用推荐的卡牌数量（如果小于请求数量，会自动调整）
-      const actualCards = Math.min(totalCards, layoutResult.maxSafeCards)
+      // 使用多行卡牌定位计算
+      const enhancedPositions = calculateMultiRowCardPositions(totalCards, enhancedLayout)
       
-      // 获取设备配置
-      const { deviceConfig, containerDimensions } = layoutResult
-      const { cardSize, spacing, cardsPerRow } = deviceConfig
+      // 转换为兼容的位置格式
+      const positions = enhancedPositions.map(pos => ({
+        x: pos.x,
+        y: pos.y,
+        rotation: pos.rotation,
+        cardWidth: pos.cardWidth,
+        cardHeight: pos.cardHeight
+      }))
       
-      // 计算实际的每行卡牌数（基于可用空间）
-      const actualCardsPerRow = Math.min(
-        cardsPerRow,
-        Math.floor((containerDimensions.availableWidth + spacing) / (cardSize.width + spacing))
-      )
-      
-      // 计算行数
-      const rows = Math.ceil(actualCards / actualCardsPerRow)
-      
-      // 建立统一的位置计算基准点系统
-      const positions = []
-      
-      // 基准点：容器中心点作为坐标原点
-      const originX = 0
-      const originY = 0
-      
-      // 计算整个卡牌网格的尺寸
-      const gridWidth = actualCardsPerRow * cardSize.width + (actualCardsPerRow - 1) * spacing
-      const gridHeight = rows * cardSize.height + (rows - 1) * spacing
-      
-      // 计算网格起始位置（相对于中心点）
-      const gridStartX = originX - gridWidth / 2
-      const gridStartY = originY - gridHeight / 2
-      
-      // 生成每张卡牌的位置
-      let cardIndex = 0
-      for (let row = 0; row < rows && cardIndex < actualCards; row++) {
-        const cardsInThisRow = Math.min(actualCardsPerRow, actualCards - row * actualCardsPerRow)
-        
-        // 计算当前行的宽度和起始X位置（用于居中对齐）
-        const rowWidth = cardsInThisRow * cardSize.width + (cardsInThisRow - 1) * spacing
-        const rowStartX = originX - rowWidth / 2
-        
-        for (let col = 0; col < cardsInThisRow && cardIndex < actualCards; col++) {
-          // 计算卡牌中心位置
-          const cardCenterX = rowStartX + col * (cardSize.width + spacing) + cardSize.width / 2
-          const cardCenterY = gridStartY + row * (cardSize.height + spacing) + cardSize.height / 2
-          
-          // 添加位置验证机制防止跳跃
-          const position = {
-            x: cardCenterX,
-            y: cardCenterY,
-            rotation: (Math.random() - 0.5) * 4, // 轻微随机旋转，保持一致性
-            cardWidth: cardSize.width,
-            cardHeight: cardSize.height
-          }
-          
-          // 验证位置是否在安全范围内
-          const isPositionSafe = (
-            Math.abs(position.x) <= containerDimensions.availableWidth / 2 &&
-            Math.abs(position.y) <= containerDimensions.availableHeight / 2
-          )
-          
-          if (!isPositionSafe) {
-            console.warn(`Card ${cardIndex} position may be outside safe area:`, position)
-          }
-          
-          positions.push(position)
-          cardIndex++
+      // 验证位置平衡性
+      if (process.env.NODE_ENV === 'development') {
+        const balanceValidation = require('@/lib/layout-manager').validateMultiRowBalance(enhancedPositions, enhancedLayout)
+        if (!balanceValidation.isBalanced) {
+          console.warn('Layout balance issues:', balanceValidation.issues)
+          console.log('Recommendations:', balanceValidation.recommendations)
         }
-      }
-      
-      // 确保洗牌和发牌阶段使用相同的位置计算逻辑
-      // 通过缓存位置信息来保证一致性
-      if (positions.length !== totalCards && totalCards <= layoutResult.maxSafeCards) {
-        console.warn(`Position count mismatch: generated ${positions.length}, requested ${totalCards}`)
       }
       
       return positions
       
     } catch (error) {
-      console.error('Error in optimized card position calculation:', error)
+      console.error('Error in enhanced card position calculation:', error)
       
       // 安全降级机制
       const fallbackCardSize = { width: 96, height: 144 }
@@ -922,9 +917,17 @@ export function CardFlipGame({
     )
   }
 
+  // 获取优化的游戏信息显示配置
+  const optimizedGameInfo = getOptimizedGameInfoDisplay(
+    gameState,
+    quantity,
+    items.length,
+    dynamicSpacing.deviceType
+  )
+
   return (
     <div className={cn("flex flex-col items-center", dynamicSpacing.cssClasses.component.spaceY, dynamicSpacing.cssClasses.container.padding, className)}>
-      {/* 游戏信息面板 - 优化视觉层次和间距 */}
+      {/* 优化的游戏信息面板 - 根据设备和游戏阶段调整显示内容 */}
       <div className={cn(
         "text-center w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100", 
         dynamicSpacing.cssClasses.uiElement.gameInfo,
@@ -935,37 +938,41 @@ export function CardFlipGame({
           游戏信息
         </div>
         
-        {/* 信息网格 - 优化布局层次 */}
+        {/* 核心信息网格 - 始终显示的基本信息 */}
         <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="text-xs text-blue-600 font-medium mb-1">抽取数量</div>
-            <div className="text-lg font-bold text-blue-800">{quantity}</div>
+            <div className="text-lg font-bold text-blue-800">{optimizedGameInfo.essential.drawQuantity}</div>
           </div>
           <div className="bg-green-50 rounded-lg p-3">
             <div className="text-xs text-green-600 font-medium mb-1">总项目</div>
-            <div className="text-lg font-bold text-green-800">{items.length}</div>
+            <div className="text-lg font-bold text-green-800">{optimizedGameInfo.essential.totalItems}</div>
           </div>
         </div>
         
-        {/* 游戏进度信息 */}
-        <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
-          <div className="bg-purple-50 rounded-lg p-3">
-            <div className="text-xs text-purple-600 font-medium mb-1">总卡牌</div>
-            <div className="text-lg font-bold text-purple-800">{actualQuantity}</div>
+        {/* 详细模式下的游戏进度信息 */}
+        {optimizedGameInfo.displayMode === 'detailed' && (
+          <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
+            <div className="bg-purple-50 rounded-lg p-3">
+              <div className="text-xs text-purple-600 font-medium mb-1">总卡牌</div>
+              <div className="text-lg font-bold text-purple-800">{actualQuantity}</div>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-3">
+              <div className="text-xs text-orange-600 font-medium mb-1">已翻开</div>
+              <div className="text-lg font-bold text-orange-800">{gameState.revealedCards.size}</div>
+            </div>
           </div>
-          <div className="bg-orange-50 rounded-lg p-3">
-            <div className="text-xs text-orange-600 font-medium mb-1">已翻开</div>
-            <div className="text-lg font-bold text-orange-800">{gameState.revealedCards.size}</div>
-          </div>
-        </div>
+        )}
         
-        {/* 剩余卡牌指示器 */}
-        <div className="bg-gray-50 rounded-lg p-2">
-          <div className="text-xs text-gray-600 font-medium mb-1">剩余卡牌</div>
-          <div className="text-sm font-semibold text-gray-800">
-            {gameState.cards.length - gameState.revealedCards.size}
+        {/* 条件显示剩余卡牌指示器 - 只在游戏完成且卡牌数量较多时显示 */}
+        {optimizedGameInfo.optional.remainingCards !== undefined && (
+          <div className="bg-gray-50 rounded-lg p-2">
+            <div className="text-xs text-gray-600 font-medium mb-1">剩余卡牌</div>
+            <div className="text-sm font-semibold text-gray-800">
+              {optimizedGameInfo.optional.remainingCards}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 游戏状态提示 */}

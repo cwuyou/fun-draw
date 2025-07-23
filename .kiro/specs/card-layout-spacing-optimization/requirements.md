@@ -1,79 +1,79 @@
-# 需求文档
+# Requirements Document
 
-## 介绍
+## Introduction
 
-卡牌抽奖页面当前存在布局间距问题，影响用户体验。主要问题包括：1）洗牌时卡牌位置正常，但发牌完成后卡牌位置下移，贴近了边框线；2）翻牌完成后下方的中奖信息与卡牌贴在一起，缺乏适当的间距。这些布局问题需要通过优化卡牌定位算法和调整UI元素间距来解决，确保在不同设备和屏幕尺寸下都能提供良好的视觉体验。
+This feature addresses visual layout issues in the card flip lottery system when displaying more than 5 cards. Currently, when the quantity exceeds 5 cards, they are arranged in 2 rows (5 cards in the first row, remaining cards in the second row), but the cards are positioned too close to the container borders, creating poor visual experience. Additionally, the "剩余卡牌" (remaining cards) display may not be necessary and could be optimized or removed to improve the user interface.
 
-## 需求
+## Requirements
 
-### 需求 1
+### Requirement 1
 
-**用户故事：** 作为用户，我希望卡牌在洗牌和发牌阶段保持一致的垂直位置，这样我就不会看到卡牌突然下移贴近边框的情况
+**User Story:** As a user drawing more than 5 cards, I want the cards to have proper spacing from the container borders, so that the layout looks visually balanced and professional.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当洗牌阶段结束转入发牌阶段时，卡牌的垂直位置应该保持稳定，不应该出现明显的位置跳跃
-2. 当卡牌完成发牌动画后，卡牌与容器边框应该保持适当的距离，不应该贴近边框线
-3. 当卡牌布局计算时，应该考虑容器的安全边距，确保卡牌不会超出可视区域的舒适范围
-4. 当在不同屏幕尺寸下显示时，卡牌与边框的相对距离应该保持一致的比例
-5. 当卡牌数量变化时，布局算法应该自动调整间距以保持视觉平衡
+1. WHEN more than 5 cards are displayed THEN there SHALL be at least 32px spacing between the card area and the container borders on desktop
+2. WHEN more than 5 cards are displayed THEN there SHALL be at least 24px spacing between the card area and the container borders on tablet
+3. WHEN more than 5 cards are displayed THEN there SHALL be at least 16px spacing between the card area and the container borders on mobile
+4. WHEN cards are arranged in multiple rows THEN each row SHALL be properly centered within the available space
+5. WHEN the card layout is calculated THEN the spacing SHALL be consistent across all device types
 
-### 需求 2
+### Requirement 2
 
-**用户故事：** 作为用户，我希望翻牌完成后的中奖信息与卡牌之间有足够的间距，这样我就能清楚地看到中奖结果而不会感到拥挤
+**User Story:** As a user viewing the card layout, I want the multi-row card arrangement to be visually balanced, so that it doesn't look cramped or poorly aligned.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当游戏结束显示中奖信息时，中奖信息区域与卡牌区域之间应该有至少40px的间距
-2. 当中奖信息显示时，应该确保信息不会与卡牌重叠或视觉上产生冲突
-3. 当在移动设备上显示时，中奖信息应该有足够的空间显示完整内容
-4. 当中奖者名单较长时，信息区域应该能够适当扩展而不影响卡牌布局
-5. 当页面滚动时，中奖信息应该保持在可见区域内，便于用户查看
+1. WHEN cards are arranged in 2 rows THEN the rows SHALL be vertically centered within the card area
+2. WHEN the second row has fewer cards than the first row THEN the second row SHALL be horizontally centered
+3. WHEN calculating row spacing THEN there SHALL be at least 20px vertical spacing between rows on desktop
+4. WHEN calculating row spacing THEN there SHALL be at least 16px vertical spacing between rows on tablet
+5. WHEN calculating row spacing THEN there SHALL be at least 12px vertical spacing between rows on mobile
 
-### 需求 3
+### Requirement 3
 
-**用户故事：** 作为用户，我希望游戏信息面板与卡牌之间有合适的间距，这样我就能清楚地看到游戏状态而不会与卡牌产生视觉干扰
+**User Story:** As a user, I want the card area to have proper margins from other UI elements, so that the interface doesn't feel cluttered.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当游戏信息面板显示时，与卡牌区域之间应该有至少30px的间距
-2. 当游戏状态提示显示时，应该与卡牌保持足够的视觉分离
-3. 当在不同设备上显示时，游戏信息的间距应该按比例调整
-4. 当游戏信息更新时，不应该影响卡牌的位置布局
-5. 当页面内容较多时，各个UI元素之间应该保持清晰的层次结构
+1. WHEN the game info panel is displayed THEN there SHALL be at least 36px spacing between it and the card area on desktop
+2. WHEN the game info panel is displayed THEN there SHALL be at least 32px spacing between it and the card area on tablet
+3. WHEN the game info panel is displayed THEN there SHALL be at least 30px spacing between it and the card area on mobile
+4. WHEN the start button is displayed THEN there SHALL be at least 24px spacing between the card area and the button
+5. WHEN result information is displayed THEN there SHALL be at least 40px spacing between the card area and the result display
 
-### 需求 4
+### Requirement 4
 
-**用户故事：** 作为用户，我希望卡牌布局在不同设备上都能保持良好的视觉效果，这样我就能在手机、平板、电脑上都获得一致的体验
+**User Story:** As a user, I want to understand whether the "剩余卡牌" (remaining cards) display is necessary, so that the interface is clean and focused on the essential information.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当在手机设备上显示时，卡牌应该有适当的边距，不会贴近屏幕边缘
-2. 当在平板设备上显示时，卡牌布局应该充分利用屏幕空间同时保持美观
-3. 当在桌面设备上显示时，卡牌应该居中显示并保持合适的间距
-4. 当设备方向改变时，布局应该能够自适应调整间距
-5. 当在不同分辨率下显示时，间距比例应该保持一致
+1. WHEN the game is in progress THEN the system SHALL evaluate if remaining cards count adds value to the user experience
+2. WHEN displaying game statistics THEN only essential information SHALL be shown to avoid information overload
+3. WHEN the user is focused on card flipping THEN distracting elements SHALL be minimized
+4. WHEN the game is completed THEN the focus SHALL be on the results rather than remaining statistics
+5. WHEN the interface is optimized THEN the remaining cards display SHALL either be removed or redesigned to be less prominent
 
-### 需求 5
+### Requirement 5
 
-**用户故事：** 作为用户，我希望卡牌动画过程中位置保持稳定，这样我就不会看到卡牌在动画中出现位置偏移或抖动
+**User Story:** As a user on different screen sizes, I want the card layout to adapt properly to available space, so that the spacing remains optimal across all devices.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当卡牌执行发牌动画时，最终位置应该与计算的布局位置完全一致
-2. 当卡牌动画完成后，不应该有额外的位置调整或微调动画
-3. 当多张卡牌同时动画时，相对位置应该保持稳定
-4. 当动画性能优化启用时，位置计算应该保持准确性
-5. 当窗口大小改变时，卡牌位置应该平滑地重新计算和调整
+1. WHEN the screen size changes THEN the card area margins SHALL adjust proportionally
+2. WHEN the container is very wide THEN the cards SHALL not spread too far apart horizontally
+3. WHEN the container is very narrow THEN the cards SHALL maintain minimum readable spacing
+4. WHEN the aspect ratio changes THEN the vertical spacing SHALL adjust to maintain visual balance
+5. WHEN the layout is recalculated THEN the spacing SHALL transition smoothly without jarring jumps
 
-### 需求 6
+### Requirement 6
 
-**用户故事：** 作为用户，我希望页面布局具有良好的视觉层次，这样我就能轻松地区分不同的功能区域
+**User Story:** As a developer maintaining the card layout system, I want clear spacing configuration and validation, so that layout issues can be easily identified and fixed.
 
-#### 验收标准
+#### Acceptance Criteria
 
-1. 当页面加载时，各个功能区域应该有清晰的视觉分隔
-2. 当游戏进行时，主要内容（卡牌）应该是视觉焦点，其他元素不应该干扰
-3. 当显示多个信息区域时，应该通过间距和背景色来区分层次
-4. 当用户交互时，相关的UI反馈应该在合适的位置显示
-5. 当内容较多时，应该通过合理的间距避免视觉拥挤
+1. WHEN spacing is configured THEN there SHALL be clear constants for minimum spacing values
+2. WHEN layout is calculated THEN the system SHALL validate that minimum spacing requirements are met
+3. WHEN spacing validation fails THEN the system SHALL provide clear error messages and fallback values
+4. WHEN debugging layout issues THEN the system SHALL provide detailed spacing information
+5. WHEN spacing is adjusted THEN the changes SHALL be consistent across all related components

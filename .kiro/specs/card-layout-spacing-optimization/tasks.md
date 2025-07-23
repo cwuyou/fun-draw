@@ -1,186 +1,159 @@
-# 实现计划
+# Implementation Plan
 
-- [x] 1. 创建布局管理核心工具函数
+- [x] 1. Enhance spacing system configuration
 
 
 
 
+  - Update spacing-system.ts to include card area specific spacing constants
+  - Add containerMargins, rowSpacing, and cardSpacing configurations for each device type
+  - Create getCardAreaSpacing function to retrieve device-specific spacing
+  - Add validation functions for minimum spacing requirements
+  - _Requirements: 1.1, 1.2, 1.3, 1.5, 6.1_
 
+- [x] 2. Implement enhanced card layout calculation
 
 
 
 
 
 
-  - 实现设备类型检测和响应式配置系统
-  - 创建安全边距计算函数
-  - 添加容器尺寸计算工具
-  - _需求: 1.4, 4.1, 4.2, 4.3_
+  - Create calculateEnhancedCardLayout function with proper margin handling
+  - Update layout-manager.ts to use enhanced spacing in container dimension calculations
+  - Add fallback logic when optimal spacing cannot be achieved
+  - Implement spacing validation in layout calculation process
+  - _Requirements: 1.4, 5.1, 5.3, 6.2, 6.5_
 
-- [ ] 2. 重构卡牌定位算法
-- [x] 2.1 优化 calculateCardPositions 函数的位置一致性
+- [x] 3. Optimize multi-row card positioning
 
 
 
-  - 建立统一的位置计算基准点系统
-  - 确保洗牌和发牌阶段使用相同的位置计算逻辑
-  - 添加位置验证机制防止跳跃
-  - _需求: 1.1, 1.2, 5.1, 5.2_
 
-- [x] 2.2 实现动态间距计算系统
+  - Implement calculateMultiRowCardPositions function for balanced row layouts
+  - Add row centering logic for uneven card distributions
+  - Update card position calculation to include row and column metadata
+  - Ensure proper vertical spacing between rows across device types
+  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
+- [x] 4. Update CardFlipGame component spacing integration
 
 
 
+  - Modify calculateCardPositions to use enhanced layout calculation
+  - Update card positioning logic to handle multi-row layouts properly
+  - Integrate new spacing system with existing dynamic spacing hook
+  - Ensure smooth transitions when layout changes
+  - _Requirements: 1.1, 1.2, 1.3, 5.5, 6.4_
 
+- [x] 5. Implement UI element spacing optimization
 
-  - 替换硬编码的边距值为动态计算
-  - 实现基于设备类型的响应式间距配置
-  - 添加UI元素间距验证功能
-  - _需求: 2.1, 3.1, 4.3, 6.1_
 
-- [ ] 2.3 增强布局溢出处理机制
-  - 实现智能的自动缩放算法
-  - 添加降级到安全布局的机制
-  - 优化卡牌尺寸自适应逻辑
-  - _需求: 1.3, 4.2, 4.5_
 
-- [x] 3. 优化UI元素间距和布局结构
+  - Create calculateUIElementSpacingWithCardArea function
+  - Update safe margins calculation to use card area specific spacing
+  - Adjust spacing between game info panel and card area
+  - Optimize spacing between card area and start button/results
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
+- [x] 6. Evaluate and optimize remaining cards display
 
 
 
 
-- [x] 3.1 调整游戏信息面板的间距
+  - Analyze current game info display for essential vs optional information
+  - Implement OptimizedGameInfo interface and conditional display logic
+  - Create shouldShowRemainingCards function to determine display necessity
+  - Update game info panel to use simplified display mode
+  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
+- [x] 7. Add responsive spacing adaptation
 
 
-  - 确保游戏信息面板与卡牌区域有至少30px间距
-  - 实现响应式间距调整
-  - 优化信息面板的视觉层次
-  - _需求: 3.1, 3.2, 3.3, 6.3_
 
-- [x] 3.2 优化中奖结果显示的间距
 
+  - Implement spacing adjustment for different screen sizes and aspect ratios
+  - Add logic to prevent cards from spreading too far on wide screens
+  - Ensure minimum spacing is maintained on narrow screens
+  - Create smooth transitions for spacing changes during resize
+  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
+- [x] 8. Create spacing validation and debugging tools
 
-  - 确保中奖信息与卡牌区域有至少40px间距
-  - 实现中奖信息的自适应扩展
-  - 添加滚动时的可见性保证
-  - _需求: 2.1, 2.2, 2.4, 2.5_
 
-- [x] 3.3 改进整体页面布局层次
 
 
-  - 优化各功能区域的视觉分隔
-  - 确保卡牌作为视觉焦点不被干扰
-  - 实现清晰的UI层次结构
-  - _需求: 6.1, 6.2, 6.4, 6.5_
 
-- [x] 4. 增强动画位置同步机制
 
 
+  - Implement SpacingValidation interface and validation functions
+  - Add spacing measurement verification in layout calculation
+  - Create debugging tools to display spacing information in development mode
+  - Add error handling and fallback values for spacing validation failures
+  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
+- [x] 9. Update dynamic spacing hook integration
 
 
-- [x] 4.1 优化发牌动画的位置计算
 
 
+  - Modify useDynamicSpacing hook to support card area specific spacing
+  - Add card layout complexity detection for spacing adjustments
+  - Update CSS class generation to include card area margins
+  - Ensure compatibility with existing spacing system
+  - _Requirements: 1.5, 3.1, 3.2, 3.3, 5.1_
 
-  - 在动画开始前预计算所有最终位置
-  - 确保动画过程中位置保持稳定
-  - 移除可能导致位置偏移的跳动效果
-  - _需求: 5.1, 5.3, 5.4_
+- [x] 10. Create unit tests for enhanced spacing system
 
-- [x] 4.2 改进窗口大小变化的响应机制
 
 
 
+  - Test spacing configuration retrieval for different device types
+  - Test enhanced layout calculation with various card counts
+  - Test multi-row positioning logic with different row configurations
+  - Test spacing validation functions with edge cases
+  - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2_
 
+- [x] 11. Create integration tests for card layout optimization
 
 
-  - 实现平滑的位置重新计算和调整
-  - 优化resize事件的处理性能
-  - 确保动画过程中的位置准确性
-  - _需求: 5.5, 4.4, 4.5_
 
-- [x] 5. 创建布局验证和测试工具
 
+  - Test complete card layout with 6, 8, 10 cards across device types
+  - Test spacing measurements match requirements
+  - Test layout balance and row centering functionality
+  - Test responsive behavior during screen size changes
+  - _Requirements: 2.3, 2.4, 2.5, 5.1, 5.2_
 
+- [x] 12. Implement visual regression testing
 
 
-- [x] 5.1 实现布局一致性验证函数
 
 
+  - Create visual tests to verify proper spacing from container borders
+  - Test multi-row layout balance and centering
+  - Verify UI element spacing optimization
+  - Test remaining cards display optimization
+  - _Requirements: 1.4, 2.1, 3.4, 4.5_
 
-  - 创建位置一致性检查工具
-  - 添加间距规范验证机制
-  - 实现布局溢出检测功能
-  - _需求: 1.1, 1.2, 2.1, 3.1_
+- [x] 13. Performance optimization for spacing calculations
 
-- [x] 5.2 编写响应式布局测试用例
 
+  - Optimize spacing calculation performance for frequent layout updates
+  - Add memoization for spacing configuration retrieval
+  - Ensure smooth animations during spacing transitions
+  - Monitor memory usage impact of enhanced spacing system
+  - _Requirements: 5.5, 6.4_
 
-  - 测试不同设备类型的布局适配
-  - 验证间距比例的一致性
-  - 测试设备方向改变的适配
-  - _需求: 4.1, 4.2, 4.3, 4.4_
+- [ ] 14. Update documentation and examples
+  - Document new spacing configuration options
+  - Create examples showing proper card layout spacing
+  - Update component documentation with spacing guidelines
+  - Add troubleshooting guide for spacing issues
+  - _Requirements: 6.1, 6.3, 6.5_
 
-- [x] 6. 性能优化和错误处理
-
-
-
-
-
-
-
-
-
-
-
-
-
-- [x] 6.1 优化布局计算性能
-
-
-
-
-
-
-
-  - 实现布局计算结果的缓存机制
-  - 优化频繁调用的计算函数
-  - 添加性能监控和警告
-  - _需求: 5.4, 5.5_
-
-- [x] 6.2 增强错误处理和降级机制
-
-
-
-  - 实现布局计算失败的安全降级
-  - 添加详细的错误日志和用户提示
-  - 确保在异常情况下的用户体验
-  - _需求: 1.5, 2.3, 3.4_
-
-- [x] 7. 集成测试和最终验证
-
-
-
-
-
-- [x] 7.1 进行端到端的布局测试
-
-
-
-  - 测试完整的游戏流程中的布局表现
-  - 验证所有需求的满足情况
-  - 进行跨设备和跨浏览器测试
-  - _需求: 所有需求_
-
-- [x] 7.2 性能和用户体验验证
-
-
-  - 测试布局计算和动画的性能表现
-  - 验证用户交互的流畅性
-  - 确保视觉效果的一致性和美观性
-  - _需求: 5.4, 6.2, 6.4_
+- [ ] 15. Conduct user experience validation
+  - Test visual hierarchy and information clarity
+  - Validate spacing comfort across different device types
+  - Verify improved layout balance with multiple rows
+  - Confirm remaining cards display optimization effectiveness
+  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
