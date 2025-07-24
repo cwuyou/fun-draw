@@ -20,7 +20,7 @@ export interface DrawingConfig {
   items: ListItem[]
 }
 
-export type DrawingMode = "slot-machine" | "blind-box" | "card-flip" | "bullet-screen" | "gashapon"
+export type DrawingMode = "slot-machine" | "blind-box" | "card-flip" | "bullet-screen" | "gashapon" | "grid-lottery"
 
 export interface DrawingModeInfo {
   id: DrawingMode
@@ -226,4 +226,35 @@ export interface LayoutConfig {
     bottom: number
     left: number
   }
+}
+
+// 多宫格抽奖相关类型
+export interface GridLotteryConfig {
+  gridSize: 6 | 9 | 12 | 15  // 支持的宫格数量
+  animationDuration: number  // 动画持续时间
+  highlightSpeed: number     // 高亮跳转速度
+  countdownDuration: number  // 倒计时时长
+  soundEnabled: boolean      // 音效开关
+}
+
+export interface GridCell {
+  id: string
+  index: number
+  item: ListItem
+  isHighlighted: boolean
+  isWinner: boolean
+  position: {
+    row: number
+    col: number
+  }
+}
+
+export type GridLotteryPhase = 'idle' | 'countdown' | 'spinning' | 'slowing' | 'finished'
+
+export interface GridLotteryState {
+  phase: GridLotteryPhase
+  cells: GridCell[]
+  currentHighlight: number
+  winner: ListItem | null
+  countdown: number
 }

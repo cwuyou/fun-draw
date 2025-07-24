@@ -35,7 +35,10 @@ export class SoundManager {
         this.createSoundSafely('card-shuffle', () => this.createCardShuffleSound()),
         this.createSoundSafely('card-deal', () => this.createCardDealSound()),
         this.createSoundSafely('card-flip', () => this.createCardFlipSound()),
-        this.createSoundSafely('card-reveal', () => this.createCardRevealSound())
+        this.createSoundSafely('card-reveal', () => this.createCardRevealSound()),
+        // 多宫格抽奖音效
+        this.createSoundSafely('countdown', () => this.createCountdownSound()),
+        this.createSoundSafely('highlight', () => this.createHighlightSound())
       ]
       
       await Promise.allSettled(soundCreationPromises)
@@ -106,7 +109,9 @@ export class SoundManager {
       'card-shuffle': 0.3,
       'card-deal': 0.4,
       'card-flip': 0.5,
-      'card-reveal': 0.6
+      'card-reveal': 0.6,
+      'countdown': 0.6,
+      'highlight': 0.4
     }
     return baseVolumes[soundName] || 0.5
   }
@@ -455,6 +460,85 @@ export class SoundManager {
     }
     
     audio.volume = 0.6
+    return audio
+  }
+
+  // 生成倒计时音效（电子倒计时声）
+  private createCountdownSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.8
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成电子倒计时声
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 主音调 - 低沉的电子音
+          const mainTone = Math.sin(2 * Math.PI * 220 * t) * 0.4
+          // 和声 - 高一个八度
+          const harmony = Math.sin(2 * Math.PI * 440 * t) * 0.2
+          // 电子脉冲效果
+          const pulse = Math.sin(t * 10) > 0.5 ? 1 : 0.3
+          // 音量包络 - 快速上升，缓慢衰减
+          const envelope = t < 0.1 ? t * 10 : Math.exp(-(t - 0.1) * 3)
+          
+          channelData[i] = (mainTone + harmony) * pulse * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(220, 0.5)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(220, 0.5)
+    }
+    
+    audio.volume = 0.6
+    return audio
+  }
+
+  // 生成高亮跳转音效（快速的电子提示音）
+  private createHighlightSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.15
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成快速的高亮提示音
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 高频提示音
+          const frequency = 1000 + Math.sin(t * 50) * 200
+          const tone = Math.sin(2 * Math.PI * frequency * t) * 0.3
+          // 快速衰减包络
+          const envelope = Math.exp(-t * 20) * Math.sin(t * Math.PI * 5)
+          
+          channelData[i] = tone * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(1000, 0.1)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(1000, 0.1)
+    }
+    
+    audio.volume = 0.4
     return audio
   }
 

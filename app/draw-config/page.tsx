@@ -20,13 +20,51 @@ export default function DrawConfigPage() {
   const [listName, setListName] = useState("")
   const [items, setItems] = useState<ListItem[]>([])
   const [selectedMode, setSelectedMode] = useState<DrawingMode>("slot-machine")
-  const [quantity, setQuantity] = useState(1)
+  const [quantity, setQuantity] = useState<number | string>(1)
   const [allowRepeat, setAllowRepeat] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [initialized, setInitialized] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   console.log("DrawConfigPage 组件渲染");
+
+  // 根据抽奖模式获取最大数量限制
+  const getMaxQuantityForMode = (mode: DrawingMode, allowRepeat: boolean, itemCount: number): number => {
+    switch (mode) {
+      case 'card-flip':
+        return 10 // 卡牌模式：布局限制
+      case 'slot-machine':
+        return Math.min(12, allowRepeat ? 100 : itemCount) // 老虎机：最多12个滚轮，避免过窄
+      case 'bullet-screen':
+        return Math.min(20, allowRepeat ? 100 : itemCount) // 弹幕：最多20行，垂直空间限制
+      case 'grid-lottery':
+        return Math.min(15, allowRepeat ? 100 : itemCount) // 多宫格：最多15个格子（3x5或5x3布局）
+      case 'blind-box':
+      case 'gashapon':
+      default:
+        return allowRepeat ? 100 : itemCount // 其他模式：保持原有逻辑
+    }
+  }
+
+  // 获取数量限制的描述文本
+  const getQuantityLimitDescription = (mode: DrawingMode, allowRepeat: boolean, itemCount: number): string => {
+    const maxQuantity = getMaxQuantityForMode(mode, allowRepeat, itemCount)
+    
+    switch (mode) {
+      case 'card-flip':
+        return '卡牌模式最多10个'
+      case 'slot-machine':
+        return `老虎机模式最多${maxQuantity}个（避免滚轮过窄）`
+      case 'bullet-screen':
+        return `弹幕模式最多${maxQuantity}个（垂直空间限制）`
+      case 'grid-lottery':
+        return `多宫格模式最多${maxQuantity}个（支持6、9、12、15宫格）`
+      case 'blind-box':
+      case 'gashapon':
+      default:
+        return `最多 ${maxQuantity} 个`
+    }
+  }
 
   // 去重工具函数
   const removeDuplicateItems = (itemsToProcess: ListItem[]): { uniqueItems: ListItem[], duplicateCount: number } => {
@@ -192,6 +230,13 @@ export default function DrawConfigPage() {
       icon: <Gamepad2 className="w-6 h-6" />,
       color: "bg-orange-500",
     },
+    {
+      id: "grid-lottery",
+      name: "多宫格抽奖",
+      description: "电视节目风格，灯光跳转定格，仪式感满满",
+      icon: <Hash className="w-6 h-6" />,
+      color: "bg-indigo-500",
+    },
   ]
 
   const handleSaveCurrentList = async () => {
@@ -259,7 +304,35 @@ export default function DrawConfigPage() {
       return
     }
 
-    if (quantity > items.length && !allowRepeat) {
+    // 确保quantity是有效数字
+    const numQuantity = typeof quantity === 'string' ? Number.parseInt(quantity) || 1 : quantity
+    
+    // 如果quantity无效，先设置为有效值
+    if (typeof quantity === 'string' || quantity < 1) {
+      setQuantity(numQuantity)
+    }
+
+    // 各模式的数量限制验证
+    const maxQuantity = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
+    if (numQuantity > maxQuantity) {
+      const modeNames = {
+        'card-flip': '卡牌抽奖',
+        'slot-machine': '老虎机',
+        'bullet-screen': '弹幕滚动',
+        'grid-lottery': '多宫格抽奖',
+        'blind-box': '盲盒',
+        'gashapon': '扭蛋机'
+      }
+      
+      toast({
+        title: "数量错误",
+        description: `${modeNames[selectedMode] || '当前'}模式最多支持${maxQuantity}个`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (numQuantity > items.length && !allowRepeat) {
       toast({
         title: "抽取数量过多",
         description: "在不允许重复的情况下，抽取数量不能超过项目总数",
@@ -270,7 +343,7 @@ export default function DrawConfigPage() {
 
     const config: DrawingConfig = {
       mode: selectedMode,
-      quantity,
+      quantity: numQuantity,
       allowRepeat,
       items,
     }
@@ -392,13 +465,46 @@ export default function DrawConfigPage() {
                   id="quantity"
                   type="number"
                   min="1"
-                  max={allowRepeat ? 100 : items.length}
+                  max={getMaxQuantityForMode(selectedMode, allowRepeat, items.length)}
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number.parseInt(e.target.value) || 1))}
+                  onChange={(e) => {
+                    const inputValue = e.target.value
+                    
+                    // 允许空值，让用户可以清空输入框
+                    if (inputValue === '') {
+                      setQuantity('')
+                      return
+                    }
+                    
+                    const numValue = Number.parseInt(inputValue)
+                    
+                    // 如果输入的不是有效数字，保持当前值
+                    if (isNaN(numValue)) {
+                      return
+                    }
+                    
+                    const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
+                    
+                    // 允许用户输入，但在合理范围内
+                    if (numValue >= 1 && numValue <= maxValue) {
+                      setQuantity(numValue)
+                    } else if (numValue > maxValue) {
+                      setQuantity(maxValue)
+                    } else if (numValue < 1) {
+                      setQuantity(1)
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // 当失去焦点时，如果是空值则设为1
+                    if (e.target.value === '' || isNaN(Number.parseInt(e.target.value))) {
+                      setQuantity(1)
+                    }
+                  }}
+                  placeholder="请输入数量"
                   className="w-32"
                 />
                 <p className="text-sm text-gray-500">
-                  单次抽取的项目数量（最多 {allowRepeat ? 100 : items.length} 个）
+                  单次抽取的项目数量（{getQuantityLimitDescription(selectedMode, allowRepeat, items.length)}）
                 </p>
               </div>
 

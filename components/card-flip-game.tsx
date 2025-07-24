@@ -34,24 +34,14 @@ import {
   isValidDimension
 } from '@/lib/position-validation'
 import {
-  calculateAvailableCardSpace,
-  validateSpaceForCards,
-  getAvailableSpaceDebugInfo,
-  type AvailableCardSpace
-} from '@/lib/card-space-calculator'
-import {
-  calculateBoundaryAwarePositions,
-  validatePositionBoundaries,
-  validateAndCorrectPositions,
-  createContainerAwareFallback,
-  createEnhancedFallback,
-  performRealTimeBoundaryCheck,
-  validateAndCorrectPositionsRealTime
-} from '@/lib/boundary-aware-positioning'
-import { 
-  resizePerformanceManager,
-  withPerformanceMonitoring 
-} from '@/lib/resize-performance'
+  calculateFixedCardLayout,
+  calculateSimpleCardSpace,
+  validateLayout,
+  createEmergencyLayout,
+  type CardLayoutResult,
+  type SimpleCardSpace
+} from '@/lib/fixed-card-positioning'
+// 移除了复杂的性能管理器，使用简化的resize处理
 import { useDynamicSpacing } from '@/hooks/use-dynamic-spacing'
 import { ListItem, GameCard, CardStyle, CardGamePhase, CardFlipGameState } from '@/types'
 import { cn } from '@/lib/utils'
@@ -189,71 +179,53 @@ export function CardFlipGame({
     enableDebug: process.env.NODE_ENV === 'development'
   })
 
-  // 修复的卡牌布局位置计算（使用正确的可用空间计算）
+  // 修复的卡牌布局位置计算（使用简化且可靠的系统，带性能优化）
   const calculateCardPositions = useCallback((totalCards: number) => {
     try {
-      // 获取容器尺寸并验证
+      // 获取容器尺寸
       const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
       const containerHeight = typeof window !== 'undefined' ? window.innerHeight : 768
       
-      // 验证容器尺寸
-      if (!isValidDimension(containerWidth, containerHeight)) {
-        throw new Error(`Invalid container dimensions: ${containerWidth}x${containerHeight}`)
-      }
+      // 使用修复的卡牌布局计算系统
+      const layoutResult = calculateFixedCardLayout(totalCards, containerWidth, containerHeight)
       
-      // 检测设备类型
-      const deviceType = detectDeviceType(containerWidth)
+      // 验证布局是否合理
+      const space = calculateSimpleCardSpace(containerWidth, containerHeight)
+      const isValid = validateLayout(layoutResult, space)
       
-      // 计算可用卡牌空间（替换缺失的adaptiveCardAreaSpacing函数）
-      const availableSpace = calculateAvailableCardSpace(
-        containerWidth,
-        containerHeight,
-        {
-          hasGameInfo: true,
-          hasWarnings: warnings.length > 0,
-          hasStartButton: gameState.gamePhase === 'idle',
-          hasResultDisplay: gameState.gamePhase === 'finished'
-        }
-      )
-      
-      // 验证空间是否足够容纳卡牌
-      const spaceValidation = validateSpaceForCards(availableSpace, totalCards)
-      if (!spaceValidation.isValid) {
-        console.warn('Insufficient space for cards:', spaceValidation.issues)
-        console.log('Recommendations:', spaceValidation.recommendations)
-      }
-      
-      // 使用边界感知的位置计算
-      const positions = calculateBoundaryAwarePositions(totalCards, availableSpace)
-      
-      // 验证所有位置都在边界内
-      const boundaryCheck = validatePositionBoundaries(positions, availableSpace)
-      if (!boundaryCheck.isValid) {
-        console.warn('Position boundary violations detected:', boundaryCheck.violations)
-        // 自动修正违规位置
-        return validateAndCorrectPositions(positions, availableSpace)
+      if (!isValid) {
+        console.warn('Layout validation failed, using emergency layout')
+        // 如果布局不合理，使用紧急布局
+        const emergencyLayout = createEmergencyLayout(totalCards, space)
+        return emergencyLayout.positions
       }
       
       // 输出调试信息
       if (process.env.NODE_ENV === 'development') {
-        console.group('🎯 Card Position Calculation')
-        console.log('Container:', { width: containerWidth, height: containerHeight })
-        console.log('Available Space:', getAvailableSpaceDebugInfo(availableSpace))
-        console.log('Total Cards:', totalCards)
-        console.log('Generated Positions:', positions.length)
-        console.log('Boundary Check:', boundaryCheck.isValid ? 'PASSED' : 'FAILED')
+        console.group('🎯 Fixed Card Position Calculation')
+        console.log('Container:', `${containerWidth}x${containerHeight}`)
+        console.log('Card Count:', totalCards)
+        console.log('Layout:', `${layoutResult.layoutInfo.rows}x${layoutResult.layoutInfo.cardsPerRow}`)
+        console.log('Card Size:', layoutResult.actualCardSize)
+        console.log('Grid Size:', `${layoutResult.layoutInfo.totalWidth}x${layoutResult.layoutInfo.totalHeight}`)
+        console.log('Positions:', layoutResult.positions.length)
         console.groupEnd()
       }
       
-      return positions
+      return layoutResult.positions
       
     } catch (error) {
       console.error('Error in card position calculation:', error)
-      
-      // 增强的容器感知降级机制
-      return createContainerAwareFallback(totalCards, containerWidth, containerHeight)
+      return createEmergencyLayoutFallback(totalCards, containerWidth, containerHeight)
     }
-  }, [warnings.length, gameState.gamePhase, items.length])
+  }, [warnings.length, gameState.gamePhase])
+
+  // 紧急布局函数 - 当主要布局系统失败时使用
+  const createEmergencyLayoutFallback = useCallback((cardCount: number, containerWidth: number, containerHeight: number): CardPosition[] => {
+    const space = calculateSimpleCardSpace(containerWidth, containerHeight)
+    const emergencyLayout = createEmergencyLayout(cardCount, space)
+    return emergencyLayout.positions
+  }, [])
 
   // 选择中奖者
   const selectWinners = useCallback((items: ListItem[], quantity: number, allowRepeat: boolean): ListItem[] => {
@@ -642,9 +614,11 @@ export function CardFlipGame({
 
   // 监听窗口大小变化，实现平滑的位置重新计算和调整（使用增强的边界感知系统）
   useEffect(() => {
-    // 创建优化的防抖resize处理函数
-    const debouncedResizeHandler = resizePerformanceManager.debounce(
-      withPerformanceMonitoring(() => {
+    // 创建简化的防抖resize处理函数
+    let resizeTimeout: NodeJS.Timeout
+    const debouncedResizeHandler = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
         // 只有在有卡牌需要重新定位时才进行处理
         if (!gameState.cards || gameState.cards.length === 0) {
           console.log('No cards to reposition during resize')
@@ -664,59 +638,35 @@ export function CardFlipGame({
             return
           }
           
-          // 确定当前UI状态
-          const uiElements = {
-            hasGameInfo: true,
-            hasWarnings: warnings.length > 0,
-            hasStartButton: gameState.gamePhase === 'idle',
-            hasResultDisplay: gameState.gamePhase === 'finished'
-          }
+          // 移除了复杂的UI状态计算，使用简化的空间计算
           
-          // 计算可用空间
-          const availableSpace = calculateAvailableCardSpace(containerWidth, containerHeight, uiElements)
-          
-          // 使用边界感知位置计算重新计算位置
+          // 使用修复的布局系统重新计算位置
           let newPositions
           try {
-            newPositions = calculateBoundaryAwarePositions(gameState.cards.length, availableSpace)
+            const layoutResult = calculateFixedCardLayout(gameState.cards.length, containerWidth, containerHeight)
+            const space = calculateSimpleCardSpace(containerWidth, containerHeight)
+            const isValid = validateLayout(layoutResult, space)
+            
+            if (isValid) {
+              newPositions = layoutResult.positions
+            } else {
+              console.warn('Layout validation failed during resize, using emergency layout')
+              const emergencyLayout = createEmergencyLayout(gameState.cards.length, space)
+              newPositions = emergencyLayout.positions
+            }
           } catch (positionError) {
             console.error('Position calculation failed during resize:', positionError)
-            // 使用增强的降级系统
-            const fallbackResult = createEnhancedFallback(
-              gameState.cards.length,
-              containerWidth,
-              containerHeight,
-              `Resize position calculation failed: ${positionError instanceof Error ? positionError.message : 'Unknown error'}`
-            )
-            newPositions = fallbackResult.positions
-            console.warn(`Applied ${fallbackResult.fallbackLevel} fallback with quality score: ${fallbackResult.qualityScore}`)
-          }
-          
-          // 实时边界验证
-          const boundaryCheck = performRealTimeBoundaryCheck(
-            newPositions,
-            containerWidth,
-            containerHeight,
-            uiElements
-          )
-          
-          // 如果有边界违规，自动修正
-          if (!boundaryCheck.validationResult.isValid) {
-            console.warn(`Resize boundary violations detected: ${boundaryCheck.validationResult.violations.length}`)
-            const { correctedPositions } = validateAndCorrectPositionsRealTime(
-              newPositions,
-              containerWidth,
-              containerHeight,
-              uiElements
-            )
-            newPositions = correctedPositions
+            const space = calculateSimpleCardSpace(containerWidth, containerHeight)
+            const emergencyLayout = createEmergencyLayout(gameState.cards.length, space)
+            newPositions = emergencyLayout.positions
           }
           
           // 验证位置数组完整性
           if (newPositions.length !== gameState.cards.length) {
             console.error(`Position array length mismatch during resize: expected ${gameState.cards.length}, got ${newPositions.length}`)
-            // 使用容器感知降级
-            newPositions = createContainerAwareFallback(gameState.cards.length, containerWidth, containerHeight)
+            const space = calculateSimpleCardSpace(containerWidth, containerHeight)
+            const emergencyLayout = createEmergencyLayout(gameState.cards.length, space)
+            newPositions = emergencyLayout.positions
           }
           
           // 安全地应用新位置
@@ -772,9 +722,7 @@ export function CardFlipGame({
             console.log('Window resized - Positions recalculated:', {
               cardCount: gameState.cards.length,
               containerSize: `${containerWidth}x${containerHeight}`,
-              availableSpace: `${availableSpace.width}x${availableSpace.height}`,
-              boundaryValid: boundaryCheck.validationResult.isValid,
-              validationTime: boundaryCheck.performanceMetrics.validationTime.toFixed(2) + 'ms'
+              positionsGenerated: newPositions.length
             })
           }
           
@@ -804,28 +752,16 @@ export function CardFlipGame({
             }))
           }))
         }
-        
-      }, 'resize-operation')
-    )
+      }, 150) // 150ms防抖延迟
+    }
 
     // 添加resize事件监听器
     window.addEventListener('resize', debouncedResizeHandler)
     
-    // 定期清理性能数据
-    const cleanupInterval = setInterval(() => {
-      resizePerformanceManager.cleanup()
-    }, 30000) // 每30秒清理一次
-    
     // 清理函数
     return () => {
       window.removeEventListener('resize', debouncedResizeHandler)
-      clearInterval(cleanupInterval)
-      
-      // 在组件卸载时获取性能报告
-      if (process.env.NODE_ENV === 'development') {
-        const report = resizePerformanceManager.getPerformanceReport()
-        console.log('Resize Performance Report:', report)
-      }
+      clearTimeout(resizeTimeout)
     }
   }, [gameState.cards.length, gameState.gamePhase, calculateCardPositions, warnings.length, items.length])
 
