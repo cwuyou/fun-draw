@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { AlertTriangle, AlertCircle, Info } from 'lucide-react'
 import { PlayingCard } from './playing-card'
 import { CardDeck } from './card-deck'
+import { CardPositionDebugOverlay, DebugToggleButton } from './card-position-debug-overlay'
 import { soundManager } from '@/lib/sound-manager'
 import { useAnimationPerformance } from '@/lib/animation-performance'
 import { 
@@ -42,7 +43,10 @@ import {
   calculateBoundaryAwarePositions,
   validatePositionBoundaries,
   validateAndCorrectPositions,
-  createContainerAwareFallback
+  createContainerAwareFallback,
+  createEnhancedFallback,
+  performRealTimeBoundaryCheck,
+  validateAndCorrectPositionsRealTime
 } from '@/lib/boundary-aware-positioning'
 import { 
   resizePerformanceManager,
@@ -143,6 +147,7 @@ export function CardFlipGame({
   const [error, setError] = useState<string | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [debugVisible, setDebugVisible] = useState(false)
   const dealTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const dealIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const animationCleanupRef = useRef<(() => void)[]>([])
@@ -635,7 +640,7 @@ export function CardFlipGame({
     }, gameConfig.flipDuration)
   }, [gameState, soundEnabled, onComplete, gameConfig.flipDuration])
 
-  // 监听窗口大小变化，实现平滑的位置重新计算和调整（使用性能优化）
+  // 监听窗口大小变化，实现平滑的位置重新计算和调整（使用增强的边界感知系统）
   useEffect(() => {
     // 创建优化的防抖resize处理函数
     const debouncedResizeHandler = resizePerformanceManager.debounce(
@@ -660,57 +665,90 @@ export function CardFlipGame({
           }
           
           // 确定当前UI状态
-          const uiOptions = {
+          const uiElements = {
             hasGameInfo: true,
             hasWarnings: warnings.length > 0,
             hasStartButton: gameState.gamePhase === 'idle',
             hasResultDisplay: gameState.gamePhase === 'finished'
           }
           
-          // 使用统一的布局计算系统重新计算位置，带错误处理
-          let layoutResult
-          try {
-            layoutResult = calculateLayout(
-              containerWidth,
-              containerHeight,
-              gameState.cards.length,
-              items.length,
-              uiOptions
-            )
-          } catch (layoutError) {
-            console.error('Layout calculation failed during resize:', layoutError)
-            // 使用降级布局
-            layoutResult = createFallbackLayout(containerWidth, containerHeight, gameState.cards.length)
-          }
+          // 计算可用空间
+          const availableSpace = calculateAvailableCardSpace(containerWidth, containerHeight, uiElements)
           
-          // 计算新位置，带错误处理
+          // 使用边界感知位置计算重新计算位置
           let newPositions
           try {
-            newPositions = calculateCardPositions(gameState.cards.length)
+            newPositions = calculateBoundaryAwarePositions(gameState.cards.length, availableSpace)
           } catch (positionError) {
             console.error('Position calculation failed during resize:', positionError)
-            // 创建降级位置 - 直接使用已导入的函数
-            const { createFallbackPositions } = require('@/lib/position-validation')
-            newPositions = createFallbackPositions(gameState.cards.length, layoutResult.deviceConfig)
+            // 使用增强的降级系统
+            const fallbackResult = createEnhancedFallback(
+              gameState.cards.length,
+              containerWidth,
+              containerHeight,
+              `Resize position calculation failed: ${positionError instanceof Error ? positionError.message : 'Unknown error'}`
+            )
+            newPositions = fallbackResult.positions
+            console.warn(`Applied ${fallbackResult.fallbackLevel} fallback with quality score: ${fallbackResult.qualityScore}`)
           }
           
-          // 验证位置数组
-          const validation = validatePositionArray(newPositions, gameState.cards.length)
-          if (!validation.isValid) {
-            console.warn(`Position validation failed: ${validation.errors.join(', ')}`)
-            // 标准化位置数组
-            newPositions = normalizePositionArray(newPositions, gameState.cards.length, layoutResult.deviceConfig)
+          // 实时边界验证
+          const boundaryCheck = performRealTimeBoundaryCheck(
+            newPositions,
+            containerWidth,
+            containerHeight,
+            uiElements
+          )
+          
+          // 如果有边界违规，自动修正
+          if (!boundaryCheck.validationResult.isValid) {
+            console.warn(`Resize boundary violations detected: ${boundaryCheck.validationResult.violations.length}`)
+            const { correctedPositions } = validateAndCorrectPositionsRealTime(
+              newPositions,
+              containerWidth,
+              containerHeight,
+              uiElements
+            )
+            newPositions = correctedPositions
+          }
+          
+          // 验证位置数组完整性
+          if (newPositions.length !== gameState.cards.length) {
+            console.error(`Position array length mismatch during resize: expected ${gameState.cards.length}, got ${newPositions.length}`)
+            // 使用容器感知降级
+            newPositions = createContainerAwareFallback(gameState.cards.length, containerWidth, containerHeight)
           }
           
           // 安全地应用新位置
           setGameState(prev => ({
             ...prev,
             cards: prev.cards.map((card, index) => {
-              // 创建降级位置
-              const fallbackPosition = createSingleFallbackPosition(index, layoutResult.deviceConfig)
+              const newPosition = newPositions[index]
               
-              // 安全地获取新位置
-              const newPosition = getSafeCardPosition(newPositions, index, fallbackPosition)
+              // 确保位置有效
+              if (!newPosition || typeof newPosition.x !== 'number' || typeof newPosition.y !== 'number') {
+                console.error(`Invalid position for card ${index} during resize:`, newPosition)
+                // 使用紧急降级位置
+                return {
+                  ...card,
+                  position: {
+                    x: 0,
+                    y: index * 20 - (prev.cards.length - 1) * 10,
+                    rotation: 0,
+                    cardWidth: 96,
+                    cardHeight: 144
+                  },
+                  style: {
+                    ...card.style,
+                    transform: `translate(0px, ${index * 20 - (prev.cards.length - 1) * 10}px) rotate(0deg)`,
+                    width: '96px',
+                    height: '144px',
+                    marginLeft: '-48px',
+                    marginTop: '-72px',
+                    transition: 'transform 0.3s ease-out'
+                  }
+                }
+              }
               
               return {
                 ...card,
@@ -731,8 +769,13 @@ export function CardFlipGame({
           
           // 调试信息
           if (process.env.NODE_ENV === 'development') {
-            console.log('Window resized - Layout recalculated:', getLayoutDebugInfo(layoutResult))
-            console.log(`Applied ${validation.validPositions}/${gameState.cards.length} valid positions`)
+            console.log('Window resized - Positions recalculated:', {
+              cardCount: gameState.cards.length,
+              containerSize: `${containerWidth}x${containerHeight}`,
+              availableSpace: `${availableSpace.width}x${availableSpace.height}`,
+              boundaryValid: boundaryCheck.validationResult.isValid,
+              validationTime: boundaryCheck.performanceMetrics.validationTime.toFixed(2) + 'ms'
+            })
           }
           
         } catch (error) {
@@ -1066,6 +1109,19 @@ export function CardFlipGame({
         )}
       </div>
 
+      {/* 开发模式调试工具 */}
+      <CardPositionDebugOverlay
+        containerWidth={typeof window !== 'undefined' ? window.innerWidth : 1024}
+        containerHeight={typeof window !== 'undefined' ? window.innerHeight : 768}
+        cardPositions={gameState.cards.map(card => card.position)}
+        isVisible={debugVisible}
+        onToggle={setDebugVisible}
+      />
+      
+      <DebugToggleButton
+        isVisible={debugVisible}
+        onToggle={setDebugVisible}
+      />
 
     </div>
   )
