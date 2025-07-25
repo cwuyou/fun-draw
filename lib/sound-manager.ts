@@ -38,7 +38,12 @@ export class SoundManager {
         this.createSoundSafely('card-reveal', () => this.createCardRevealSound()),
         // 多宫格抽奖音效
         this.createSoundSafely('countdown', () => this.createCountdownSound()),
-        this.createSoundSafely('highlight', () => this.createHighlightSound())
+        this.createSoundSafely('highlight', () => this.createHighlightSound()),
+        // 闪烁点名音效
+        this.createSoundSafely('tick', () => this.createTickSound()),
+        this.createSoundSafely('slow-tick', () => this.createSlowTickSound()),
+        this.createSoundSafely('select', () => this.createSelectSound()),
+        this.createSoundSafely('complete', () => this.createCompleteSound())
       ]
       
       await Promise.allSettled(soundCreationPromises)
@@ -111,7 +116,11 @@ export class SoundManager {
       'card-flip': 0.5,
       'card-reveal': 0.6,
       'countdown': 0.6,
-      'highlight': 0.4
+      'highlight': 0.4,
+      'tick': 0.3,
+      'slow-tick': 0.4,
+      'select': 0.5,
+      'complete': 0.6
     }
     return baseVolumes[soundName] || 0.5
   }
@@ -539,6 +548,176 @@ export class SoundManager {
     }
     
     audio.volume = 0.4
+    return audio
+  }
+
+  // 生成闪烁节拍音效（快速的节拍提示音）
+  private createTickSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.1
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成短促的节拍音
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 双音调节拍，模拟时钟滴答声
+          const frequency1 = 800
+          const frequency2 = 1200
+          const tone1 = Math.sin(2 * Math.PI * frequency1 * t) * 0.3
+          const tone2 = Math.sin(2 * Math.PI * frequency2 * t) * 0.2
+          // 快速衰减包络
+          const envelope = Math.exp(-t * 30) * Math.sin(t * Math.PI * 10)
+          
+          channelData[i] = (tone1 + tone2) * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(800, 0.1)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(800, 0.1)
+    }
+    
+    audio.volume = 0.3
+    return audio
+  }
+
+  // 生成慢速节拍音效（减速时的低频节拍）
+  private createSlowTickSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.2
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成低频的慢节拍音
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 低频主音调
+          const frequency1 = 400
+          const frequency2 = 600
+          const tone1 = Math.sin(2 * Math.PI * frequency1 * t) * 0.4
+          const tone2 = Math.sin(2 * Math.PI * frequency2 * t) * 0.2
+          // 较慢的衰减，营造紧张感
+          const envelope = Math.exp(-t * 15) * Math.sin(t * Math.PI * 5)
+          
+          channelData[i] = (tone1 + tone2) * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(400, 0.2)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(400, 0.2)
+    }
+    
+    audio.volume = 0.4
+    return audio
+  }
+
+  // 生成选中确认音效（清脆的确认提示音）
+  private createSelectSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.5
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成清脆的确认音
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 上升音调序列，表示确认
+          const frequencies = [523, 659, 784] // C5, E5, G5
+          const noteIndex = Math.floor(t * 6) % frequencies.length
+          const frequency = frequencies[noteIndex]
+          const tone = Math.sin(2 * Math.PI * frequency * t) * 0.4
+          // 和声增强效果
+          const harmony = Math.sin(2 * Math.PI * frequency * 1.5 * t) * 0.2
+          // 铃声效果
+          const bell = Math.sin(2 * Math.PI * frequency * 2 * t) * 0.1
+          // 衰减包络
+          const envelope = Math.exp(-t * 4) * Math.sin(t * Math.PI * 2)
+          
+          channelData[i] = (tone + harmony + bell) * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(650, 0.4)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(650, 0.4)
+    }
+    
+    audio.volume = 0.5
+    return audio
+  }
+
+  // 生成完成音效（庆祝完成的音效）
+  private createCompleteSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 1.5
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成庆祝完成音效
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 欢快的上升音阶
+          const melody = [523, 587, 659, 698, 784, 880, 988, 1047] // C5到C6音阶
+          const noteIndex = Math.floor(t * 8) % melody.length
+          const frequency = melody[noteIndex]
+          // 主旋律
+          const tone = Math.sin(2 * Math.PI * frequency * t) * 0.3
+          // 和声
+          const harmony1 = Math.sin(2 * Math.PI * frequency * 1.25 * t) * 0.15
+          const harmony2 = Math.sin(2 * Math.PI * frequency * 1.5 * t) * 0.1
+          // 闪烁装饰音
+          const sparkle = Math.sin(t * 30) * Math.sin(t * 200) * 0.05
+          // 整体包络，逐渐衰减但保持欢快
+          const envelope = Math.exp(-t * 0.8) * Math.sin(t * Math.PI / duration) * 1.2
+          
+          channelData[i] = (tone + harmony1 + harmony2 + sparkle) * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(700, 1.0)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(700, 1.0)
+    }
+    
+    audio.volume = 0.6
     return audio
   }
 

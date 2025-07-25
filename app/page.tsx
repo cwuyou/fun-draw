@@ -54,6 +54,12 @@ export default function HomePage() {
       description: "可爱扭蛋动画，童趣满满的抽奖方式",
       color: "bg-orange-500",
     },
+    {
+      icon: <Sparkles className="w-8 h-8" />,
+      title: "闪烁点名式",
+      description: "快速闪烁定格，公平随机的点名体验",
+      color: "bg-pink-500",
+    },
   ]
 
   const useCases = [
@@ -78,7 +84,7 @@ export default function HomePage() {
     {
       icon: <Sparkles className="w-5 h-5" />,
       title: "多种抽奖模式",
-      description: "5种创新动画效果，告别单调的转盘",
+      description: "6种创新动画效果，告别单调的转盘",
     },
     {
       icon: <Download className="w-5 h-5" />,
@@ -140,7 +146,7 @@ export default function HomePage() {
             让抽奖变得更有趣
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式，
+            告别单调的转盘抽奖！趣抽为您提供6种创新的抽奖动画模式，
             <br />
             无论是课堂教学、企业年会还是朋友聚会，都能找到最适合的抽奖方式。
           </p>
@@ -196,7 +202,7 @@ export default function HomePage() {
       <section id="modes" className="py-16 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-gray-800">五种创新抽奖模式</h2>
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">六种创新抽奖模式</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               每种模式都有独特的动画效果和音效，为不同场景提供最佳的抽奖体验
             </p>

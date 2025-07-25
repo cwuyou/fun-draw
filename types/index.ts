@@ -20,7 +20,50 @@ export interface DrawingConfig {
   items: ListItem[]
 }
 
-export type DrawingMode = "slot-machine" | "blind-box" | "card-flip" | "bullet-screen" | "gashapon" | "grid-lottery"
+export type DrawingMode = "slot-machine" | "blind-box" | "card-flip" | "bullet-screen" | "gashapon" | "grid-lottery" | "blinking-name-picker"
+
+// 闪烁点名相关类型定义
+export interface BlinkingGameState {
+  phase: 'idle' | 'blinking' | 'slowing' | 'stopped' | 'finished'
+  items: BlinkingItem[]
+  currentHighlight: number | null
+  selectedItems: ListItem[]
+  blinkingSpeed: number
+  currentRound: number
+  totalRounds: number
+  startTime: number
+}
+
+export interface BlinkingItem {
+  id: string
+  item: ListItem
+  isHighlighted: boolean
+  isSelected: boolean
+  highlightColor: string
+  position: {
+    row: number
+    col: number
+    index: number
+  }
+}
+
+export interface BlinkingConfig {
+  initialSpeed: number      // 初始闪烁间隔(ms)
+  finalSpeed: number        // 最终闪烁间隔(ms)
+  accelerationDuration: number // 减速过程时长(ms)
+  colors: string[]          // 闪烁颜色数组
+  glowIntensity: number     // 发光强度
+}
+
+export interface BlinkingNamePickerProps {
+  items: ListItem[]
+  quantity: number
+  allowRepeat: boolean
+  onComplete: (winners: ListItem[]) => void
+  soundEnabled: boolean
+  className?: string
+  autoStart?: boolean
+}
 
 export interface DrawingModeInfo {
   id: DrawingMode
@@ -257,4 +300,49 @@ export interface GridLotteryState {
   currentHighlight: number
   winner: ListItem | null
   countdown: number
+}
+
+// 闪烁点名相关类型定义
+export interface BlinkingConfig {
+  initialSpeed: number      // 初始闪烁间隔(ms) - 100
+  finalSpeed: number        // 最终闪烁间隔(ms) - 1000
+  accelerationDuration: number // 减速过程时长(ms) - 3000
+  colors: string[]          // 闪烁颜色数组
+  glowIntensity: number     // 发光强度 0-1
+}
+
+export interface BlinkingItem {
+  id: string
+  item: ListItem
+  isHighlighted: boolean
+  isSelected: boolean
+  highlightColor: string
+  position: {
+    row: number
+    col: number
+    index: number
+  }
+}
+
+export type BlinkingGamePhase = 'idle' | 'blinking' | 'slowing' | 'stopped' | 'finished'
+
+export interface BlinkingGameState {
+  phase: BlinkingGamePhase
+  items: BlinkingItem[]
+  currentHighlight: number | null
+  selectedItems: ListItem[]
+  blinkingSpeed: number
+  currentRound: number
+  totalRounds: number
+  startTime: number
+}
+
+export interface BlinkingNamePickerProps {
+  items: ListItem[]
+  quantity: number
+  allowRepeat: boolean
+  onComplete: (winners: ListItem[]) => void
+  soundEnabled: boolean
+  className?: string
+  autoStart?: boolean
 }

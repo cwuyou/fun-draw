@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Dices, Gift, CreditCard, MessageSquare, Gamepad2, ArrowLeft, Users, Settings, Play, Hash, Save } from "lucide-react"
+import { Dices, Gift, CreditCard, MessageSquare, Gamepad2, ArrowLeft, Users, Settings, Play, Hash, Save, Sparkles } from "lucide-react"
 import type { DrawingMode, DrawingModeInfo, ListItem, DrawingConfig } from "@/types"
 import { useToast } from "@/hooks/use-toast"
 import { saveList, generateUniqueListName, generateDefaultTempName } from "@/lib/storage"
@@ -39,6 +39,8 @@ export default function DrawConfigPage() {
         return Math.min(20, allowRepeat ? 100 : itemCount) // 弹幕：最多20行，垂直空间限制
       case 'grid-lottery':
         return Math.min(15, allowRepeat ? 100 : itemCount) // 多宫格：最多15个格子（3x5或5x3布局）
+      case 'blinking-name-picker':
+        return Math.min(50, allowRepeat ? 100 : itemCount) // 闪烁点名：最多50个项目（虚拟滚动支持）
       case 'blind-box':
       case 'gashapon':
       default:
@@ -59,6 +61,8 @@ export default function DrawConfigPage() {
         return `弹幕模式最多${maxQuantity}个（垂直空间限制）`
       case 'grid-lottery':
         return `多宫格模式最多${maxQuantity}个（支持6、9、12、15宫格）`
+      case 'blinking-name-picker':
+        return `闪烁点名模式最多${maxQuantity}个（支持虚拟滚动）`
       case 'blind-box':
       case 'gashapon':
       default:
@@ -237,6 +241,13 @@ export default function DrawConfigPage() {
       icon: <Hash className="w-6 h-6" />,
       color: "bg-indigo-500",
     },
+    {
+      id: "blinking-name-picker",
+      name: "闪烁点名式",
+      description: "快速闪烁定格，公平随机的点名体验",
+      icon: <Sparkles className="w-6 h-6" />,
+      color: "bg-pink-500",
+    },
   ]
 
   const handleSaveCurrentList = async () => {
@@ -320,6 +331,7 @@ export default function DrawConfigPage() {
         'slot-machine': '老虎机',
         'bullet-screen': '弹幕滚动',
         'grid-lottery': '多宫格抽奖',
+        'blinking-name-picker': '闪烁点名',
         'blind-box': '盲盒',
         'gashapon': '扭蛋机'
       }
