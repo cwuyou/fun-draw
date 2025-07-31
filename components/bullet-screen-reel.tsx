@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "@/hooks/use-translation"
 import type { ListItem } from "@/types"
 
 interface BulletScreenReelProps {
@@ -14,6 +15,7 @@ interface BulletScreenReelProps {
 type ScrollPhase = "idle" | "accelerating" | "scrolling" | "slowing" | "highlighting" | "stopped"
 
 export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComplete, delay = 0 }: BulletScreenReelProps) {
+  const { t } = useTranslation()
   const [currentItems, setCurrentItems] = useState<ListItem[]>([])
   const [scrollPhase, setScrollPhase] = useState<ScrollPhase>("idle")
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -24,7 +26,7 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 创建扩展的项目列表用于无缝滚动
+  // 创建扩展的名称列表用于无缝滚动
   const extendedItems = [...items, ...items, ...items, ...items]
 
   // 重置状态的 effect
@@ -108,7 +110,7 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
   }
 
   const updateScrollingItems = () => {
-    // 随机选择一些项目显示，模拟弹幕效果
+    // 随机选择一些名称显示，模拟弹幕效果
     const visibleCount = Math.min(8, items.length)
     const shuffled = [...extendedItems].sort(() => Math.random() - 0.5)
     setCurrentItems(shuffled.slice(0, visibleCount))
@@ -151,35 +153,35 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
   const highlightWinner = () => {
     if (!finalResult) return
 
-    // 准备最终显示的项目列表，确保中奖项目在显著位置
+    // 准备最终显示的名称列表，确保中奖名称在显著位置
     const finalDisplayItems = []
     const otherItems = items.filter(item => item.id !== finalResult.id)
     
-    // 将中奖项目放在中间位置，周围放其他项目
+    // 将中奖名称放在中间位置，周围放其他名称
     const visibleCount = Math.min(7, items.length)
     const middleIndex = Math.floor(visibleCount / 2)
     
-    // 添加前面的项目
+    // 添加前面的名称
     for (let i = 0; i < middleIndex; i++) {
       if (otherItems[i]) {
         finalDisplayItems.push(otherItems[i])
       }
     }
     
-    // 添加中奖项目到中间
+    // 添加中奖名称到中间
     finalDisplayItems.push(finalResult)
     
-    // 添加后面的项目
+    // 添加后面的名称
     for (let i = middleIndex; i < visibleCount - 1; i++) {
       if (otherItems[i]) {
         finalDisplayItems.push(otherItems[i])
       }
     }
 
-    // 更新显示的项目列表
+    // 更新显示的名称列表
     setCurrentItems(finalDisplayItems)
     
-    // 中奖项目现在在中间位置
+    // 中奖名称现在在中间位置
     const displayWinnerIndex = middleIndex
     
     // 高亮动画 - 闪烁效果
@@ -195,7 +197,7 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
         setHasCompleted(true)
         
         setTimeout(() => {
-          console.log("弹幕滚动停止，触发完成回调")
+          console.log(t('drawingComponents.bulletScreen.scrollStopped'))
           onScrollComplete?.()
         }, 500)
       }
@@ -233,17 +235,17 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
   const getPhaseText = () => {
     switch (scrollPhase) {
       case "accelerating":
-        return "加速中..."
+        return t('drawingComponents.bulletScreen.accelerating')
       case "scrolling":
-        return "快速滚动"
+        return t('drawingComponents.bulletScreen.scrolling')
       case "slowing":
-        return "减速中..."
+        return t('drawingComponents.bulletScreen.slowing')
       case "highlighting":
-        return "定格选中"
+        return t('drawingComponents.bulletScreen.highlighting')
       case "stopped":
-        return "已选中"
+        return t('drawingComponents.bulletScreen.stopped')
       default:
-        return "准备中"
+        return t('drawingComponents.bulletScreen.ready')
     }
   }
 
@@ -270,7 +272,7 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
           </div>
         </div>
 
-        {/* 弹幕项目 */}
+        {/* 弹幕名称 */}
         <div className="relative h-full flex items-center justify-center">
           <div className="flex items-center gap-4 px-4">
             {currentItems.map((item, index) => (

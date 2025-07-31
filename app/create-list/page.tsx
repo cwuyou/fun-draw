@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,25 +12,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Upload, Type, FileText, Trash2, Save, Play, ArrowLeft, Users } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { ListItem } from "@/types"
 import { saveList, parseTextToItems, isNameEmpty, generateUniqueListName, generateDefaultTempName } from "@/lib/storage"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import EnhancedFileUpload from "@/components/enhanced-file-upload"
+import SmartContentPaste from "@/components/smart-content-paste"
 
 export default function CreateListPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [listName, setListName] = useState("")
   const [items, setItems] = useState<ListItem[]>([])
   const [newItemName, setNewItemName] = useState("")
-  const [bulkText, setBulkText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [encoding, setEncoding] = useState<string>("UTF-8")
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [isDataRestored, setIsDataRestored] = useState(false)
 
@@ -72,8 +72,8 @@ export default function CreateListPage() {
             setItems(parsedData.items)
 
             toast({
-              title: "数据已恢复",
-              description: `已恢复之前的名单数据，包含 ${parsedData.items.length} 个项目`,
+              title: t('createList.dataRestored'),
+              description: t('createList.dataRestoredDescription', { count: parsedData.items.length }),
             })
           }
         }
@@ -111,29 +111,29 @@ export default function CreateListPage() {
     setSelectedItems(new Set())
 
     toast({
-      title: "批量删除成功",
-      description: `已删除 ${selectedItems.size} 个项目`,
+      title: t('createList.batchDeleteSuccess'),
+      description: t('createList.batchDeleteSuccessDescription', { count: selectedItems.size }),
     })
   }
 
   const addItem = () => {
     if (!newItemName.trim()) return
 
-    console.log("检查重复项目:", newItemName.trim())
-    console.log("当前项目列表:", items.map(item => item.name))
+    console.log("检查重复名称:", newItemName.trim())
+    console.log("当前名称列表:", items.map(item => item.name))
 
     // 检查是否重复
     if (checkForDuplicates(newItemName)) {
-      console.log("发现重复项目，显示提示")
+      console.log("发现重复名称，显示提示")
       toast({
-        title: "项目已存在",
-        description: `"${newItemName.trim()}" 已在名单中，请勿重复添加`,
+        title: t('createList.nameExists'),
+        description: t('createList.nameExistsDescription', { name: newItemName.trim() }),
         variant: "destructive",
       })
       return
     }
 
-    console.log("添加新项目:", newItemName.trim())
+    console.log("添加新名称:", newItemName.trim())
     const newItem: ListItem = {
       id: crypto.randomUUID(),
       name: newItemName.trim(),
@@ -147,158 +147,56 @@ export default function CreateListPage() {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
-  const handleBulkAdd = () => {
-    if (!bulkText.trim()) return
 
-    const newItems = parseTextToItems(bulkText)
 
-    // 合并现有项目和新项目，然后去重
+  // 处理增强文件上传
+  const handleEnhancedFileUpload = (newItems: ListItem[]) => {
+    if (newItems.length === 0) return
+
+    // 合并现有名称和新名称，然后去重
     const allItems = [...items, ...newItems]
     const { uniqueItems, duplicateCount } = removeDuplicateItems(allItems)
 
     setItems(uniqueItems)
-    setBulkText("")
 
-    // 显示添加结果
+    // 显示导入结果
     const addedCount = uniqueItems.length - items.length
-    let description = `已添加 ${addedCount} 个项目`
-    if (duplicateCount > 0) {
-      description += `，已自动去除 ${duplicateCount} 个重复项目`
-    }
+    const description = duplicateCount > 0 
+      ? t('createList.fileImportSuccessWithDuplicates', { added: addedCount, duplicates: duplicateCount })
+      : t('createList.fileImportSuccessDescription', { added: addedCount })
 
     toast({
-      title: "批量添加成功",
+      title: t('createList.fileImportSuccess'),
       description,
     })
   }
 
-  // 修改文件上传处理
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  // 处理智能内容解析
+  const handleSmartContentParsed = (newItems: ListItem[]) => {
+    if (newItems.length === 0) return
 
-    // 检查文件大小
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      toast({
-        title: "文件过大",
-        description: "请上传小于5MB的文件",
-        variant: "destructive",
-      })
-      return
-    }
+    // 合并现有名称和新名称，然后去重
+    const allItems = [...items, ...newItems]
+    const { uniqueItems, duplicateCount } = removeDuplicateItems(allItems)
 
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      try {
-        let text = e.target?.result as string
+    setItems(uniqueItems)
 
-        // 自动检测编码
-        if (encoding === 'auto') {
-          // 检查BOM标记
-          if (text.charCodeAt(0) === 0xFEFF) {
-            text = text.slice(1) // 移除BOM
-            setEncoding('UTF-8')
-          } else if (/[\u4E00-\u9FA5]/.test(text)) {
-            // 如果包含中文字符但解码正常，可能是UTF-8
-            setEncoding('UTF-8')
-          } else {
-            // 尝试其他编码
-            try {
-              const decoder = new TextDecoder('GBK')
-              const encoder = new TextEncoder()
-              const bytes = encoder.encode(text)
-              text = decoder.decode(bytes)
-              setEncoding('GBK')
-            } catch {
-              // 如果GBK解码失败，保持UTF-8
-              setEncoding('UTF-8')
-            }
-          }
-        }
+    // 显示添加结果
+    const addedCount = uniqueItems.length - items.length
+    const description = duplicateCount > 0 
+      ? t('createList.batchAddSuccessWithDuplicates', { added: addedCount, duplicates: duplicateCount })
+      : t('createList.batchAddSuccessDescription', { added: addedCount })
 
-        // 处理CSV格式
-        let lines: string[] = []
-        if (file.name.toLowerCase().endsWith('.csv')) {
-          // 处理CSV，支持带引号的字段和逗号分隔
-          lines = text.split(/\r?\n/).map(line => {
-            // 移除首尾引号并处理转义引号
-            return line.replace(/^"(.*)"$/, '$1').replace(/""/g, '"').split(',')[0]
-          })
-        } else {
-          // 普通文本文件按行分割
-          lines = text.split(/\r?\n/)
-        }
-
-        // 过滤空行和处理每行数据
-        const newItems = lines
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .map(name => ({
-            id: crypto.randomUUID(),
-            name: name
-          }))
-
-        if (newItems.length === 0) {
-          throw new Error("未找到有效数据")
-        }
-
-        // 合并现有项目和新项目，然后去重
-        const allItems = [...items, ...newItems]
-        const { uniqueItems, duplicateCount } = removeDuplicateItems(allItems)
-
-        setItems(uniqueItems)
-
-        // 显示导入结果
-        const addedCount = uniqueItems.length - items.length
-        let description = `已导入 ${addedCount} 个项目，使用 ${encoding} 编码`
-        if (duplicateCount > 0) {
-          description += `，已自动去除 ${duplicateCount} 个重复项目`
-        }
-
-        toast({
-          title: "文件导入成功",
-          description,
-        })
-      } catch (error) {
-        toast({
-          title: "文件解析失败",
-          description: error instanceof Error ? error.message : "请检查文件格式是否正确",
-          variant: "destructive",
-        })
-      }
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-    }
-
-    reader.onerror = () => {
-      toast({
-        title: "文件读取失败",
-        description: "请检查文件是否损坏或重试",
-        variant: "destructive",
-      })
-    }
-
-    try {
-      if (encoding === 'auto') {
-        reader.readAsText(file) // 先尝试默认编码
-      } else {
-        reader.readAsText(file, encoding)
-      }
-    } catch (error) {
-      toast({
-        title: "文件读取失败",
-        description: "不支持的文件编码",
-        variant: "destructive",
-      })
-    }
+    toast({
+      title: t('createList.batchAddSuccess'),
+      description,
+    })
   }
 
   const handleSaveList = async () => {
     if (items.length === 0) {
       toast({
-        title: "请至少添加一个项目",
+        title: t('createList.addAtLeastOne'),
         variant: "destructive",
       })
       return
@@ -321,23 +219,23 @@ export default function CreateListPage() {
 
       // 根据是否自动生成名称显示不同的成功提示
       let successMessage = wasAutoGenerated
-        ? `名单保存成功，已自动命名为："${savedList.name}"`
-        : `名单"${savedList.name}"已保存到名单库`
+        ? t('createList.saveSuccessAuto', { name: savedList.name })
+        : t('createList.saveSuccessDescription', { name: savedList.name })
 
       if (duplicateCount > 0) {
-        successMessage += `，已自动去除 ${duplicateCount} 个重复项目`
+        successMessage = t('createList.saveSuccessWithDuplicates', { message: successMessage, duplicates: duplicateCount })
       }
 
       toast({
-        title: "名单保存成功",
+        title: t('createList.saveSuccess'),
         description: successMessage,
       })
 
       router.push("/list-library")
     } catch (error) {
       toast({
-        title: "保存失败",
-        description: "请稍后重试",
+        title: t('createList.saveFailed'),
+        description: t('createList.saveFailedDescription'),
         variant: "destructive",
       })
     } finally {
@@ -350,7 +248,7 @@ export default function CreateListPage() {
   const handleQuickDraw = async () => {
     if (items.length === 0) {
       toast({
-        title: "请至少添加一个项目",
+        title: t('createList.addAtLeastOne'),
         variant: "destructive",
       })
       return
@@ -358,7 +256,7 @@ export default function CreateListPage() {
 
     try {
       console.log("开始处理快速抽奖...");
-      console.log("当前名单项目数量:", items.length);
+      console.log("当前名单名称数量:", items.length);
 
       // 清除可能存在的旧数据
       localStorage.removeItem("temp-draw-list")
@@ -392,8 +290,8 @@ export default function CreateListPage() {
 
       // 添加成功提示
       toast({
-        title: "准备开始抽奖",
-        description: "正在跳转到抽奖配置页面...",
+        title: t('createList.preparingDraw'),
+        description: t('createList.preparingDrawDescription'),
       })
 
       // 使用 window.location 确保跳转成功
@@ -405,8 +303,8 @@ export default function CreateListPage() {
     } catch (error) {
       console.error("保存名单数据失败:", error)
       toast({
-        title: "跳转失败",
-        description: "无法保存名单数据，请重试",
+        title: t('createList.jumpFailed'),
+        description: t('createList.jumpFailedDescription'),
         variant: "destructive",
       })
     }
@@ -425,14 +323,14 @@ export default function CreateListPage() {
               className="text-gray-600 hover:text-purple-600"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {t('createList.back')}
             </Button>
-            <h1 className="text-2xl font-bold text-gray-800">创建名单</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{t('createList.title')}</h1>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="bg-purple-100 text-purple-700">
               <Users className="w-3 h-3 mr-1" />
-              {items.length} 个项目
+              {t('createList.itemsCount', { count: items.length })}
             </Badge>
           </div>
         </div>
@@ -445,16 +343,16 @@ export default function CreateListPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-purple-600" />
-                名单信息
+                {t('createList.listInfo')}
               </CardTitle>
-              <CardDescription>为您的名单起一个容易识别的名称</CardDescription>
+              <CardDescription>{t('createList.listInfoDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="list-name">名单名称</Label>
+                <Label htmlFor="list-name">{t('createList.listName')}</Label>
                 <Input
                   id="list-name"
-                  placeholder="例如：三年二班学生、年会奖品池... （留空将自动生成名称）"
+                  placeholder={t('createList.listNamePlaceholder')}
                   value={listName}
                   onChange={(e) => setListName(e.target.value)}
                   className="text-lg"
@@ -466,30 +364,30 @@ export default function CreateListPage() {
           {/* Add Items */}
           <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>添加项目</CardTitle>
-              <CardDescription>选择最适合您的方式来添加抽奖项目</CardDescription>
+              <CardTitle>{t('createList.addList')}</CardTitle>
+              <CardDescription>{t('createList.addListDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="manual" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="manual" className="flex items-center gap-2">
                     <Type className="w-4 h-4" />
-                    手动输入
+                    {t('createList.manualInput')}
                   </TabsTrigger>
-                  <TabsTrigger value="bulk" className="flex items-center gap-2">
+                  <TabsTrigger value="smart-paste" className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    批量粘贴
+                    {t('createList.smartPaste')}
                   </TabsTrigger>
                   <TabsTrigger value="file" className="flex items-center gap-2">
                     <Upload className="w-4 h-4" />
-                    文件导入
+                    {t('createList.fileImport')}
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="manual" className="space-y-4">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="输入项目名称，按回车或点击添加"
+                      placeholder={t('createList.inputPlaceholder')}
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addItem()}
@@ -504,57 +402,28 @@ export default function CreateListPage() {
                       disabled={!newItemName.trim()}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      添加
+                      {t('createList.addButton')}
                     </Button>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="bulk" className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bulk-text">批量文本（每行一个项目）</Label>
-                    <Textarea
-                      id="bulk-text"
-                      placeholder="张三&#10;李四&#10;王五&#10;赵六"
-                      value={bulkText}
-                      onChange={(e) => setBulkText(e.target.value)}
-                      rows={6}
-                    />
-                  </div>
-                  <Button onClick={handleBulkAdd} disabled={!bulkText.trim()}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    批量添加
-                  </Button>
+                <TabsContent value="smart-paste" className="space-y-4">
+                  <SmartContentPaste
+                    onContentParsed={handleSmartContentParsed}
+                    placeholder={t('createList.smartPastePlaceholder')}
+                    maxLength={50000}
+                    showPreview={true}
+                  />
                 </TabsContent>
 
                 <TabsContent value="file" className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">支持 .txt 和 .csv 文件</p>
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="encoding">文件编码：</Label>
-                        <Select value={encoding} onValueChange={setEncoding}>
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="选择编码" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto">自动检测</SelectItem>
-                            <SelectItem value="UTF-8">UTF-8</SelectItem>
-                            <SelectItem value="GB2312">GB2312</SelectItem>
-                            <SelectItem value="GBK">GBK</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button onClick={() => fileInputRef.current?.click()}>选择文件</Button>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".txt,.csv"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </div>
+                  <EnhancedFileUpload
+                    onFileProcessed={handleEnhancedFileUpload}
+                    maxFileSize={10}
+                    acceptedFormats={['.txt', '.csv', '.xlsx']}
+                    showPreview={true}
+                    className="w-full"
+                  />
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -566,8 +435,8 @@ export default function CreateListPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <span>项目列表</span>
-                    <Badge variant="outline">{items.length} 个项目</Badge>
+                    <span>{t('createList.nameList')}</span>
+                    <Badge variant="outline">{t('createList.itemsCount', { count: items.length })}</Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     {items.length > 0 && (
@@ -578,7 +447,7 @@ export default function CreateListPage() {
                           onClick={toggleSelectAll}
                           className="text-gray-600"
                         >
-                          {selectedItems.size === items.length ? "取消全选" : "全选"}
+                          {selectedItems.size === items.length ? t('createList.deselectAll') : t('createList.selectAll')}
                         </Button>
                         {selectedItems.size > 0 && (
                           <Button
@@ -587,7 +456,7 @@ export default function CreateListPage() {
                             onClick={deleteSelected}
                             className="bg-red-500 hover:bg-red-600"
                           >
-                            删除所选 ({selectedItems.size})
+                            {t('createList.deleteSelected', { count: selectedItems.size })}
                           </Button>
                         )}
                       </>
@@ -644,7 +513,7 @@ export default function CreateListPage() {
               className="bg-purple-600 hover:bg-purple-700 text-white px-8"
             >
               <Save className="w-5 h-5 mr-2" />
-              {isLoading ? "保存中..." : isNameEmpty(listName) ? "保存到名单库（自动命名）" : "保存到名单库"}
+              {isLoading ? t('createList.saving') : isNameEmpty(listName) ? t('createList.saveToLibraryAuto') : t('createList.saveToLibrary')}
             </Button>
             <Button
               size="lg"
@@ -654,7 +523,7 @@ export default function CreateListPage() {
               className="border-purple-200 text-purple-600 hover:bg-purple-50 px-8 bg-transparent"
             >
               <Play className="w-5 h-5 mr-2" />
-              快速抽奖
+              {t('createList.quickDraw')}
             </Button>
           </div>
         </div>

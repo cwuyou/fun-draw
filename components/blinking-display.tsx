@@ -50,7 +50,7 @@ export function BlinkingDisplay({
   const layoutConfig = useMemo((): LayoutConfig => {
     const itemCount = items.length
     
-    // 基于容器宽度和项目数量计算最佳布局
+    // 基于容器宽度和名称数量计算最佳布局
     if (containerWidth === 0) {
       // 默认配置
       return {
@@ -93,7 +93,7 @@ export function BlinkingDisplay({
       gap = 16
     }
 
-    // 根据项目数量调整列数
+    // 根据名称数量调整列数
     const optimalColumns = Math.min(
       baseColumns,
       Math.max(2, Math.ceil(Math.sqrt(itemCount))),
@@ -118,7 +118,7 @@ export function BlinkingDisplay({
     alignItems: 'start' as const
   }), [layoutConfig])
 
-  // 虚拟滚动支持（当项目超过50个时）
+  // 虚拟滚动支持（当名称超过50个时）
   const shouldUseVirtualScroll = items.length > 50
   const visibleItems = shouldUseVirtualScroll ? items.slice(0, 50) : items
 
@@ -152,7 +152,7 @@ export function BlinkingDisplay({
       {shouldUseVirtualScroll && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent p-4 text-center">
           <p className="text-sm text-gray-500">
-            显示前50个项目，共{items.length}个项目
+            显示前50个名称，共{items.length}个名称
           </p>
         </div>
       )}
@@ -160,7 +160,7 @@ export function BlinkingDisplay({
       {/* 空状态 */}
       {items.length === 0 && (
         <div className="flex items-center justify-center h-32 text-gray-500">
-          <p>暂无项目</p>
+          <p>暂无名称</p>
         </div>
       )}
 

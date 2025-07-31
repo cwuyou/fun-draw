@@ -1,0 +1,18 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "language": "语言",
+    "locale": "zh"
+  },
+  "navigation": {
+    "home": "首页",
+    "createList": "创建名单"
+  },
+  "home": {
+    "title": "让抽奖变得更有趣",
+    "startButton": "立即开始抽奖",
+    "hero": {
+      "title": "让抽奖变得更有趣"
+    }
+  }
+}

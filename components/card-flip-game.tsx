@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { AlertTriangle, AlertCircle, Info } from 'lucide-react'
+import { useTranslation } from '@/hooks/use-translation'
 import { PlayingCard } from './playing-card'
 import { CardDeck } from './card-deck'
 import { CardPositionDebugOverlay, DebugToggleButton } from './card-position-debug-overlay'
@@ -124,6 +125,7 @@ export function CardFlipGame({
   className,
   autoStart = false
 }: CardFlipGameProps) {
+  const { t } = useTranslation()
   const [gameState, setGameState] = useState<CardFlipGameState>({
     gamePhase: 'idle',
     cards: [],
@@ -232,11 +234,11 @@ export function CardFlipGame({
     try {
       // 增强的输入验证
       if (!Array.isArray(items)) {
-        throw new Error('项目列表必须是数组格式')
+        throw new Error('名称列表必须是数组格式')
       }
       
       if (items.length === 0) {
-        throw new Error('项目列表为空')
+        throw new Error(t('drawingComponents.cardFlip.emptyList'))
       }
       
       if (!Number.isInteger(quantity) || quantity <= 0) {
@@ -251,7 +253,7 @@ export function CardFlipGame({
         throw new Error('Quantity exceeds available items when repeat is disabled')
       }
 
-      // 验证项目格式
+      // 验证名称格式
       const invalidItems = items.filter(item => 
         !item || 
         typeof item.name !== 'string' || 
@@ -259,7 +261,7 @@ export function CardFlipGame({
       )
       
       if (invalidItems.length > 0) {
-        throw new Error(`发现${invalidItems.length}个无效项目，请检查项目名称`)
+        throw new Error(`发现${invalidItems.length}个无效名称，请检查名称格式`)
       }
       
       const winners: ListItem[] = []
@@ -287,7 +289,7 @@ export function CardFlipGame({
         const winner = availableItems[randomIndex]
         
         if (!winner) {
-          console.error(`选择中奖者时遇到空项目，索引: ${randomIndex}`)
+          console.error(`选择中奖者时遇到空名称，索引: ${randomIndex}`)
           continue
         }
         
@@ -299,7 +301,7 @@ export function CardFlipGame({
       }
       
       if (winners.length === 0) {
-        throw new Error('未能选择任何中奖者，请检查项目列表')
+        throw new Error('未能选择任何中奖者，请检查名称列表')
       }
       
       if (winners.length < quantity) {
@@ -352,13 +354,13 @@ export function CardFlipGame({
       
       // 预先验证游戏状态
       if (gameState.gamePhase !== 'idle' && gameState.gamePhase !== 'finished') {
-        console.warn('游戏正在进行中，无法重新开始')
+        console.warn(t('drawingComponents.cardFlip.gameInProgress'))
         return
       }
 
       // 验证必要的游戏参数
       if (!items || items.length === 0) {
-        setError('项目列表为空，无法开始游戏')
+        setError(t('drawingComponents.cardFlip.cannotStartGame'))
         return
       }
 
@@ -367,7 +369,7 @@ export function CardFlipGame({
         return
       }
 
-      // 验证不允许重复时的项目数量
+      // 验证不允许重复时的名称数量
       if (!allowRepeat && quantity > items.length) {
         setError('Quantity exceeds available items when repeat is disabled')
         return
@@ -793,7 +795,7 @@ export function CardFlipGame({
   // 初始化游戏 - 只在autoStart为true时自动开始
   useEffect(() => {
     if (items.length === 0) {
-      console.warn('项目列表为空')
+      console.warn(t('drawingComponents.cardFlip.emptyList'))
       return
     }
     
@@ -826,17 +828,17 @@ export function CardFlipGame({
   const renderGameStatus = () => {
     switch (gameState.gamePhase) {
       case 'shuffling':
-        return <div className="text-lg font-medium text-blue-600">正在洗牌...</div>
+        return <div className="text-lg font-medium text-blue-600">{t('drawingComponents.cardFlip.shuffling')}</div>
       case 'dealing':
-        return <div className="text-lg font-medium text-green-600">正在发牌...</div>
+        return <div className="text-lg font-medium text-green-600">{t('drawingComponents.cardFlip.dealing')}</div>
       case 'waiting':
-        return <div className="text-lg font-medium text-purple-600">点击卡牌进行翻牌</div>
+        return <div className="text-lg font-medium text-purple-600">{t('drawingComponents.cardFlip.waiting')}</div>
       case 'revealing':
-        return <div className="text-lg font-medium text-orange-600">翻牌中...</div>
+        return <div className="text-lg font-medium text-orange-600">{t('drawingComponents.cardFlip.revealing')}</div>
       case 'finished':
-        return <div className="text-lg font-medium text-red-600">抽奖完成！</div>
+        return <div className="text-lg font-medium text-red-600">{t('drawingComponents.cardFlip.finished')}</div>
       default:
-        return <div className="text-lg font-medium text-gray-600">准备中...</div>
+        return <div className="text-lg font-medium text-gray-600">{t('drawingComponents.cardFlip.ready')}</div>
     }
   }
 
@@ -849,7 +851,7 @@ export function CardFlipGame({
             <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
           <div className={cn("text-xl font-semibold text-red-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
-            游戏出错了
+            {t('drawingComponents.cardFlip.gameError')}
           </div>
           <div className={cn("text-red-600", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
             {error}
@@ -861,7 +863,7 @@ export function CardFlipGame({
             }}
             className={cn("bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors", `px-[${dynamicSpacing.spacing.responsive('md')}px] py-[${dynamicSpacing.spacing.responsive('sm')}px]`)}
           >
-            重新开始
+            {t('drawingComponents.cardFlip.restart')}
           </button>
         </div>
       </div>
@@ -873,10 +875,10 @@ export function CardFlipGame({
       <div className={cn("flex flex-col items-center justify-center", dynamicSpacing.cssClasses.container.padding, className)}>
         <div className="text-center">
           <div className={cn("text-xl font-semibold text-gray-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
-            项目列表为空
+            {t('drawingComponents.cardFlip.emptyList')}
           </div>
           <div className="text-gray-500">
-            请添加至少 1 个项目进行抽奖
+            {t('drawingComponents.cardFlip.emptyListMessage')}
           </div>
         </div>
       </div>
@@ -925,7 +927,7 @@ export function CardFlipGame({
             <div className="text-lg font-bold text-blue-800">{optimizedGameInfo.essential.drawQuantity}</div>
           </div>
           <div className="bg-green-50 rounded-lg p-3">
-            <div className="text-xs text-green-600 font-medium mb-1">总项目</div>
+            <div className="text-xs text-green-600 font-medium mb-1">总名称</div>
             <div className="text-lg font-bold text-green-800">{optimizedGameInfo.essential.totalItems}</div>
           </div>
         </div>

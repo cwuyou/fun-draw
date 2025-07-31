@@ -1,0 +1,503 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "language": "Language",
+    "switchLanguage": "Switch Language",
+    "current": "Current",
+    "languageHelp": "Language preference is saved automatically",
+    "locale": "en"
+  },
+  "navigation": {
+    "home": "Home",
+    "createList": "Create List",
+    "listLibrary": "List Library",
+    "features": "Features",
+    "modes": "Drawing Modes",
+    "useCases": "Use Cases",
+    "drawConfig": "Draw Config"
+  },
+  "home": {
+    "title": "Make Drawing More Fun",
+    "subtitle": "Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes",
+    "description": "Whether it's classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method.",
+    "startButton": "Start Drawing Now",
+    "demoButton": "View Demo",
+    "quickExperience": "Quick Experience",
+    "experienceDescription": "Choose a scenario and experience the charm of Fun Draw in 30 seconds",
+    "newExperienceBadge": "🎉 Brand New Multi-Mode Drawing Experience",
+    "newUserTip": "💡 New user? Click \"Quick Experience\" to instantly feel the charm of Fun Draw, no need to create lists!",
+    "newUserTipBold": "New user?",
+    "hero": {
+      "title": "Make Drawing More Fun",
+      "subtitle": "Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes,",
+      "description": "Whether it's classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method."
+    },
+    "features": {
+      "title": "Why Choose Fun Draw?",
+      "subtitle": "We've redefined the online drawing experience, making every draw full of anticipation and fun",
+      "items": {
+        "modes": {
+          "title": "Multiple Drawing Modes",
+          "description": "5 innovative animation effects, say goodbye to boring wheels"
+        },
+        "management": {
+          "title": "Convenient List Management",
+          "description": "Support manual input, batch import, local storage"
+        },
+        "rules": {
+          "title": "Flexible Drawing Rules",
+          "description": "Customize draw quantity, allow/disallow repeat winners"
+        },
+        "sharing": {
+          "title": "Result Sharing & Saving",
+          "description": "One-click copy, export files, continuous drawing"
+        }
+      }
+    },
+    "quickExperienceSection": {
+      "title": "Experience Fun Draw Now",
+      "subtitle": "No need to create lists, choose a scenario and start experiencing our innovative drawing modes immediately",
+      "advantages": {
+        "quick": {
+          "title": "30-Second Quick Experience",
+          "description": "Pre-set sample data, no preparation needed"
+        },
+        "templates": {
+          "title": "Multiple Scenario Templates",
+          "description": "Professional templates for classroom, corporate, party and other scenarios"
+        },
+        "complete": {
+          "title": "Complete Feature Display",
+          "description": "Experience the complete functionality and animation effects of all drawing modes"
+        }
+      }
+    },
+    "modes": {
+      "title": "Five Innovative Drawing Modes",
+      "subtitle": "Each mode has unique animation effects and sound effects, providing the best drawing experience for different scenarios"
+    },
+    "useCases": {
+      "title": "Use Cases",
+      "subtitle": "From education to enterprise, from entertainment to decision-making, Fun Draw can meet various drawing needs",
+      "items": {
+        "classroom": {
+          "title": "Classroom Teaching",
+          "description": "Random name calling, grouping, questioning, make classroom more interesting"
+        },
+        "corporate": {
+          "title": "Corporate Events",
+          "description": "Annual meeting lottery, team building activities, live interaction"
+        },
+        "party": {
+          "title": "Friend Gatherings",
+          "description": "Decision making, game selection, party entertainment"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Fun Drawing Journey?",
+      "subtitle": "No registration required, no download needed, just open your browser to use. Supports PC, tablet, and mobile platforms.",
+      "startButton": "Start Using for Free",
+      "learnMoreButton": "Learn More Features"
+    },
+    "footer": {
+      "copyright": "© 2025 Fun Draw - Make Drawing More Fun | Multi-Mode Fun Drawing Website"
+    }
+  },
+  "drawingModes": {
+    "slotMachine": {
+      "title": "Slot Machine",
+      "shortTitle": "Slot Machine",
+      "description": "Classic reel animation with thrilling drawing experience",
+      "features": [
+        "Classic slot machine reel effects",
+        "Configurable scroll speed and duration",
+        "Support multiple winners display",
+        "Sound effects enhance experience"
+      ]
+    },
+    "cardFlip": {
+      "title": "Card Drawing",
+      "shortTitle": "Card Drawing",
+      "description": "Elegant card flip animation like a magician's performance",
+      "features": [
+        "Beautiful card flip animations",
+        "Shuffle and deal process display",
+        "Customizable card styles",
+        "Support batch card reveal"
+      ]
+    },
+    "bulletScreen": {
+      "title": "Bullet Screen Scrolling",
+      "shortTitle": "Bullet Screen",
+      "description": "Fast scrolling freeze, dynamic selection process",
+      "altDescription": "Dynamic bullet screen effects, modern drawing method",
+      "features": [
+        "Smooth bullet screen scrolling effects",
+        "Adjustable bullet speed and density",
+        "Support colorful bullet display",
+        "Modern visual experience"
+      ]
+    },
+    "gridLottery": {
+      "title": "Multi-Grid Lottery",
+      "shortTitle": "Grid Lottery",
+      "description": "TV show style, light jumping freeze, full of ceremony",
+      "altDescription": "Classic grid jumping, single draw for one lucky winner",
+      "features": [
+        "Classic grid light jumping",
+        "Support 6/9/12/15 grid layouts",
+        "Single draw, unique result",
+        "Countdown adds tension"
+      ]
+    },
+    "blinkingNamePicker": {
+      "title": "Blinking Name Calling",
+      "shortTitle": "Blinking Name Picker",
+      "description": "Fast blinking freeze, fair random name calling experience",
+      "altDescription": "Fast blinking highlight, suitable for classroom name calling",
+      "features": [
+        "Fast blinking highlight effects",
+        "Configurable blink speed and colors",
+        "Support multiple selection",
+        "Suitable for teaching and team scenarios"
+      ]
+    }
+  },
+  "experienceTemplates": {
+    "classroomNaming": {
+      "name": "Classroom Naming",
+      "description": "Simulate random student name calling scenario, suitable for teaching interaction"
+    },
+    "prizeDrawing": {
+      "name": "Prize Drawing",
+      "description": "Simulate prize drawing scenario, suitable for various lottery activities"
+    },
+    "partyGame": {
+      "name": "Party Game",
+      "description": "Simulate friend party game selection scenario, add party fun"
+    },
+    "teamGrouping": {
+      "name": "Team Grouping",
+      "description": "Simulate random team member grouping scenario, suitable for team collaboration"
+    },
+    "departmentLottery": {
+      "name": "Department Lottery",
+      "description": "Simulate company department employee lottery scenario, suitable for team building"
+    },
+    "annualMeeting": {
+      "name": "Annual Meeting",
+      "description": "Simulate company annual meeting lottery scenario, create grand atmosphere"
+    }
+  },
+  "errors": {
+    "networkError": "Network connection failed, please check network settings",
+    "fileUploadError": "File upload failed, please try again",
+    "invalidFormat": "Invalid file format, please select the correct file",
+    "insufficientItems": "Insufficient items, please add more items",
+    "configurationError": "Configuration error, please check settings",
+    "animationError": "Animation playback failed, please refresh and try again",
+    "audioError": "Audio playback failed, please check audio settings",
+    "pageError": "An Error Occurred",
+    "pageErrorDescription": "Sorry, an error occurred while rendering the page",
+    "languageLoadError": "Language loading failed",
+    "translationMissing": "Translation missing",
+    "fallbackUsed": "Using fallback translation"
+  },
+  "status": {
+    "preparing": "Preparing...",
+    "processing": "Processing...",
+    "completed": "Completed",
+    "failed": "Failed",
+    "uploading": "Uploading...",
+    "parsing": "Parsing..."
+  },
+  "toast": {
+    "success": {
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully",
+      "uploaded": "Uploaded successfully",
+      "configured": "Configured successfully"
+    },
+    "error": {
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed",
+      "uploadFailed": "Upload failed",
+      "configFailed": "Configuration failed"
+    },
+    "warning": {
+      "unsavedChanges": "Unsaved changes",
+      "duplicateItems": "Duplicate items found",
+      "limitExceeded": "Limit exceeded"
+    }
+  },
+  "createList": {
+    "title": "Create List",
+    "subtitle": "Create your participant list",
+    "back": "Back",
+    "listInfo": "List Information",
+    "listInfoDescription": "Give your list an easily recognizable name",
+    "listName": "List Name",
+    "listNamePlaceholder": "e.g.: Class 3-2 Students, Annual Party Prize Pool... (Leave blank for auto-generated name)",
+    "addList": "Add List",
+    "addListDescription": "Choose the most suitable way to add drawing names",
+    "manualInput": "Manual Input",
+    "batchPaste": "Batch Paste",
+    "fileImport": "File Import",
+    "inputPlaceholder": "Enter name, press Enter or click Add",
+    "addButton": "Add",
+    "batchTextLabel": "Batch Text (one name per line)",
+    "batchTextPlaceholder": "John\nJane\nBob\nAlice",
+    "batchAddButton": "Batch Add",
+    "fileSupport": "Supports .txt and .csv files",
+    "fileEncoding": "File Encoding:",
+    "autoDetect": "Auto Detect",
+    "selectFile": "Select File",
+    "nameList": "Name List",
+    "itemsCount": "{{count}} names",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "saveToLibrary": "Save to Library",
+    "saveToLibraryAuto": "Save to Library (Auto-named)",
+    "quickDraw": "Quick Draw",
+    "saving": "Saving...",
+    "nameExists": "Name Already Exists",
+    "nameExistsDescription": "\"{{name}}\" is already in the list, please do not add duplicates",
+    "batchAddSuccess": "Batch Add Successful",
+    "batchAddSuccessDescription": "Added {{added}} names",
+    "batchAddSuccessWithDuplicates": "Added {{added}} names, automatically removed {{duplicates}} duplicates",
+    "batchDeleteSuccess": "Batch Delete Successful",
+    "batchDeleteSuccessDescription": "Deleted {{count}} names",
+    "fileImportSuccess": "File Import Successful",
+    "fileImportSuccessDescription": "Imported {{added}} names using {{encoding}} encoding",
+    "fileImportSuccessWithDuplicates": "Imported {{added}} names using {{encoding}} encoding, automatically removed {{duplicates}} duplicates",
+    "fileTooLarge": "File Too Large",
+    "fileTooLargeDescription": "Please upload files smaller than 5MB",
+    "fileParseError": "File Parse Error",
+    "fileParseErrorDescription": "Please check if the file format is correct",
+    "fileReadError": "File Read Error",
+    "fileReadErrorDescription": "Please check if the file is corrupted or try again",
+    "unsupportedEncoding": "Unsupported File Encoding",
+    "noValidData": "No Valid Data Found",
+    "addAtLeastOne": "Please add at least one name",
+    "saveSuccess": "List Saved Successfully",
+    "saveSuccessDescription": "List \"{{name}}\" has been saved to the library",
+    "saveSuccessAuto": "List saved successfully, auto-named as: \"{{name}}\"",
+    "saveSuccessWithDuplicates": "{{message}}, automatically removed {{duplicates}} duplicates",
+    "saveFailed": "Save Failed",
+    "saveFailedDescription": "Please try again later",
+    "dataRestored": "Data Restored",
+    "dataRestoredDescription": "Restored previous list data containing {{count}} names",
+    "preparingDraw": "Preparing to Draw",
+    "preparingDrawDescription": "Redirecting to draw configuration page...",
+    "jumpFailed": "Redirect Failed",
+    "jumpFailedDescription": "Unable to save list data, please try again"
+  },
+  "listLibrary": {
+    "title": "List Library",
+    "subtitle": "Manage your lists",
+    "back": "Back",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "newList": "New List",
+    "searchPlaceholder": "Search lists...",
+    "loading": "Loading...",
+    "noListsFound": "No matching lists found",
+    "noListsYet": "No saved lists yet",
+    "tryOtherKeywords": "Try searching with other keywords",
+    "createFirstList": "Create your first list to get started",
+    "createList": "Create List",
+    "itemsCount": "{{count}} names",
+    "use": "Use",
+    "loadFailed": "Load Failed",
+    "loadFailedDescription": "Unable to load list library",
+    "deleteConfirm": "Are you sure you want to delete list \"{{name}}\"? This action cannot be undone.",
+    "deleteSuccess": "Delete Successful",
+    "deleteSuccessDescription": "List \"{{name}}\" has been deleted",
+    "deleteFailed": "Delete Failed",
+    "batchDeleteConfirm": "Are you sure you want to delete the selected {{count}} lists? This action cannot be undone.",
+    "batchDeleteSuccess": "Batch Delete Successful",
+    "batchDeleteSuccessDescription": "Deleted {{count}} lists"
+  },
+  "drawConfig": {
+    "title": "Draw Configuration",
+    "subtitle": "Configure your drawing rules",
+    "back": "Back",
+    "loading": "Loading...",
+    "currentList": "Current List: {{name}}",
+    "itemsCount": "{{count}} names",
+    "itemsPreview": "Total {{count}} names: {{preview}}",
+    "selectMode": "Select Drawing Mode",
+    "selectModeDescription": "Each mode has unique animation effects and experience",
+    "drawSettings": "Drawing Settings",
+    "drawSettingsDescription": "Configure specific drawing parameters",
+    "drawQuantity": "Draw Quantity",
+    "allowRepeat": "Allow Repeat Winners",
+    "allowRepeatDescription": "When enabled, the same name can be drawn multiple times",
+    "startDraw": "Start Drawing",
+    "saveToLibrary": "Save to Library",
+    "saving": "Saving...",
+    "gridLotteryFeatures": "Grid Lottery Features",
+    "gridLotteryFeature1": "Only 1 winner per draw, creating focused lottery atmosphere",
+    "gridLotteryFeature2": "Select winner through light jumping and freezing, full of ceremony",
+    "gridLotteryFeature3": "Suitable for important prizes like annual meeting grand prizes, special awards",
+    "gridLotteryFeature4": "Supports 6, 9, 12, 15 grid layouts, automatically adapts to name count",
+    "gridLotteryFeature5": "When more than 15 names, system randomly selects 15 for lottery",
+    "oneWinner": "1 Winner",
+    "fixedQuantity": "Fixed Quantity",
+    "gridLotteryQuantityDescription": "Grid lottery focuses on single winner selection, creating stronger ceremony and anticipation",
+    "gridLotteryRepeatDescription": "In grid mode, enable this option to fill all grids when name count is less than grid count",
+    "quantityPlaceholder": "Enter quantity",
+    "pleaseCreateList": "Please Create List First",
+    "pleaseCreateListDescription": "Need to create or select a list before starting the draw",
+    "loadFailed": "Load Failed",
+    "loadFailedDescription": "Unable to load list data, please recreate list",
+    "listEmpty": "List Empty",
+    "listEmptyDescription": "No names available to save",
+    "listEmptyDrawDescription": "Please add drawing names first",
+    "saveSuccess": "List Saved Successfully",
+    "saveSuccessDescription": "List \"{{name}}\" has been saved to library",
+    "saveSuccessWithDuplicates": "{{message}}, automatically removed {{duplicates}} duplicates",
+    "saveFailed": "Save Failed",
+    "saveFailedDescription": "Please try again later",
+    "saveHint": "Save Hint",
+    "saveHintDescription": "Currently {{count}} names, grid lottery will randomly select 15 names to fill the grid",
+    "configError": "Configuration Error",
+    "gridLotteryOnlyOne": "Grid lottery mode can only draw 1 winner",
+    "nameCountHint": "Name Count Hint",
+    "nameCountHintDescription": "Currently {{count}} names, system will randomly select 15 names to fill grid for lottery",
+    "gridLotteryTip": "Tip",
+    "gridLotteryTipDescription": "Currently only {{count}} names, recommend enabling \"Allow Repeat Winners\" to fill all grids for better visual effect"
+  },
+  "blinkingNamePicker": {
+    "title": "Blinking Name Picker",
+    "loading": "Loading...",
+    "configLoadFailed": "Configuration load failed, please reconfigure",
+    "backToConfig": "Back to Config",
+    "backToHome": "Back to Home",
+    "backToConfigPage": "Back to Draw Configuration",
+    "restart": "Restart",
+    "restartTooltip": "Restart the draw",
+    "participants": "Participants: {{count}} people",
+    "drawCount": "Draw: {{count}} items",
+    "allowRepeat": "Allow Repeat",
+    "noRepeat": "No Repeat",
+    "experienceDataError": "Experience Data Error",
+    "experienceDataErrorDescription": "Experience mode configuration is invalid, please reselect",
+    "experienceTemplateError": "Experience Template Error",
+    "experienceTemplateErrorDescription": "Experience template data is invalid, please reselect",
+    "welcomeExperience": "Welcome to experience \"{{name}}\"",
+    "welcomeExperienceDescription": "This is demo data, you can start the draw experience directly",
+    "loadFailed": "Load Failed",
+    "loadFailedDescription": "Configuration loading error, please try again"
+  },
+  "quickExperience": {
+    "title": "Quick Experience",
+    "description": "Choose a scenario and experience the charm of Fun Draw in 30 seconds",
+    "oneClickExperience": "One-Click Experience",
+    "starting": "Starting...",
+    "selectScene": "Select Experience Scenario",
+    "welcomeFirstTime": "Welcome to Fun Draw! Choose a scenario to quickly experience our drawing features",
+    "welcomeReturning": "Choose a scenario to start the experience, each scenario has different drawing styles",
+    "quickStart": "Quick Start",
+    "quickStartDescription": "Use recommended scenario to start experience immediately, no selection needed",
+    "startNow": "Start Now",
+    "recommended": "Recommended",
+    "forYouRecommended": "Recommended for You",
+    "allScenes": "All Scenarios",
+    "viewMoreScenes": "View More Scenarios",
+    "exampleCount": "{{count}} examples",
+    "experienceTime": "About 30 seconds experience",
+    "examplePreview": "Examples: {{preview}}",
+    "experienceStart": "Experience Started!",
+    "experienceStartDescription": "Preparing \"{{name}}\" experience for you...",
+    "startFailed": "Start Failed",
+    "startFailedDescription": "Unable to start experience mode, please try again later"
+  },
+  "experienceFeedback": {
+    "title": "Experience Feedback",
+    "description": "Please provide feedback on your experience to help us improve our product",
+    "ratingQuestion": "How was your experience with \"{{templateName}}\"?",
+    "ratingDescription": "Please rate this experience",
+    "ratingInstructions": "Click stars to rate",
+    "ratingLabels": {
+      "1": "Very Dissatisfied",
+      "2": "Dissatisfied",
+      "3": "Neutral",
+      "4": "Satisfied", 
+      "5": "Very Satisfied"
+    },
+    "detailsTitle": "Tell us more",
+    "detailsDescription": "Your suggestions are important to us (optional)",
+    "recommendQuestion": "Would you recommend Fun Draw to friends?",
+    "recommend": "Would Recommend",
+    "notRecommend": "Would Not Recommend",
+    "commentsLabel": "Other thoughts or suggestions",
+    "commentsPlaceholder": "Share your experience, suggestions, or any issues you encountered...",
+    "backButton": "Back",
+    "submitButton": "Submit Feedback",
+    "submitting": "Submitting...",
+    "thanksTitle": "Thank you for your feedback!",
+    "thanksDescription": "Your feedback will help us provide better experiences for more users",
+    "completionMessage": "🎉 Experience completed! What's next:",
+    "createOwnList": "Create Your Own List",
+    "tryAnotherTemplate": "Try Another Scenario",
+    "skipFeedback": "Skip Feedback",
+    "feedbackSuccess": "Thank you for your feedback!",
+    "feedbackSuccessDescription": "Your feedback will help us improve the product experience",
+    "submitFailed": "Submit Failed",
+    "submitFailedDescription": "Failed to submit feedback, please try again later"
+  },
+  "experienceGuide": {
+    "title": "User Guide",
+    "description": "Welcome to Fun Draw, let us introduce the main features",
+    "welcome": {
+      "title": "Welcome to Fun Draw!",
+      "description": "We provide 5 innovative drawing modes to make drawing more fun",
+      "tip": "💡 Tip: You can use the \"One-Click Experience\" feature to get started quickly anytime"
+    },
+    "modes": {
+      "title": "Multiple Drawing Modes",
+      "description": "Slot machine, card flip, bullet screen, grid, blinking - each mode has unique animation effects",
+      "slotMachine": "Slot Machine",
+      "slotMachineDesc": "Classic & Thrilling",
+      "cardFlip": "Card Flip",
+      "cardFlipDesc": "Elegant & Mysterious",
+      "bulletScreen": "Bullet Screen",
+      "bulletScreenDesc": "Dynamic & Energetic",
+      "gridLottery": "Grid Lottery",
+      "gridLotteryDesc": "Ceremonial"
+    },
+    "scenarios": {
+      "title": "Multiple Use Cases",
+      "description": "Classroom teaching, corporate events, friend gatherings - there's always one that suits your scenario",
+      "selectPrompt": "Choose a scenario to start the experience:"
+    },
+    "templates": {
+      "classroomNaming": "Classroom Naming",
+      "classroomNamingDesc": "Simulate random student name calling scenario",
+      "annualMeeting": "Annual Meeting",
+      "annualMeetingDesc": "Company annual meeting prize drawing scenario",
+      "partyGame": "Party Game",
+      "partyGameDesc": "Friend party game selection scenario"
+    },
+    "skipGuide": "Skip Guide",
+    "nextStep": "Next Step"
+  }
+}

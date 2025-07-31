@@ -40,6 +40,7 @@ export class SoundManager {
         this.createSoundSafely('countdown', () => this.createCountdownSound()),
         this.createSoundSafely('highlight', () => this.createHighlightSound()),
         // 闪烁点名音效
+        this.createSoundSafely('blinking-start', () => this.createBlinkingStartSound()),
         this.createSoundSafely('tick', () => this.createTickSound()),
         this.createSoundSafely('slow-tick', () => this.createSlowTickSound()),
         this.createSoundSafely('select', () => this.createSelectSound()),
@@ -117,6 +118,7 @@ export class SoundManager {
       'card-reveal': 0.6,
       'countdown': 0.6,
       'highlight': 0.4,
+      'blinking-start': 0.4,
       'tick': 0.3,
       'slow-tick': 0.4,
       'select': 0.5,
@@ -545,6 +547,49 @@ export class SoundManager {
       }
     } else {
       audio.src = this.createSimpleBeep(1000, 0.1)
+    }
+    
+    audio.volume = 0.4
+    return audio
+  }
+
+  // 生成闪烁点名开始音效（专用的开始提示音）
+  private createBlinkingStartSound(): HTMLAudioElement {
+    const audio = new Audio()
+    
+    if (this.audioContext) {
+      try {
+        const duration = 0.8
+        const sampleRate = this.audioContext.sampleRate
+        const frameCount = sampleRate * duration
+        const buffer = this.audioContext.createBuffer(1, frameCount, sampleRate)
+        const channelData = buffer.getChannelData(0)
+        
+        // 生成闪烁点名专用的开始音效
+        for (let i = 0; i < frameCount; i++) {
+          const t = i / sampleRate
+          // 上升音调序列，表示开始
+          const frequencies = [330, 440, 550] // 三个音调的上升序列
+          const noteIndex = Math.floor(t * 6) % frequencies.length
+          const frequency = frequencies[noteIndex]
+          // 主音调
+          const tone = Math.sin(2 * Math.PI * frequency * t) * 0.4
+          // 电子音效果
+          const electronic = Math.sin(2 * Math.PI * frequency * 2 * t) * 0.1
+          // 渐强包络，营造开始的感觉
+          const envelope = Math.min(1, t * 4) * Math.exp(-t * 2)
+          
+          channelData[i] = (tone + electronic) * envelope
+        }
+        
+        const wavData = this.bufferToWav(buffer)
+        const blob = new Blob([wavData], { type: 'audio/wav' })
+        audio.src = URL.createObjectURL(blob)
+      } catch (error) {
+        audio.src = this.createSimpleBeep(440, 0.6)
+      }
+    } else {
+      audio.src = this.createSimpleBeep(440, 0.6)
     }
     
     audio.volume = 0.4

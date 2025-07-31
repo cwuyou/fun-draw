@@ -5,7 +5,7 @@
 A modern web-based lottery/drawing application that provides 5 different interactive drawing modes for various scenarios including education, corporate events, and social gatherings.
 
 ### Core Features
-- **Multi-mode drawing system**: Slot machine, blind box, card flip, bullet screen, and gashapon styles
+- **Multi-mode drawing system**: Slot machine, card flip, bullet screen, and blinking name picker styles
 - **List management**: Create, save, and manage participant lists with local storage
 - **Flexible drawing rules**: Configurable quantity and repeat settings
 - **Interactive animations**: Engaging visual effects with sound support

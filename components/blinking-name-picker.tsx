@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AlertTriangle, Play, Pause, RotateCcw } from 'lucide-react'
+import { useTranslation } from '@/hooks/use-translation'
 import { BlinkingDisplay } from './blinking-display'
 import { BlinkingControlPanel } from './blinking-control-panel'
 import { soundManager } from '@/lib/sound-manager'
@@ -34,13 +35,31 @@ export function BlinkingNamePicker({
   quantity,
   allowRepeat,
   onComplete,
+  onRestart,
   soundEnabled,
   className,
   autoStart = false
 }: BlinkingNamePickerProps) {
+  const { t } = useTranslation()
+  // 初始化游戏名称 - 在组件加载时就创建
+  const initialGameItems = useMemo(() => {
+    return items.map((item, index) => ({
+      id: `blinking-item-${item.id}`,
+      item,
+      isHighlighted: false,
+      isSelected: false,
+      highlightColor: DEFAULT_BLINKING_CONFIG.colors[0],
+      position: {
+        row: Math.floor(index / 4), // 假设4列布局
+        col: index % 4,
+        index
+      }
+    }))
+  }, [items])
+
   const [gameState, setGameState] = useState<BlinkingGameState>({
     phase: 'idle',
-    items: [],
+    items: initialGameItems, // 使用初始化的游戏名称
     currentHighlight: null,
     selectedItems: [],
     blinkingSpeed: DEFAULT_BLINKING_CONFIG.initialSpeed,
@@ -49,8 +68,28 @@ export function BlinkingNamePicker({
     startTime: 0
   })
 
+  // 当 items 或 quantity 变化时，更新游戏状态
+  useEffect(() => {
+    setGameState(prev => ({
+      ...prev,
+      items: initialGameItems,
+      totalRounds: quantity,
+      // 如果不在游戏进行中，重置到 idle 状态
+      phase: prev.phase === 'blinking' || prev.phase === 'slowing' ? prev.phase : 'idle',
+      selectedItems: prev.phase === 'blinking' || prev.phase === 'slowing' ? prev.selectedItems : [],
+      currentHighlight: prev.phase === 'blinking' || prev.phase === 'slowing' ? prev.currentHighlight : null
+    }))
+  }, [initialGameItems, quantity])
+
+
+
   const [config, setConfig] = useState<BlinkingConfig>(DEFAULT_BLINKING_CONFIG)
   const [localSoundEnabled, setLocalSoundEnabled] = useState(soundEnabled)
+
+  // 同步外部 soundEnabled 属性的变化
+  useEffect(() => {
+    setLocalSoundEnabled(soundEnabled)
+  }, [soundEnabled])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -77,6 +116,8 @@ export function BlinkingNamePicker({
     return () => {
       animationControllerRef.current?.stopBlinking()
       colorManagerRef.current?.reset()
+      // 清理所有音效
+      soundManager.stopAll()
     }
   }, [])
 
@@ -99,7 +140,7 @@ export function BlinkingNamePicker({
     }
   }, [])
 
-  // 初始化游戏项目
+  // 初始化游戏名称
   const initializeGameItems = useCallback((itemList: ListItem[]): BlinkingItem[] => {
     return itemList.map((item, index) => ({
       id: `blinking-item-${item.id}`,
@@ -115,7 +156,7 @@ export function BlinkingNamePicker({
     }))
   }, [config.colors])
 
-  // 选择随机项目
+  // 选择随机名称
   const selectRandomItem = useCallback((
     availableItems: BlinkingItem[], 
     excludeIndices: Set<number> = new Set()
@@ -125,7 +166,7 @@ export function BlinkingNamePicker({
       .filter(index => !excludeIndices.has(index))
     
     if (availableIndices.length === 0) {
-      throw new Error('没有可选择的项目')
+      throw new Error('没有可选择的名称')
     }
     
     return availableIndices[Math.floor(Math.random() * availableIndices.length)]
@@ -149,9 +190,12 @@ export function BlinkingNamePicker({
   const startBlinkingAnimation = useCallback((gameItems: BlinkingItem[], roundNumber: number) => {
     if (!animationControllerRef.current) return
 
-    // 播放开始音效
-    if (soundEnabled) {
-      soundManager.play('card-shuffle').catch(() => {
+    // 停止之前的动画，防止多个动画同时运行
+    animationControllerRef.current.stopBlinking()
+
+    // 播放闪烁点名专用开始音效
+    if (localSoundEnabled) {
+      soundManager.play('blinking-start').catch(() => {
         // 忽略音效错误
       })
     }
@@ -171,7 +215,7 @@ export function BlinkingNamePicker({
         }))
 
         // 播放闪烁音效
-        if (soundEnabled) {
+        if (localSoundEnabled) {
           soundManager.play('tick').catch(() => {
             // 忽略音效错误
           })
@@ -198,6 +242,12 @@ export function BlinkingNamePicker({
           const selectedItem = gameItems[selectedIndex].item
           
           setGameState(prev => {
+            // 防止超过目标数量的选择
+            if (prev.selectedItems.length >= quantity) {
+              console.warn('已达到目标数量，忽略额外的选择')
+              return prev
+            }
+            
             const newSelectedItems = [...prev.selectedItems, selectedItem]
             const updatedItems = prev.items.map((item, i) => ({
               ...item,
@@ -205,24 +255,25 @@ export function BlinkingNamePicker({
               isHighlighted: false
             }))
 
-            // 播放选中音效
-            if (soundEnabled) {
+            // 停止所有循环音效并播放选中音效
+            if (localSoundEnabled) {
+              soundManager.stopAll()
               soundManager.play('select').catch(() => {
                 // 忽略音效错误
               })
             }
 
             // 检查是否需要继续下一轮
-            if (roundNumber < quantity) {
+            if (newSelectedItems.length < quantity) {
               // 延迟开始下一轮
               setTimeout(() => {
                 if (!allowRepeat) {
-                  // 从可用项目中移除已选中的项目
+                  // 从可用名称中移除已选中的名称
                   const availableItems = updatedItems.filter(item => !item.isSelected)
                   if (availableItems.length > 0) {
                     startBlinkingAnimation(updatedItems, roundNumber + 1)
                   } else {
-                    // 没有更多可选项目，结束游戏
+                    // 没有更多可选名称，结束游戏
                     setGameState(current => ({ ...current, phase: 'finished' }))
                     onComplete(newSelectedItems)
                   }
@@ -243,8 +294,9 @@ export function BlinkingNamePicker({
             } else {
               // 所有轮次完成
               setTimeout(() => {
-                // 播放完成音效
-                if (soundEnabled) {
+                // 停止所有音效并播放完成音效
+                if (localSoundEnabled) {
+                  soundManager.stopAll()
                   soundManager.play('complete').catch(() => {
                     // 忽略音效错误
                   })
@@ -264,7 +316,7 @@ export function BlinkingNamePicker({
         }
       }
     )
-  }, [config, soundEnabled, quantity, allowRepeat, onComplete])
+  }, [config, localSoundEnabled, quantity, allowRepeat, onComplete])
 
   // 开始游戏
   const startGame = useCallback(() => {
@@ -272,7 +324,7 @@ export function BlinkingNamePicker({
       setError(null)
       
       if (items.length === 0) {
-        setError('项目列表为空，无法开始游戏')
+        setError(t('drawingComponents.blinkingNamePicker.emptyListError'))
         return
       }
 
@@ -282,30 +334,44 @@ export function BlinkingNamePicker({
       }
 
       if (!allowRepeat && quantity > items.length) {
-        setError('不允许重复时，抽取数量不能超过项目总数')
+        setError('不允许重复时，抽取数量不能超过名称总数')
+        return
+      }
+
+      // 检查动画控制器是否存在
+      if (!animationControllerRef.current) {
+        console.error('Animation controller not initialized')
+        setError(t('drawingComponents.blinkingNamePicker.animationControllerError'))
         return
       }
 
       setIsLoading(true)
 
-      const gameItems = initializeGameItems(items)
+      // 使用当前的游戏名称，重置它们的状态
+      const resetGameItems = gameState.items.map(item => ({
+        ...item,
+        isHighlighted: false,
+        isSelected: false,
+        highlightColor: config.colors[0]
+      }))
       
-      setGameState({
+      setGameState(prev => ({
+        ...prev,
         phase: 'blinking',
-        items: gameItems,
+        items: resetGameItems,
         currentHighlight: null,
         selectedItems: [],
         blinkingSpeed: config.initialSpeed,
         currentRound: 1,
         totalRounds: quantity,
         startTime: Date.now()
-      })
+      }))
 
       setIsLoading(false)
 
       // 开始第一轮闪烁动画
       setTimeout(() => {
-        startBlinkingAnimation(gameItems, 1)
+        startBlinkingAnimation(resetGameItems, 1)
       }, 100)
 
     } catch (err) {
@@ -313,20 +379,67 @@ export function BlinkingNamePicker({
       setError(errorMessage)
       setIsLoading(false)
     }
-  }, [items, quantity, allowRepeat, config, initializeGameItems, startBlinkingAnimation])
+  }, [items, quantity, allowRepeat, config, gameState.items, startBlinkingAnimation])
 
-  // 停止游戏
+  // 暂停游戏
+  const pauseGame = useCallback(() => {
+    animationControllerRef.current?.stopBlinking()
+    // 暂停时不重置颜色管理器，保持当前状态
+    // 暂停音效但不完全停止
+    soundManager.stopAll()
+    
+    setGameState(prev => ({
+      ...prev,
+      phase: 'paused'
+    }))
+  }, [])
+
+  // 恢复游戏
+  const resumeGame = useCallback(() => {
+    if (gameState.phase === 'paused') {
+      setGameState(prev => ({
+        ...prev,
+        phase: 'blinking'
+      }))
+      
+      // 恢复闪烁动画
+      setTimeout(() => {
+        startBlinkingAnimation(gameState.items, gameState.currentRound)
+      }, 100)
+    }
+  }, [gameState.phase, gameState.items, gameState.currentRound, startBlinkingAnimation])
+
+  // 停止游戏（完全停止并选择结果）
   const stopGame = useCallback(() => {
     animationControllerRef.current?.stopBlinking()
     colorManagerRef.current?.reset()
+    // 停止所有音效
+    soundManager.stopAll()
   }, [])
 
-  // 重置游戏
+  // 重置游戏（完全重置）
   const resetGame = useCallback(() => {
     stopGame()
+    
+    // 重新初始化动画控制器
+    if (animationControllerRef.current) {
+      animationControllerRef.current = new BlinkingAnimationController(config)
+    }
+    if (colorManagerRef.current) {
+      colorManagerRef.current = new ColorCycleManager(config.colors)
+    }
+    
+    // 重置游戏名称状态
+    const resetGameItems = initialGameItems.map(item => ({
+      ...item,
+      isHighlighted: false,
+      isSelected: false,
+      highlightColor: config.colors[0]
+    }))
+    
     setGameState({
       phase: 'idle',
-      items: [],
+      items: resetGameItems, // 使用重置后的游戏名称
       currentHighlight: null,
       selectedItems: [],
       blinkingSpeed: config.initialSpeed,
@@ -335,7 +448,40 @@ export function BlinkingNamePicker({
       startTime: 0
     })
     setError(null)
-  }, [stopGame, config.initialSpeed, quantity])
+  }, [stopGame, config, quantity, initialGameItems])
+
+  // 重新开始游戏（保持配置，重置选择状态）- 用于"再抽一次"
+  const restartGame = useCallback(() => {
+    stopGame()
+    
+    // 重新初始化动画控制器
+    if (animationControllerRef.current) {
+      animationControllerRef.current = new BlinkingAnimationController(config)
+    }
+    if (colorManagerRef.current) {
+      colorManagerRef.current = new ColorCycleManager(config.colors)
+    }
+    
+    // 重置游戏名称状态但保持配置
+    const resetGameItems = initialGameItems.map(item => ({
+      ...item,
+      isHighlighted: false,
+      isSelected: false,
+      highlightColor: config.colors[0]
+    }))
+    
+    setGameState(prev => ({
+      ...prev,
+      phase: 'idle',
+      items: resetGameItems,
+      currentHighlight: null,
+      selectedItems: [],
+      blinkingSpeed: config.initialSpeed,
+      currentRound: 0,
+      startTime: 0
+    }))
+    setError(null)
+  }, [stopGame, config, initialGameItems])
 
   // 游戏状态转换管理
   const transitionToPhase = useCallback((newPhase: BlinkingGameState['phase'], additionalState?: Partial<BlinkingGameState>) => {
@@ -349,6 +495,12 @@ export function BlinkingNamePicker({
   // 处理轮次完成
   const handleRoundComplete = useCallback((selectedItem: ListItem, selectedIndex: number) => {
     setGameState(prev => {
+      // 防止超过目标数量的选择
+      if (prev.selectedItems.length >= prev.totalRounds) {
+        console.warn('已达到目标数量，忽略额外的选择')
+        return prev
+      }
+      
       const newSelectedItems = [...prev.selectedItems, selectedItem]
       const updatedItems = prev.items.map((item, i) => ({
         ...item,
@@ -357,13 +509,13 @@ export function BlinkingNamePicker({
       }))
 
       // 播放选中音效
-      if (soundEnabled) {
+      if (localSoundEnabled) {
         soundManager.play('card-reveal').catch(() => {
           // 忽略音效错误
         })
       }
 
-      const isLastRound = prev.currentRound >= prev.totalRounds
+      const isLastRound = newSelectedItems.length >= prev.totalRounds
       
       if (isLastRound) {
         // 所有轮次完成
@@ -385,10 +537,10 @@ export function BlinkingNamePicker({
         
         setTimeout(() => {
           if (!allowRepeat) {
-            // 检查是否还有可选项目
+            // 检查是否还有可选名称
             const availableItems = updatedItems.filter(item => !item.isSelected)
             if (availableItems.length === 0) {
-              // 没有更多可选项目，提前结束
+              // 没有更多可选名称，提前结束
               transitionToPhase('finished')
               onComplete(newSelectedItems)
               return
@@ -418,7 +570,7 @@ export function BlinkingNamePicker({
         }
       }
     })
-  }, [soundEnabled, allowRepeat, onComplete, transitionToPhase, startBlinkingAnimation])
+  }, [localSoundEnabled, allowRepeat, onComplete, transitionToPhase, startBlinkingAnimation])
 
   // 进度跟踪
   const getProgress = useCallback(() => {
@@ -445,21 +597,12 @@ export function BlinkingNamePicker({
           if (gameState.phase === 'idle') {
             startGame()
           } else if (gameState.phase === 'blinking' || gameState.phase === 'slowing') {
-            stopGame()
+            pauseGame()
+          } else if (gameState.phase === 'paused') {
+            resumeGame()
           }
           break
-        case 'KeyR':
-          if (event.ctrlKey || event.metaKey) {
-            event.preventDefault()
-            resetGame()
-          }
-          break
-        case 'KeyS':
-          if (event.ctrlKey || event.metaKey) {
-            event.preventDefault()
-            setLocalSoundEnabled(prev => !prev)
-          }
-          break
+
         case 'Enter':
           if (gameState.phase === 'stopped' && getRemainingRounds() > 0) {
             event.preventDefault()
@@ -483,57 +626,113 @@ export function BlinkingNamePicker({
   const renderGameStatus = () => {
     switch (gameState.phase) {
       case 'blinking':
-        return <div className="text-lg font-medium text-blue-600">正在闪烁选择中...</div>
+        return <div className="text-lg font-medium text-blue-600">{t('drawingComponents.blinkingNamePicker.blinkingStatus')}</div>
       case 'slowing':
-        return <div className="text-lg font-medium text-orange-600">即将停止...</div>
+        return <div className="text-lg font-medium text-orange-600">{t('drawingComponents.blinkingNamePicker.slowingStatus')}</div>
       case 'stopped':
-        return <div className="text-lg font-medium text-green-600">选择完成！</div>
+        return <div className="text-lg font-medium text-green-600">{t('drawingComponents.blinkingNamePicker.stoppedStatus')}</div>
       case 'finished':
-        return <div className="text-lg font-medium text-purple-600">全部完成！</div>
+        return <div className="text-lg font-medium text-purple-600">{t('drawingComponents.blinkingNamePicker.finishedStatus')}</div>
       default:
-        return <div className="text-lg font-medium text-gray-600">准备开始</div>
+        return <div className="text-lg font-medium text-gray-600">{t('drawingComponents.blinkingNamePicker.readyStatus')}</div>
     }
   }
 
   // 错误状态显示
   if (error) {
+    const getErrorSolution = (errorMessage: string) => {
+      if (errorMessage.includes('名称列表为空')) {
+        return {
+          solution: '请返回配置页面添加参与者',
+          action: '返回配置',
+          actionFn: () => window.history.back()
+        }
+      }
+      if (errorMessage.includes('抽取数量必须大于0')) {
+        return {
+          solution: '请设置正确的抽取数量',
+          action: '返回配置',
+          actionFn: () => window.history.back()
+        }
+      }
+      if (errorMessage.includes('不允许重复时，抽取数量不能超过名称总数')) {
+        return {
+          solution: '请减少抽取数量或允许重复抽取',
+          action: '返回配置',
+          actionFn: () => window.history.back()
+        }
+      }
+      return {
+        solution: t('drawingComponents.blinkingNamePicker.checkConfigRetry'),
+        action: t('drawingComponents.blinkingNamePicker.restart'),
+        actionFn: () => {
+          setError(null)
+          resetGame()
+        }
+      }
+    }
+
+    const errorInfo = getErrorSolution(error)
+
     return (
       <div className={cn("flex flex-col items-center justify-center p-8", className)}>
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-600" />
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+            <AlertTriangle className="w-10 h-10 text-red-600" />
           </div>
-          <div className="text-xl font-semibold text-red-700 mb-2">
-            游戏出错了
+          <div className="text-2xl font-bold text-red-700 mb-3">
+            遇到问题了
           </div>
-          <div className="text-red-600 mb-4">
+          <div className="text-red-600 mb-4 text-lg">
             {error}
           </div>
-          <button
-            onClick={() => {
-              setError(null)
-              startGame()
-            }}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            重新开始
-          </button>
+          <div className="text-gray-600 mb-6 text-sm bg-gray-50 p-3 rounded-lg">
+            💡 解决方案：{errorInfo.solution}
+          </div>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={errorInfo.actionFn}
+              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+            >
+              {errorInfo.action}
+            </button>
+            <button
+              onClick={() => setError(null)}
+              className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium"
+            >
+              忽略错误
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
-  // 空项目列表
+  // 空名称列表
   if (items.length === 0) {
     return (
       <div className={cn("flex flex-col items-center justify-center p-8", className)}>
-        <div className="text-center">
-          <div className="text-xl font-semibold text-gray-700 mb-2">
-            项目列表为空
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl">📝</span>
           </div>
-          <div className="text-gray-500">
-            请添加至少 1 个项目进行抽奖
+          <div className="text-2xl font-bold text-gray-700 mb-3">
+            还没有参与者
           </div>
+          <div className="text-gray-500 mb-6 text-lg">
+            {t('drawingComponents.blinkingNamePicker.emptyListMessage')}
+          </div>
+          <div className="bg-blue-50 p-4 rounded-lg mb-6">
+            <div className="text-sm text-blue-700">
+              {t('drawingComponents.blinkingNamePicker.emptyListTip')}
+            </div>
+          </div>
+          <button
+            onClick={() => window.history.back()}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+          >
+            返回配置页面
+          </button>
         </div>
       </div>
     )
@@ -544,9 +743,17 @@ export function BlinkingNamePicker({
     return (
       <div className={cn("flex flex-col items-center justify-center p-8", className)}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-lg font-medium text-blue-600">
-            正在准备游戏...
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-2xl animate-pulse">⚡</span>
+            </div>
+          </div>
+          <div className="text-xl font-medium text-blue-600 mb-2">
+            {t('drawingComponents.blinkingNamePicker.preparingGame')}
+          </div>
+          <div className="text-sm text-gray-500">
+            {t('drawingComponents.blinkingNamePicker.aboutToStart')}
           </div>
         </div>
       </div>
@@ -562,7 +769,7 @@ export function BlinkingNamePicker({
     >
       {/* 隐藏的游戏说明，供屏幕阅读器使用 */}
       <div id="game-instructions" className="sr-only">
-        闪烁点名游戏。使用空格键开始或停止游戏，使用回车键继续下一轮，使用Ctrl+R重置游戏。
+        {t('drawingComponents.blinkingNamePicker.gameInstructions')}
       </div>
 
       {/* 游戏状态公告，供屏幕阅读器使用 */}
@@ -571,10 +778,10 @@ export function BlinkingNamePicker({
         aria-atomic="true" 
         className="sr-only"
       >
-        {gameState.phase === 'blinking' && '正在闪烁选择中'}
-        {gameState.phase === 'slowing' && '即将停止'}
-        {gameState.phase === 'stopped' && `选择完成，选中了 ${gameState.selectedItems[gameState.selectedItems.length - 1]?.name}`}
-        {gameState.phase === 'finished' && `游戏完成，共选中 ${gameState.selectedItems.length} 个项目`}
+        {gameState.phase === 'blinking' && t('drawingComponents.blinkingNamePicker.blinkingInProgress')}
+        {gameState.phase === 'slowing' && t('drawingComponents.blinkingNamePicker.aboutToStop')}
+        {gameState.phase === 'stopped' && t('drawingComponents.blinkingNamePicker.selectionComplete', { name: gameState.selectedItems[gameState.selectedItems.length - 1]?.name })}
+        {gameState.phase === 'finished' && t('drawingComponents.blinkingNamePicker.gameComplete', { count: gameState.selectedItems.length })}
       </div>
 
       {/* 控制面板 */}
@@ -583,7 +790,8 @@ export function BlinkingNamePicker({
         config={config}
         soundEnabled={localSoundEnabled}
         onStart={startGame}
-        onStop={stopGame}
+        onStop={pauseGame}
+        onResume={resumeGame}
         onReset={resetGame}
         onContinue={() => {
           const nextRound = gameState.currentRound + 1
@@ -592,7 +800,10 @@ export function BlinkingNamePicker({
             startBlinkingAnimation(gameState.items, nextRound)
           }, 200)
         }}
-        onSoundToggle={setLocalSoundEnabled}
+        onSoundToggle={(enabled) => {
+          setLocalSoundEnabled(enabled)
+          soundManager.setEnabled(enabled)
+        }}
         onConfigChange={(newConfig) => {
           setConfig(prev => ({ ...prev, ...newConfig }))
         }}
@@ -613,7 +824,7 @@ export function BlinkingNamePicker({
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-green-800 flex items-center gap-2">
               <span>🎉</span>
-              已选中项目 ({gameState.selectedItems.length})
+              {t('drawingComponents.blinkingNamePicker.selectedNames', { count: gameState.selectedItems.length })}
             </h3>
             
             {/* 操作按钮 */}
@@ -675,7 +886,7 @@ export function BlinkingNamePicker({
                 
                 {/* 选中时间戳或轮次信息 */}
                 <div className="text-xs text-gray-500">
-                  第 {index + 1} 轮选中
+                  {t('drawingComponents.blinkingNamePicker.roundSelected', { round: index + 1 })}
                 </div>
               </div>
             ))}
@@ -687,7 +898,7 @@ export function BlinkingNamePicker({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-green-600">{gameState.selectedItems.length}</div>
-                  <div className="text-xs text-gray-500">选中项目</div>
+                  <div className="text-xs text-gray-500">{t('drawingComponents.blinkingNamePicker.selectedCount')}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-blue-600">{gameState.totalRounds}</div>
@@ -695,7 +906,7 @@ export function BlinkingNamePicker({
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-purple-600">{items.length}</div>
-                  <div className="text-xs text-gray-500">候选项目</div>
+                  <div className="text-xs text-gray-500">候选名称</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-orange-600">
@@ -712,7 +923,7 @@ export function BlinkingNamePicker({
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-blue-700">
-                  还需要选择 {getRemainingRounds()} 个项目
+                  还需要选择 {getRemainingRounds()} 个名称
                 </div>
                 <button
                   onClick={() => {

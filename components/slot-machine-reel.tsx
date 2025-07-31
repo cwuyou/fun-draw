@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "@/hooks/use-translation"
 import type { ListItem } from "@/types"
 
 interface SlotMachineReelProps {
@@ -14,6 +15,7 @@ interface SlotMachineReelProps {
 type AnimationPhase = "idle" | "accelerating" | "spinning" | "decelerating" | "stopping" | "stopped"
 
 export function SlotMachineReel({ items, isSpinning, finalResult, onSpinComplete, delay = 0 }: SlotMachineReelProps) {
+  const { t } = useTranslation()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [spinSpeed, setSpinSpeed] = useState(100)
   const [hasCompleted, setHasCompleted] = useState(false)
@@ -22,7 +24,7 @@ export function SlotMachineReel({ items, isSpinning, finalResult, onSpinComplete
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const slowDownIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 创建扩展的项目列表用于无缝滚动
+  // 创建扩展的名称列表用于无缝滚动
   const extendedItems = [...items, ...items, ...items]
 
   // 重置状态的 effect - 当不在旋转且没有最终结果时重置
@@ -152,7 +154,7 @@ export function SlotMachineReel({ items, isSpinning, finalResult, onSpinComplete
         // 阶段5: 完全停止
         setTimeout(() => {
           setAnimationPhase("stopped")
-          console.log("滚轮停止，触发完成回调")
+          console.log(t('drawingComponents.slotMachine.reelStopped'))
           onSpinComplete?.()
         }, 500)
       }
@@ -199,7 +201,7 @@ export function SlotMachineReel({ items, isSpinning, finalResult, onSpinComplete
       {/* 中心指示器 */}
       <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 h-16 border-t-2 border-b-2 border-red-500 bg-red-500/20 z-10"></div>
 
-      {/* 滚动项目 */}
+      {/* 滚动名称 */}
       <div className="relative h-full flex flex-col justify-center">
         {getVisibleItems().map((visibleItem, index) => (
           <div

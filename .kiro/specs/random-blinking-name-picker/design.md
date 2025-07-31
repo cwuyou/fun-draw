@@ -41,6 +41,8 @@ interface BlinkingGameState {
 - 管理整个闪烁点名的生命周期
 - 协调子组件间的交互
 - 处理用户输入和配置
+- 确保页面初始化时正确显示参与者名单
+- 管理音效的播放和停止
 
 **接口设计**：
 ```typescript
@@ -58,8 +60,15 @@ interface BlinkingNamePickerProps {
 **核心方法**：
 - `startBlinking()`: 开始闪烁动画
 - `stopBlinking()`: 停止闪烁并选择结果
-- `resetGame()`: 重置游戏状态
+- `resetGame()`: 重置游戏状态（清空所有状态）
+- `restartGame()`: 重新开始游戏（保持配置，重置选择状态）
 - `handleSpeedTransition()`: 处理速度变化逻辑
+- `cleanupSounds()`: 清理所有音效
+
+**初始化逻辑**：
+- 页面加载时立即显示参与者名单网格
+- 不显示"暂无项目"状态（除非真的没有项目）
+- 显示抽奖配置信息和控制按钮
 
 ### 2. BlinkingDisplay 显示组件
 
@@ -97,8 +106,14 @@ interface BlinkingConfig {
 ```
 idle → blinking → slowing → stopped → finished
   ↑                                      ↓
-  ←←←←←←←←← resetGame() ←←←←←←←←←←←←←←←←←←
+  ←←←←←←← resetGame() ←←←←←←←←←←←←←←←←←←←
+  ↑                                      ↓
+  ←←←←←← restartGame() ←←←←←←←←←←←←←←←←←
 ```
+
+### 重新开始 vs 再抽一次的区别
+- **resetGame()**: 完全重置，清空所有状态，返回idle状态，显示初始界面
+- **restartGame()**: 保持配置和参与者名单，重置选择状态，直接开始新的闪烁
 
 ### 事件流设计
 1. **用户触发开始** → `startBlinking()`
@@ -107,6 +122,25 @@ idle → blinking → slowing → stopped → finished
 4. **选择确定** → 停止动画，播放音效
 5. **多轮选择** → 重复2-4步骤
 6. **完成选择** → 显示结果，触发回调
+
+### "再抽一次"功能设计
+```typescript
+interface DrawAgainFlow {
+  // 1. 用户在结果对话框点击"再抽一次"
+  onDrawAgain(): void {
+    // 2. 关闭结果对话框
+    setShowResult(false)
+    
+    // 3. 清理音效
+    soundManager.stopAllLoops()
+    
+    // 4. 重置选择状态但保持配置，返回idle状态
+    restartGame() // 设置为idle状态，显示参与者名单和"开始闪烁"按钮
+    
+    // 5. 用户可以点击"开始闪烁"按钮开始新抽奖（只需点击一次）
+  }
+}
+```
 
 ## 算法设计
 
@@ -148,6 +182,42 @@ function getBlinkingColor(timestamp: number, colors: string[]): string {
   return colors[colorIndex]
 }
 ```
+
+## 页面初始化设计
+
+### 初始化流程
+1. **配置加载**：从localStorage加载抽奖配置
+2. **配置验证**：验证配置完整性和模式匹配
+3. **参与者显示**：立即渲染参与者名单网格
+4. **控制面板**：显示抽奖信息和控制按钮
+5. **状态初始化**：设置为idle状态，等待用户开始
+
+### 初始状态显示
+```typescript
+interface InitialDisplayState {
+  // 显示所有参与者名单（非高亮状态）
+  items: BlinkingItem[]  // 所有项目可见，无高亮
+  
+  // 显示抽奖配置信息
+  configInfo: {
+    totalItems: number
+    quantity: number
+    allowRepeat: boolean
+  }
+  
+  // 控制按钮状态
+  controls: {
+    startButton: 'enabled'    // "开始闪烁"按钮可用
+    resetButton: 'enabled'    // "重新开始"按钮可用
+    settingsButton: 'enabled' // 设置按钮可用
+  }
+}
+```
+
+### 错误状态处理
+- **配置缺失**：显示"配置加载失败"，提供返回配置按钮
+- **参与者为空**：显示"参与者列表为空"，提供返回配置按钮
+- **配置无效**：显示具体错误信息，提供修复建议
 
 ## 界面设计
 
@@ -214,18 +284,39 @@ function getBlinkingColor(timestamp: number, colors: string[]): string {
 ### 音效文件规划
 ```typescript
 interface BlinkingSounds {
-  tick: string        // 闪烁节拍音效
-  slowTick: string    // 减速时的低频节拍
-  select: string      // 选中确认音效
-  complete: string    // 全部完成音效
+  blinkingStart: string  // 闪烁点名专用开始音效（开始时播放一次）
+  tick: string          // 闪烁节拍音效
+  slowTick: string      // 减速时的低频节拍
+  select: string        // 选中确认音效
+  complete: string      // 全部完成音效
 }
 ```
 
-### 音效播放策略
-- 闪烁时：播放节拍音效，频率与闪烁同步
-- 减速时：音效频率同步降低，音调逐渐变低
-- 选中时：播放清脆的确认音效
-- 完成时：播放成功完成音效
+### 音效播放策略和管理
+- **开始闪烁时**：播放一次闪烁点名专用开始音效（blinking-start），不循环
+- **闪烁过程中**：播放节拍音效，频率与闪烁同步
+- **减速时**：音效频率同步降低，音调逐渐变低
+- **选中时**：立即停止所有循环音效，播放确认音效
+- **完成时**：播放成功完成音效
+
+### 音效生命周期管理
+```typescript
+class SoundManager {
+  private activeLoops: Set<string> = new Set()
+  
+  playOnce(soundId: string): void
+  playLoop(soundId: string): void
+  stopLoop(soundId: string): void
+  stopAllLoops(): void
+  cleanup(): void  // 页面卸载时调用
+}
+```
+
+### 关键音效控制点
+1. **抽奖结果对话框弹出时**：调用`stopAllLoops()`停止所有音效
+2. **返回配置页面时**：调用`cleanup()`清理所有音效资源
+3. **开始新一轮抽奖时**：先停止上一轮音效再开始新音效
+4. **组件卸载时**：确保所有音效被正确清理
 
 ## 错误处理
 

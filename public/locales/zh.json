@@ -1,0 +1,962 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "close": "关闭",
+    "retry": "重试",
+    "refresh": "刷新",
+    "language": "语言",
+    "switchLanguage": "切换语言",
+    "current": "当前",
+    "languageHelp": "语言偏好会自动保存",
+    "locale": "zh"
+  },
+  "navigation": {
+    "home": "首页",
+    "createList": "创建名单",
+    "listLibrary": "名单库",
+    "features": "功能特色",
+    "modes": "抽奖模式",
+    "useCases": "使用场景",
+    "drawConfig": "抽奖配置"
+  },
+  "home": {
+    "title": "让抽奖变得更有趣",
+    "subtitle": "告别无聊的转盘抽奖！趣抽提供5种创新的抽奖动画模式",
+    "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。",
+    "startButton": "立即开始抽奖",
+    "demoButton": "查看演示",
+    "quickExperience": "一键体验",
+    "experienceDescription": "选择场景，30秒体验趣抽的魅力",
+    "newExperienceBadge": "🎉 全新多模式抽奖体验",
+    "newUserTip": "💡 新用户？点击\"一键体验\"立即感受趣抽魅力，无需创建名单！",
+    "newUserTipBold": "新用户？",
+    "hero": {
+      "title": "让抽奖变得更有趣",
+      "subtitle": "告别无聊的转盘抽奖！趣抽提供5种创新的抽奖动画模式，",
+      "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。"
+    },
+    "features": {
+      "title": "为什么选择趣抽？",
+      "subtitle": "我们重新定义了在线抽奖体验，让每一次抽奖都充满期待和乐趣",
+      "items": {
+        "modes": {
+          "title": "多种抽奖模式",
+          "description": "5种创新动画效果，告别无聊转盘"
+        },
+        "management": {
+          "title": "便捷名单管理",
+          "description": "支持手动输入、批量导入、本地存储"
+        },
+        "rules": {
+          "title": "灵活抽奖规则",
+          "description": "自定义抽奖数量，允许/禁止重复中奖"
+        },
+        "sharing": {
+          "title": "结果分享保存",
+          "description": "一键复制、导出文件、连续抽奖"
+        }
+      }
+    },
+    "quickExperienceSection": {
+      "title": "立即体验趣抽",
+      "subtitle": "无需创建名单，选择场景立即开始体验我们的创新抽奖模式",
+      "advantages": {
+        "quick": {
+          "title": "30秒快速体验",
+          "description": "预设示例数据，无需准备"
+        },
+        "templates": {
+          "title": "多种场景模板",
+          "description": "课堂、企业、聚会等场景专业模板"
+        },
+        "complete": {
+          "title": "完整功能展示",
+          "description": "体验所有抽奖模式的完整功能和动画效果"
+        }
+      }
+    },
+    "modes": {
+      "title": "五种创新抽奖模式",
+      "subtitle": "每种模式都有独特的动画效果和音效，为不同场景提供最佳抽奖体验"
+    },
+    "useCases": {
+      "title": "使用场景",
+      "subtitle": "从教育到企业，从娱乐到决策，趣抽能满足各种抽奖需求",
+      "items": {
+        "classroom": {
+          "title": "课堂教学",
+          "description": "随机点名、分组、提问，让课堂更有趣"
+        },
+        "corporate": {
+          "title": "企业活动",
+          "description": "年会抽奖、团建活动、现场互动"
+        },
+        "party": {
+          "title": "朋友聚会",
+          "description": "决策选择、游戏选择、聚会娱乐"
+        }
+      }
+    },
+    "cta": {
+      "title": "准备开始你的趣抽之旅了吗？",
+      "subtitle": "无需注册，无需下载，打开浏览器即可使用。支持电脑、平板、手机多平台。",
+      "startButton": "免费开始使用",
+      "learnMoreButton": "了解更多功能"
+    },
+    "footer": {
+      "copyright": "© 2025 趣抽 - 让抽奖变得更有趣 | 多模式趣味抽奖网站"
+    }
+  },
+  "drawingModes": {
+    "slotMachine": {
+      "title": "老虎机抽奖",
+      "shortTitle": "老虎机",
+      "description": "经典转轮动画，刺激的抽奖体验",
+      "features": [
+        "经典老虎机转轮效果",
+        "可配置滚动速度和时长",
+        "支持多个中奖者显示",
+        "音效增强体验感"
+      ],
+      "detailed": {
+        "howItWorks": "模拟真实老虎机的转轮效果，名称在转轮中快速滚动，经过加速、匀速、减速三个阶段后停止",
+        "bestFor": "适合娱乐性强的抽奖场景，如年会抽奖、游戏选择、奖品抽取等",
+        "tips": [
+          "转轮会自动经历加速和减速过程",
+          "可以同时显示多个转轮进行多人抽取",
+          "配合音效使用效果更佳",
+          "适合营造紧张刺激的氛围"
+        ],
+        "scenarios": [
+          "公司年会大奖抽取",
+          "聚会游戏选择",
+          "促销活动抽奖",
+          "娱乐节目互动"
+        ]
+      }
+    },
+    "cardFlip": {
+      "title": "卡牌抽奖",
+      "shortTitle": "卡牌抽奖",
+      "description": "优雅的翻牌动画，如魔术师般的表演",
+      "features": [
+        "精美的卡牌翻转动画",
+        "洗牌发牌过程展示",
+        "可自定义卡牌样式",
+        "支持批量翻牌揭晓"
+      ],
+      "detailed": {
+        "howItWorks": "先进行洗牌动画，然后逐张发牌到指定位置，参与者点击卡牌进行翻转查看结果",
+        "bestFor": "适合需要神秘感和仪式感的抽奖场景，如神秘礼品、特殊奖励等",
+        "tips": [
+          "每张卡牌都可以单独翻转",
+          "支持自定义卡牌背面设计",
+          "翻牌顺序由参与者自由选择",
+          "适合小到中等数量的抽奖"
+        ],
+        "scenarios": [
+          "神秘礼品抽取",
+          "特殊奖励分配",
+          "团队角色分配",
+          "游戏道具选择"
+        ]
+      }
+    },
+    "bulletScreen": {
+      "title": "弹幕滚动抽奖",
+      "shortTitle": "弹幕抽奖",
+      "description": "快速滚动定格，动感的选择过程",
+      "altDescription": "动感弹幕效果，现代化抽奖方式",
+      "features": [
+        "流畅的弹幕滚动效果",
+        "可调节弹幕速度和密度",
+        "支持彩色弹幕显示",
+        "现代化视觉体验"
+      ],
+      "detailed": {
+        "howItWorks": "名称以弹幕形式快速滚动，经过加速、匀速、减速阶段后高亮显示最终选中的结果",
+        "bestFor": "适合现代化、科技感强的场景，特别受年轻群体喜爱",
+        "tips": [
+          "弹幕滚动速度会自动调节",
+          "支持多彩弹幕效果",
+          "最终结果会特别高亮显示",
+          "适合大屏幕和投影展示"
+        ],
+        "scenarios": [
+          "科技公司活动抽奖",
+          "游戏社区互动",
+          "直播平台抽奖",
+          "年轻群体聚会活动"
+        ]
+      },
+      "back": "返回",
+      "backToHome": "返回首页",
+      "configLost": "配置丢失",
+      "reconfigureRequired": "请重新配置抽奖参数",
+      "modeError": "模式错误",
+      "bulletScreenOnly": "当前页面仅支持弹幕滚动模式",
+      "loadFailed": "加载失败",
+      "configLoadError": "无法加载抽奖配置",
+      "itemCount": "{{count}} 名称",
+      "drawQuantity": "抽取 {{quantity}} 个",
+      "readyToStart": "准备开始",
+      "scrolling": "弹幕滚动中...",
+      "aboutToStop": "即将定格...",
+      "drawComplete": "抽奖完成！",
+      "scrollingInProgress": "弹幕快速滚动中，请稍候...",
+      "startDraw": "开始抽奖",
+      "scrollingStatus": "滚动中...",
+      "resultWillShow": "结果即将显示...",
+      "modeDisplayName": "弹幕滚动式"
+    },
+    "gridLottery": {
+      "title": "多宫格抽奖",
+      "shortTitle": "宫格抽奖",
+      "description": "电视节目风格，灯光跳跃定格，仪式感满满",
+      "altDescription": "经典宫格跳跃，单次抽取一位幸运儿",
+      "features": [
+        "经典宫格灯光跳跃",
+        "支持6/9/12/15宫格布局",
+        "单次抽取，结果唯一",
+        "倒计时增加紧张感"
+      ],
+      "detailed": {
+        "howItWorks": "将参与者排列在网格中，灯光在格子间快速跳跃，最终停留在选中的格子上",
+        "bestFor": "适合正式场合的单人抽取，如大奖抽取、重要角色选择等",
+        "tips": [
+          "每次只能抽取一个结果",
+          "网格布局会根据人数自动调整",
+          "跳跃速度逐渐减慢增加悬念",
+          "适合重要奖项的抽取"
+        ],
+        "scenarios": [
+          "年会特等奖抽取",
+          "重要职位选择",
+          "单一大奖分配",
+          "VIP客户选择"
+        ]
+      }
+    },
+    "blinkingNamePicker": {
+      "title": "闪烁点名",
+      "shortTitle": "闪烁点名",
+      "description": "快速闪烁定格，公平的随机点名体验",
+      "altDescription": "快速闪烁高亮，适合课堂点名",
+      "features": [
+        "快速闪烁高亮效果",
+        "可配置闪烁速度和颜色",
+        "支持多人选择",
+        "适合教学和团队场景"
+      ],
+      "detailed": {
+        "howItWorks": "闪烁点名通过快速高亮显示名称，然后逐渐减速直至停止在随机选中的名称上",
+        "bestFor": "最适合课堂教学、团队会议、随机点名等需要公平选择的场景",
+        "tips": [
+          "可以通过空格键控制开始和停止",
+          "支持连续多轮抽取",
+          "闪烁速度会自动调节以增加悬念",
+          "适合大屏幕展示，效果更佳"
+        ],
+        "scenarios": [
+          "课堂随机点名回答问题",
+          "会议中选择发言人",
+          "团队活动分组选择",
+          "培训中的互动环节"
+        ]
+      }
+    }
+  },
+
+  "quickExperience": {
+    "title": "一键体验",
+    "description": "选择场景，30秒体验趣抽的魅力",
+    "oneClickExperience": "一键体验",
+    "starting": "启动中...",
+    "selectScene": "选择体验场景",
+    "welcomeFirstTime": "欢迎使用趣抽！选择一个场景快速体验我们的抽奖功能",
+    "welcomeReturning": "选择场景开始体验，每个场景都有不同的抽奖风格",
+    "quickStart": "快速开始",
+    "quickStartDescription": "使用推荐场景立即开始体验，无需选择",
+    "startNow": "立即开始",
+    "recommended": "推荐",
+    "forYouRecommended": "为你推荐",
+    "allScenes": "全部场景",
+    "viewMoreScenes": "查看更多场景",
+    "exampleCount": "{{count}}个示例",
+    "experienceTime": "约30秒体验",
+    "examplePreview": "示例：{{preview}}",
+    "experienceStart": "体验开始！",
+    "experienceStartDescription": "正在为你准备\"{{name}}\"体验...",
+    "startFailed": "启动失败",
+    "startFailedDescription": "无法启动体验模式，请稍后重试"
+  },
+  "createList": {
+    "title": "创建名单",
+    "back": "返回",
+    "itemsCount": "{{count}} 个名称",
+    "listInfo": "名单信息",
+    "listInfoDescription": "为你的名单起个名字，方便后续管理",
+    "listName": "名单名称",
+    "listNamePlaceholder": "输入名单名称（可选，系统会自动生成）",
+    "addList": "添加名称",
+    "addListDescription": "通过多种方式快速添加参与者名称",
+    "manualInput": "手动输入",
+    "smartPaste": "智能粘贴",
+    "fileImport": "文件导入",
+    "inputPlaceholder": "输入参与者姓名",
+    "addButton": "添加",
+    "smartPastePlaceholder": "粘贴或输入名单内容...\n\n支持格式：\n• 每行一个名称\n• 1. 张三\n• 张三,学生,18\n• 张三\t学生\t18",
+    "nameList": "名称列表",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "deleteSelected": "删除选中 ({{count}})",
+    "saveToLibrary": "保存到名单库",
+    "saveToLibraryAuto": "保存到名单库",
+    "quickDraw": "快速抽奖",
+    "saving": "保存中...",
+    "preparingDraw": "准备抽奖",
+    "preparingDrawDescription": "正在跳转到抽奖配置页面...",
+    "addAtLeastOne": "请至少添加一个名称",
+    "nameExists": "名称已存在",
+    "nameExistsDescription": "名称\"{{name}}\"已存在，请输入其他名称",
+    "batchAddSuccess": "批量添加成功",
+    "batchAddSuccessDescription": "成功添加 {{added}} 个名称",
+    "batchAddSuccessWithDuplicates": "成功添加 {{added}} 个名称，去除 {{duplicates}} 个重复项",
+    "batchDeleteSuccess": "批量删除成功",
+    "batchDeleteSuccessDescription": "成功删除 {{count}} 个名称",
+    "fileImportSuccess": "文件导入成功",
+    "fileImportSuccessDescription": "成功导入 {{added}} 个名称",
+    "fileImportSuccessWithDuplicates": "成功导入 {{added}} 个名称，去除 {{duplicates}} 个重复项",
+    "saveSuccess": "保存成功",
+    "saveSuccessDescription": "名单\"{{name}}\"已保存到名单库",
+    "saveSuccessAuto": "名单\"{{name}}\"已保存到名单库",
+    "saveSuccessWithDuplicates": "{{message}}，去除 {{duplicates}} 个重复项",
+    "saveFailed": "保存失败",
+    "saveFailedDescription": "保存名单时出现错误，请重试",
+    "jumpFailed": "跳转失败",
+    "jumpFailedDescription": "无法跳转到抽奖配置页面，请重试",
+    "dataRestored": "数据已恢复",
+    "dataRestoredDescription": "已恢复之前编辑的 {{count}} 个名称"
+  },
+  "slotMachine": {
+    "title": "老虎机抽奖",
+    "back": "返回",
+    "backToHome": "返回首页",
+    "welcomeExperience": "欢迎体验\"{{name}}\"",
+    "demoDescription": "这是演示数据，您可以直接开始抽奖体验",
+    "configLost": "配置丢失",
+    "reconfigureRequired": "请重新配置抽奖参数",
+    "modeError": "模式错误",
+    "slotMachineOnly": "当前页面仅支持老虎机模式",
+    "loadFailed": "加载失败",
+    "configLoadError": "无法加载抽奖配置",
+    "itemCount": "{{count}} 名称",
+    "drawQuantity": "抽取 {{quantity}} 个",
+    "readyToStart": "准备开始",
+    "drawing": "正在抽奖...",
+    "aboutToReveal": "即将揭晓...",
+    "drawComplete": "抽奖完成！",
+    "drawingInProgress": "抽奖进行中，请稍候...",
+    "startDraw": "开始抽奖",
+    "resultWillShow": "结果即将显示...",
+    "modeDisplayName": "老虎机式"
+  },
+  "cardFlip": {
+    "soundInitFailed": "音效初始化失败",
+    "soundMayNotWork": "音效功能可能无法正常工作",
+    "configLost": "配置丢失",
+    "reconfigureRequired": "请重新配置抽奖参数",
+    "configError": "配置错误",
+    "configFormatError": "抽奖配置数据格式不正确",
+    "modeError": "模式错误",
+    "cardFlipOnly": "当前页面仅支持卡牌抽取式模式",
+    "insufficientNames": "名称不足",
+    "minThreeNames": "卡牌抽奖至少需要3个名称",
+    "quantityError": "数量错误",
+    "quantityRange": "抽取数量必须在1-10之间",
+    "loadFailed": "加载失败",
+    "configLoadError": "无法加载抽奖配置，请重新配置",
+    "cannotDrawAgain": "无法再次抽奖",
+    "insufficientRemaining": "剩余名称不足，需要 {{needed}} 个名称，但只剩 {{remaining}} 个"
+  },
+  "quickConfig": {
+    "title": "快速配置",
+    "description": "选择预设配置模板，一键设置抽奖参数，省时省力",
+    "cannotApply": "无法应用配置",
+    "addParticipantsFirst": "请先添加参与者名单",
+    "configApplied": "配置已应用",
+    "configAppliedDesc": "已应用\"{{name}}\"配置，抽取数量：{{quantity}}",
+    "applyFailed": "应用配置失败",
+    "applyError": "配置应用过程中出现错误，请重试",
+    "recommended": "推荐",
+    "applied": "已应用",
+    "smartRecommendations": "智能推荐",
+    "frequentConfigs": "常用配置",
+    "allTemplates": "所有配置模板"
+  },
+  "drawConfig": {
+    "title": "抽奖配置",
+    "back": "返回",
+    "loading": "加载中...",
+    "itemsCount": "{{count}} 个参与者",
+    "currentList": "当前名单：{{name}}",
+    "itemsPreview": "共 {{count}} 个参与者：{{preview}}",
+    "configurationSettings": "抽奖配置",
+    "configurationSettingsDescription": "选择快速配置模板或详细设置抽奖参数",
+    "quickConfig": "快速配置",
+    "detailedConfig": "详细配置",
+    "selectMode": "选择抽奖模式",
+    "selectModeDescription": "不同模式有不同的动画效果和适用场景",
+    "drawSettings": "抽奖设置",
+    "drawSettingsDescription": "配置抽奖数量和重复规则",
+    "drawQuantity": "抽取数量",
+    "quantityPlaceholder": "输入抽取数量",
+    "allowRepeat": "允许重复中奖",
+    "allowRepeatDescription": "是否允许同一个人多次中奖",
+    "oneWinner": "1 位获奖者",
+    "fixedQuantity": "固定数量",
+    "gridLotteryFeatures": "多宫格抽奖特色",
+    "gridLotteryFeature1": "经典宫格灯光跳跃效果",
+    "gridLotteryFeature2": "单次抽取，结果唯一",
+    "gridLotteryFeature3": "支持6-15个宫格布局",
+    "gridLotteryFeature4": "倒计时增加紧张感",
+    "gridLotteryFeature5": "适合大奖抽取场景",
+    "gridLotteryQuantityDescription": "多宫格抽奖固定为单次抽取模式",
+    "gridLotteryRepeatDescription": "宫格布局会根据是否允许重复自动调整",
+    "startDraw": "开始抽奖",
+    "saveToLibrary": "保存到名单库",
+    "saving": "保存中...",
+    "pleaseCreateList": "请先创建名单",
+    "pleaseCreateListDescription": "需要先创建参与者名单才能进行抽奖配置",
+    "loadFailed": "加载失败",
+    "loadFailedDescription": "无法加载名单数据，请重新创建",
+    "listEmpty": "名单为空",
+    "listEmptyDescription": "请先添加参与者名单",
+    "listEmptyDrawDescription": "请先添加参与者才能开始抽奖",
+    "configError": "配置错误",
+    "gridLotteryOnlyOne": "多宫格抽奖只能抽取1个获奖者",
+    "nameCountHint": "参与者较多",
+    "nameCountHintDescription": "当前有 {{count}} 个参与者，建议使用宫格布局",
+    "gridLotteryTip": "宫格抽奖提示",
+    "gridLotteryTipDescription": "当前有 {{count}} 个参与者，宫格布局效果更佳",
+    "saveSuccess": "保存成功",
+    "saveSuccessDescription": "名单\"{{name}}\"已保存到名单库",
+    "saveSuccessWithDuplicates": "{{message}}，去除 {{duplicates}} 个重复项",
+    "saveFailed": "保存失败",
+    "saveFailedDescription": "保存名单时出现错误，请重试",
+    "saveHint": "保存提示",
+    "saveHintDescription": "当前有 {{count}} 个参与者，适合多宫格抽奖"
+  },
+  "drawResult": {
+    "title": "抽奖结果",
+    "congratulations": "恭喜获奖者！",
+    "congratulationsMultiple": "恭喜以下幸运儿！",
+    "winner": "获奖者",
+    "winnersList": "中奖名单",
+    "oneWinner": "1 位获奖者",
+    "multipleWinners": "{{count}} 位中奖",
+    "copyResult": "复制结果",
+    "exportFile": "导出文件",
+    "exporting": "导出中...",
+    "drawAgain": "🎲 再抽一次",
+    "goHome": "返回首页",
+    "copySuccess": "复制成功",
+    "copySuccessDescription": "中奖名单已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "copyFailedDescription": "请手动复制结果",
+    "exportSuccess": "导出成功",
+    "exportSuccessDescription": "抽奖结果已保存为文件",
+    "exportFailed": "导出失败",
+    "exportFailedDescription": "请稍后重试"
+  },
+  "fileUpload": {
+    "dragToUpload": "拖拽文件到此处或点击上传",
+    "clickToSelect": "点击选择文件",
+    "supportedFormats": "支持 {{formats}} 格式，最大 {{maxSize}}MB",
+    "selectFile": "选择文件",
+    "takePhoto": "拍照识别",
+    "releaseToUpload": "释放文件开始上传",
+    "processing": "处理中...",
+    "processingFile": "正在处理文件...",
+    "completed": "处理完成",
+    "failed": "处理失败",
+    "fileName": "文件名：",
+    "fileSize": "文件大小：",
+    "parsedItems": "解析出：",
+    "processingTime": "处理时间：",
+    "itemsCount": "{{count}} 个名称",
+    "duplicatesRemoved": "已自动去除 {{count}} 个重复名称",
+    "reupload": "重新上传",
+    "retry": "重试",
+    "fileProcessSuccess": "文件处理成功",
+    "fileProcessSuccessDesc": "已从 {{fileName}} 中解析出 {{count}} 个名称",
+    "fileProcessFailed": "文件处理失败",
+    "fileSizeExceeded": "文件大小超过 {{maxSize}}MB 限制",
+    "unsupportedFormat": "不支持的文件格式，请使用 {{formats}} 格式",
+    "mobileUploadTip": "移动端上传提示",
+    "desktopUploadTip": "桌面端上传提示",
+    "mobileInstructions": {
+      "selectFromGallery": "点击\"选择文件\"从相册或文件管理器选择",
+      "takePhotoToRecognize": "点击\"拍照识别\"直接拍摄文档进行识别",
+      "shareFromOtherApps": "支持从其他应用分享文件到此页面"
+    },
+    "desktopInstructions": {
+      "dragAndDrop": "直接拖拽文件到上传区域",
+      "supportedFormats": "支持 TXT 和 CSV 格式文件",
+      "smartParsing": "自动识别内容格式并智能解析"
+    }
+  },
+  "smartPaste": {
+    "title": "智能内容粘贴",
+    "description": "支持多种格式自动识别，粘贴后将智能解析名单内容",
+    "placeholder": "粘贴或输入名单内容...\n\n支持格式：\n• 每行一个名称\n• 1. 张三\n• 张三,学生,18\n• 张三\t学生\t18",
+    "characterCount": "{{current}}/{{max}}",
+    "detectedFormat": "检测格式：{{format}}",
+    "confidence": "置信度 {{percent}}%",
+    "preview": "预览",
+    "hide": "隐藏",
+    "smartParse": "智能解析",
+    "parsing": "解析中...",
+    "clear": "清空",
+    "parsePreview": "解析预览",
+    "willParseItems": "将解析出以下 {{count}} 个名称",
+    "showingFirst": " (显示前 {{count}} 个)",
+    "moreItems": "还有 {{count}} 个名称...",
+    "contentTooLong": "内容过长",
+    "contentTooLongDesc": "粘贴内容超过 {{maxLength}} 字符限制",
+    "contentPasted": "内容已粘贴",
+    "contentPastedDesc": "正在智能分析格式...",
+    "pleaseInputContent": "请输入内容",
+    "pleaseInputContentDesc": "请先粘贴或输入要解析的名单内容",
+    "parseSuccess": "解析成功",
+    "parseSuccessDesc": "已解析出 {{count}} 个名称",
+    "parseSuccessWithDuplicates": "已解析出 {{count}} 个名称，去除 {{duplicates}} 个重复项",
+    "parseFailed": "解析失败",
+    "parseFailedDesc": "未能从内容中解析出有效的名称",
+    "parseError": "内容解析过程中出现错误，请检查格式",
+    "formatNames": {
+      "numberedList": "带序号列表",
+      "commaSeparated": "逗号分隔",
+      "tabSeparated": "制表符分隔",
+      "lineSeparated": "按行分隔",
+      "mixedFormat": "混合格式",
+      "unknown": "未知格式"
+    },
+    "supportedFormats": "智能解析支持的格式：",
+    "formatExamples": {
+      "numbered": "带序号：1. 张三",
+      "lineSeparated": "按行分隔：每行一个",
+      "commaSeparated": "逗号分隔：张三,李四",
+      "tabSeparated": "制表符分隔：表格数据"
+    },
+    "notNameListFormat": "内容可能不是名单格式"
+  },
+  "experienceTemplates": {
+    "classroomNaming": {
+      "name": "课堂点名",
+      "description": "模拟班级学生随机点名场景，适合教学互动",
+      "tags": {
+        "0": "教育",
+        "1": "课堂", 
+        "2": "点名",
+        "3": "学生"
+      }
+    },
+    "prizeDrawing": {
+      "name": "奖品抽取", 
+      "description": "模拟奖品抽取场景，适合各种抽奖活动",
+      "tags": {
+        "0": "奖品",
+        "1": "抽奖",
+        "2": "活动", 
+        "3": "礼品"
+      }
+    },
+    "partyGame": {
+      "name": "聚会游戏",
+      "description": "模拟朋友聚会游戏选择场景，增加聚会乐趣", 
+      "tags": {
+        "0": "聚会",
+        "1": "游戏",
+        "2": "娱乐",
+        "3": "朋友"
+      }
+    },
+    "teamGrouping": {
+      "name": "团队分组",
+      "description": "模拟团队成员随机分组场景，适合团队协作",
+      "tags": {
+        "0": "团队",
+        "1": "分组",
+        "2": "协作",
+        "3": "随机"
+      }
+    },
+    "departmentLottery": {
+      "name": "部门抽奖",
+      "description": "模拟公司部门员工抽奖场景，适合团建活动",
+      "tags": {
+        "0": "企业",
+        "1": "团建",
+        "2": "员工",
+        "3": "抽奖"
+      }
+    },
+    "annualMeeting": {
+      "name": "年会大奖",
+      "description": "模拟公司年会抽奖场景，营造隆重氛围",
+      "tags": {
+        "0": "年会",
+        "1": "大奖",
+        "2": "公司",
+        "3": "庆典"
+      }
+    },
+    "sampleData": {
+      "students": {
+        "张三": "张三",
+        "李四": "李四", 
+        "王五": "王五",
+        "赵六": "赵六",
+        "陈七": "陈七",
+        "刘八": "刘八",
+        "杨九": "杨九",
+        "黄十": "黄十",
+        "周小明": "周小明",
+        "吴小红": "吴小红",
+        "郑小华": "郑小华",
+        "孙小丽": "孙小丽",
+        "马小强": "马小强",
+        "朱小芳": "朱小芳",
+        "胡小军": "胡小军"
+      },
+      "employees": {
+        "张经理": "张经理",
+        "李主管": "李主管",
+        "王工程师": "王工程师",
+        "赵设计师": "赵设计师",
+        "陈分析师": "陈分析师",
+        "刘专员": "刘专员",
+        "杨助理": "杨助理",
+        "黄顾问": "黄顾问",
+        "周产品经理": "周产品经理",
+        "吴运营专员": "吴运营专员",
+        "郑技术总监": "郑技术总监",
+        "孙市场经理": "孙市场经理"
+      },
+      "prizes": {
+        "iPhone 15 Pro": "iPhone 15 Pro",
+        "MacBook Air": "MacBook Air",
+        "iPad Pro": "iPad Pro",
+        "AirPods Pro": "AirPods Pro",
+        "Apple Watch": "Apple Watch",
+        "小米电视": "小米电视",
+        "戴森吹风机": "戴森吹风机",
+        "星巴克礼品卡": "星巴克礼品卡",
+        "京东购物卡": "京东购物卡",
+        "健身房年卡": "健身房年卡"
+      },
+      "teamMembers": {
+        "小明": "小明",
+        "小红": "小红",
+        "小华": "小华",
+        "小丽": "小丽",
+        "小强": "小强",
+        "小芳": "小芳",
+        "小军": "小军",
+        "小燕": "小燕",
+        "小龙": "小龙",
+        "小梅": "小梅",
+        "小刚": "小刚",
+        "小娟": "小娟"
+      },
+      "games": {
+        "真心话大冒险": "真心话大冒险",
+        "狼人杀": "狼人杀",
+        "剧本杀": "剧本杀",
+        "KTV唱歌": "KTV唱歌",
+        "桌游大战": "桌游大战",
+        "电影欣赏": "电影欣赏",
+        "美食制作": "美食制作",
+        "户外烧烤": "户外烧烤"
+      },
+      "annualPrizes": {
+        "特等奖：海外旅游": "特等奖：海外旅游",
+        "一等奖：笔记本电脑": "一等奖：笔记本电脑",
+        "二等奖：智能手机": "二等奖：智能手机",
+        "三等奖：平板电脑": "三等奖：平板电脑",
+        "优秀奖：蓝牙耳机": "优秀奖：蓝牙耳机",
+        "参与奖：保温杯": "参与奖：保温杯",
+        "幸运奖：购物卡": "幸运奖：购物卡",
+        "惊喜奖：神秘礼品": "惊喜奖：神秘礼品"
+      }
+    }
+  },
+  "drawingComponents": {
+    "slotMachine": {
+      "reelStopped": "滚轮停止，触发完成回调"
+    },
+    "cardFlip": {
+      "shuffling": "正在洗牌...",
+      "dealing": "正在发牌...",
+      "waiting": "点击卡牌进行翻牌",
+      "revealing": "翻牌中...",
+      "finished": "抽奖完成！",
+      "ready": "准备中...",
+      "gameError": "游戏出错了",
+      "emptyList": "名称列表为空",
+      "restart": "重新开始",
+      "emptyListMessage": "请添加至少 1 个名称进行抽奖",
+      "gameInProgress": "游戏正在进行中，无法重新开始",
+      "cannotStartGame": "名称列表为空，无法开始游戏"
+    },
+    "bulletScreen": {
+      "accelerating": "加速中...",
+      "scrolling": "快速滚动",
+      "slowing": "减速中...",
+      "highlighting": "定格选中",
+      "stopped": "已选中",
+      "ready": "准备中",
+      "scrollStopped": "弹幕滚动停止，触发完成回调"
+    },
+    "blinkingNamePicker": {
+      "emptyListError": "名称列表为空，无法开始游戏",
+      "animationControllerError": "动画控制器未初始化，请重新开始",
+      "blinkingStatus": "正在闪烁选择中...",
+      "slowingStatus": "即将停止...",
+      "stoppedStatus": "选择完成！",
+      "finishedStatus": "全部完成！",
+      "readyStatus": "准备开始",
+      "emptyListMessage": "请先添加参与者才能开始闪烁点名抽奖",
+      "emptyListTip": "💡 提示：返回配置页面添加参与者名单，然后就可以开始抽奖了！",
+      "preparingGame": "正在准备闪烁点名...",
+      "aboutToStart": "即将开始精彩的抽奖体验",
+      "gameInstructions": "闪烁点名游戏。使用空格键开始或停止游戏，使用回车键继续下一轮，使用Ctrl+R重置游戏。",
+      "blinkingInProgress": "正在闪烁选择中",
+      "aboutToStop": "即将停止",
+      "selectionComplete": "选择完成，选中了 {{name}}",
+      "gameComplete": "游戏完成，共选中 {{count}} 个名称",
+      "selectedNames": "已选中名称 ({{count}})",
+      "roundSelected": "第 {{round}} 轮选中",
+      "selectedCount": "选中名称",
+      "checkConfigRetry": "请检查配置后重试",
+      "restart": "重新开始",
+      "controlPanel": {
+        "idle": {
+          "text": "准备开始",
+          "description": "点击\"开始闪烁\"开始抽奖"
+        },
+        "blinking": {
+          "text": "正在闪烁选择中...",
+          "description": "快速闪烁中，点击\"停止\"可立即选择"
+        },
+        "slowing": {
+          "text": "即将停止...",
+          "description": "闪烁速度正在减慢，即将选出结果"
+        },
+        "paused": {
+          "text": "已暂停",
+          "description": "闪烁已暂停，点击\"恢复闪烁\"或按空格键继续"
+        },
+        "stopped": {
+          "text": "选择完成",
+          "description": "已选中一个名称，点击\"继续\"进行下一轮或\"重新开始\""
+        },
+        "finished": {
+          "text": "全部完成",
+          "description": "所有轮次已完成，可以查看结果或重新开始"
+        }
+      }
+    }
+  },
+  "errors": {
+    "validation": {
+      "required": "此字段为必填项",
+      "minLength": "最少需要 {{min}} 个字符",
+      "maxLength": "最多允许 {{max}} 个字符",
+      "invalidFormat": "格式不正确",
+      "invalidEmail": "邮箱格式不正确",
+      "invalidNumber": "请输入有效数字",
+      "outOfRange": "数值超出允许范围 ({{min}}-{{max}})"
+    },
+    "network": {
+      "connectionFailed": "网络连接失败",
+      "timeout": "请求超时，请重试",
+      "serverError": "服务器错误，请稍后重试",
+      "notFound": "请求的资源不存在",
+      "unauthorized": "未授权访问",
+      "forbidden": "访问被拒绝"
+    },
+    "file": {
+      "uploadFailed": "文件上传失败",
+      "fileTooLarge": "文件大小超过限制",
+      "invalidFileType": "不支持的文件类型",
+      "fileCorrupted": "文件已损坏",
+      "readFailed": "文件读取失败",
+      "parseFailed": "文件解析失败"
+    },
+    "storage": {
+      "saveFailed": "保存失败",
+      "loadFailed": "加载失败",
+      "deleteFailed": "删除失败",
+      "quotaExceeded": "存储空间不足",
+      "accessDenied": "存储访问被拒绝"
+    },
+    "drawing": {
+      "emptyList": "名单为空",
+      "invalidQuantity": "抽取数量无效",
+      "insufficientItems": "名单数量不足",
+      "configurationError": "配置错误",
+      "animationFailed": "动画执行失败",
+      "soundInitFailed": "音效初始化失败"
+    }
+  },
+  "status": {
+    "loading": "加载中...",
+    "saving": "保存中...",
+    "processing": "处理中...",
+    "uploading": "上传中...",
+    "downloading": "下载中...",
+    "connecting": "连接中...",
+    "initializing": "初始化中...",
+    "completed": "已完成",
+    "failed": "失败",
+    "cancelled": "已取消",
+    "paused": "已暂停",
+    "resumed": "已恢复",
+    "ready": "就绪",
+    "waiting": "等待中...",
+    "inProgress": "进行中..."
+  },
+  "toast": {
+    "success": {
+      "saved": "保存成功",
+      "deleted": "删除成功",
+      "uploaded": "上传成功",
+      "copied": "复制成功",
+      "updated": "更新成功",
+      "created": "创建成功",
+      "imported": "导入成功",
+      "exported": "导出成功"
+    },
+    "error": {
+      "saveFailed": "保存失败",
+      "deleteFailed": "删除失败",
+      "uploadFailed": "上传失败",
+      "copyFailed": "复制失败",
+      "updateFailed": "更新失败",
+      "createFailed": "创建失败",
+      "importFailed": "导入失败",
+      "exportFailed": "导出失败",
+      "networkError": "网络错误",
+      "unknownError": "未知错误"
+    },
+    "warning": {
+      "unsavedChanges": "有未保存的更改",
+      "dataLoss": "数据可能丢失",
+      "lowStorage": "存储空间不足",
+      "slowConnection": "网络连接较慢",
+      "browserNotSupported": "浏览器不支持此功能"
+    },
+    "info": {
+      "autoSaved": "已自动保存",
+      "syncCompleted": "同步完成",
+      "updateAvailable": "有可用更新",
+      "offlineMode": "离线模式",
+      "dataRestored": "数据已恢复"
+    }
+  },
+  "quickConfigTemplates": {
+    "classroomNaming": {
+      "name": "课堂点名",
+      "description": "随机选择1名学生回答问题，适合教学互动",
+      "tags": {
+        "0": "教学",
+        "1": "点名",
+        "2": "随机",
+        "3": "学生"
+      }
+    },
+    "annualLottery": {
+      "name": "年会抽奖",
+      "description": "单个大奖抽取，营造隆重的抽奖氛围",
+      "tags": {
+        "0": "年会",
+        "1": "大奖",
+        "2": "企业",
+        "3": "庆典"
+      }
+    },
+    "teamGrouping": {
+      "name": "团队分组",
+      "description": "选择多名成员组成团队，适合协作活动",
+      "tags": {
+        "0": "团队",
+        "1": "分组",
+        "2": "协作",
+        "3": "多选"
+      }
+    },
+    "prizeMultiple": {
+      "name": "奖品抽取",
+      "description": "抽取多个奖品，适合批量奖励场景",
+      "tags": {
+        "0": "奖品",
+        "1": "多选",
+        "2": "批量",
+        "3": "奖励"
+      }
+    },
+    "luckyDraw": {
+      "name": "幸运抽奖",
+      "description": "经典老虎机式抽奖，紧张刺激的体验",
+      "tags": {
+        "0": "幸运",
+        "1": "刺激",
+        "2": "经典",
+        "3": "娱乐"
+      }
+    },
+    "gameSelection": {
+      "name": "游戏选择",
+      "description": "从多个选项中随机选择，适合决策场景",
+      "tags": {
+        "0": "游戏",
+        "1": "选择",
+        "2": "决策",
+        "3": "随机"
+      }
+    },
+    "presentationOrder": {
+      "name": "演讲顺序",
+      "description": "确定演讲或展示的先后顺序",
+      "tags": {
+        "0": "演讲",
+        "1": "顺序",
+        "2": "展示",
+        "3": "排序"
+      }
+    },
+    "mysteryGift": {
+      "name": "神秘礼品",
+      "description": "优雅的翻牌式抽奖，增加神秘感",
+      "tags": {
+        "0": "神秘",
+        "1": "礼品",
+        "2": "优雅",
+        "3": "翻牌"
+      }
+    }
+  }
+}

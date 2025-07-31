@@ -14,13 +14,18 @@ import { SlotMachineReel } from "@/components/slot-machine-reel"
 import { DrawResultModal } from "@/components/draw-result-modal"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import { useTranslation } from "@/hooks/use-translation"
 import { soundManager } from "@/lib/sound-manager"
+import { loadAndMigrateConfig } from "@/lib/config-migration"
+import { getCurrentExperienceSession } from "@/lib/experience-manager"
+import ExperienceFeedback from "@/components/experience-feedback"
 
 type DrawState = "idle" | "spinning" | "stopping" | "finished"
 
 export default function SlotMachineDrawPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [config, setConfig] = useState<DrawingConfig | null>(null)
   const [drawState, setDrawState] = useState<DrawState>("idle")
@@ -29,6 +34,9 @@ export default function SlotMachineDrawPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [progress, setProgress] = useState(0)
   const [completedReels, setCompletedReels] = useState(0)
+  const [isExperienceMode, setIsExperienceMode] = useState(false)
+  const [experienceSession, setExperienceSession] = useState<any>(null)
+  const [showExperienceFeedback, setShowExperienceFeedback] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -58,22 +66,40 @@ export default function SlotMachineDrawPage() {
 
   const loadDrawConfig = () => {
     try {
-      const configData = localStorage.getItem("draw-config")
-      if (!configData) {
+      // 检查是否为体验模式
+      const experienceSession = getCurrentExperienceSession()
+      if (experienceSession && experienceSession.isDemo) {
+        if (experienceSession.config.mode === "slot-machine") {
+          setIsExperienceMode(true)
+          setExperienceSession(experienceSession)
+          setConfig(experienceSession.config)
+          
+          // 显示体验开始提示
+          toast({
+            title: t('slotMachine.welcomeExperience', { name: experienceSession.template.name }),
+            description: t('slotMachine.demoDescription'),
+          })
+          return
+        }
+      }
+
+      // 常规模式：使用迁移函数加载配置
+      const migratedConfig = loadAndMigrateConfig("draw-config")
+      if (!migratedConfig) {
         toast({
-          title: "配置丢失",
-          description: "请重新配置抽奖参数",
+          title: t('slotMachine.configLost'),
+          description: t('slotMachine.reconfigureRequired'),
           variant: "destructive",
         })
         router.push("/draw-config")
         return
       }
 
-      const parsedConfig: DrawingConfig = JSON.parse(configData)
+      const parsedConfig: DrawingConfig = migratedConfig
       if (parsedConfig.mode !== "slot-machine") {
         toast({
-          title: "模式错误",
-          description: "当前页面仅支持老虎机模式",
+          title: t('slotMachine.modeError'),
+          description: t('slotMachine.slotMachineOnly'),
           variant: "destructive",
         })
         router.push("/draw-config")
@@ -83,8 +109,8 @@ export default function SlotMachineDrawPage() {
       setConfig(parsedConfig)
     } catch (error) {
       toast({
-        title: "加载失败",
-        description: "无法加载抽奖配置",
+        title: t('slotMachine.loadFailed'),
+        description: t('slotMachine.configLoadError'),
         variant: "destructive",
       })
       router.push("/draw-config")
@@ -148,6 +174,14 @@ export default function SlotMachineDrawPage() {
 
         setTimeout(() => {
           setShowResult(true)
+          
+          // 如果是体验模式，延迟显示反馈
+          if (isExperienceMode) {
+            setTimeout(() => {
+              setShowResult(false)
+              setShowExperienceFeedback(true)
+            }, 3000) // 3秒后显示体验反馈
+          }
         }, 1000)
       }
       
@@ -177,7 +211,7 @@ export default function SlotMachineDrawPage() {
   const getDrawResult = (): DrawResult => ({
     winners,
     timestamp: new Date().toISOString(),
-    mode: "老虎机式",
+    mode: t('slotMachine.modeDisplayName'),
     totalItems: config?.items.length || 0,
   })
 
@@ -186,7 +220,7 @@ export default function SlotMachineDrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-yellow-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">加载中...</p>
+          <p className="text-gray-600 mt-4">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -201,18 +235,24 @@ export default function SlotMachineDrawPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => {
+                if (isExperienceMode) {
+                  router.push("/") // 体验模式返回首页
+                } else {
+                  router.back() // 常规模式返回上一页
+                }
+              }}
               className="text-gray-600 hover:text-red-600"
               disabled={drawState === "spinning" || drawState === "stopping"}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {isExperienceMode ? t('slotMachine.backToHome') : t('slotMachine.back')}
             </Button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
                 <Dices className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800">老虎机抽奖</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('slotMachine.title')}</h1>
             </div>
           </div>
 
@@ -229,11 +269,11 @@ export default function SlotMachineDrawPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-red-100 text-red-700">
                 <Users className="w-3 h-3 mr-1" />
-                {config.items.length} 项目
+{t('slotMachine.itemCount', { count: config.items.length })}
               </Badge>
               <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                 <Hash className="w-3 h-3 mr-1" />
-                抽取 {config.quantity} 个
+{t('slotMachine.drawQuantity', { quantity: config.quantity })}
               </Badge>
             </div>
           </div>
@@ -247,15 +287,15 @@ export default function SlotMachineDrawPage() {
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2 text-2xl">
                 <Dices className="w-6 h-6 text-red-600" />
-                {drawState === "idle" && "准备开始"}
-                {drawState === "spinning" && "正在抽奖..."}
-                {drawState === "stopping" && "即将揭晓..."}
-                {drawState === "finished" && "抽奖完成！"}
+                {drawState === "idle" && t('slotMachine.readyToStart')}
+                {drawState === "spinning" && t('slotMachine.drawing')}
+                {drawState === "stopping" && t('slotMachine.aboutToReveal')}
+                {drawState === "finished" && t('slotMachine.drawComplete')}
               </CardTitle>
               {drawState === "spinning" && (
                 <CardDescription>
                   <Progress value={progress} className="w-64 mx-auto mt-4" />
-                  <p className="mt-2 text-sm text-gray-600">抽奖进行中，请稍候...</p>
+                  <p className="mt-2 text-sm text-gray-600">{t('slotMachine.drawingInProgress')}</p>
                 </CardDescription>
               )}
             </CardHeader>
@@ -280,7 +320,7 @@ export default function SlotMachineDrawPage() {
             <div className="text-center">
               <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg">
                 <div className="text-white font-bold text-xl">🎰</div>
-                <div className="text-white font-bold text-lg">老虎机抽奖</div>
+                <div className="text-white font-bold text-lg">{t('slotMachine.title')}</div>
                 <div className="text-white font-bold text-xl">🎰</div>
               </div>
             </div>
@@ -295,7 +335,7 @@ export default function SlotMachineDrawPage() {
                 className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-12 py-4 text-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Play className="w-6 h-6 mr-3" />
-                开始抽奖
+                {t('slotMachine.startDraw')}
               </Button>
             )}
 
@@ -306,15 +346,15 @@ export default function SlotMachineDrawPage() {
                 className="bg-gray-400 text-white px-12 py-4 text-xl font-bold cursor-not-allowed"
               >
                 <Pause className="w-6 h-6 mr-3" />
-                抽奖中...
+                {t('slotMachine.drawingInProgress')}
               </Button>
             )}
 
             {drawState === "finished" && !showResult && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                <p className="text-2xl font-bold text-gray-800 mb-4">抽奖完成！</p>
-                <p className="text-gray-600">结果即将显示...</p>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('slotMachine.drawComplete')}</p>
+                <p className="text-gray-600">{t('slotMachine.resultWillShow')}</p>
               </div>
             )}
           </div>
@@ -329,6 +369,17 @@ export default function SlotMachineDrawPage() {
         onDrawAgain={handleDrawAgain}
         onGoHome={handleGoHome}
       />
+
+      {/* Experience Feedback Modal */}
+      {isExperienceMode && experienceSession && (
+        <ExperienceFeedback
+          isOpen={showExperienceFeedback}
+          onClose={() => setShowExperienceFeedback(false)}
+          sessionId={experienceSession.templateId}
+          templateName={experienceSession.template.name}
+        />
+      )}
+
       <Toaster />
     </div>
   )

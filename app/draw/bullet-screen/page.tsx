@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,11 +16,13 @@ import { DrawResultModal } from "@/components/draw-result-modal"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { soundManager } from "@/lib/sound-manager"
+import { loadAndMigrateConfig } from "@/lib/config-migration"
 
 type DrawState = "idle" | "scrolling" | "slowing" | "finished"
 
 export default function BulletScreenDrawPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const { toast } = useToast()
 
   const [config, setConfig] = useState<DrawingConfig | null>(null)
@@ -57,22 +60,23 @@ export default function BulletScreenDrawPage() {
 
   const loadDrawConfig = () => {
     try {
-      const configData = localStorage.getItem("draw-config")
-      if (!configData) {
+      // 使用迁移函数加载配置
+      const migratedConfig = loadAndMigrateConfig("draw-config")
+      if (!migratedConfig) {
         toast({
-          title: "配置丢失",
-          description: "请重新配置抽奖参数",
+          title: t('bulletScreen.configLost'),
+          description: t('bulletScreen.reconfigureRequired'),
           variant: "destructive",
         })
         router.push("/draw-config")
         return
       }
 
-      const parsedConfig: DrawingConfig = JSON.parse(configData)
+      const parsedConfig: DrawingConfig = migratedConfig
       if (parsedConfig.mode !== "bullet-screen") {
         toast({
-          title: "模式错误",
-          description: "当前页面仅支持弹幕滚动模式",
+          title: t('bulletScreen.modeError'),
+          description: t('bulletScreen.bulletScreenOnly'),
           variant: "destructive",
         })
         router.push("/draw-config")
@@ -82,8 +86,8 @@ export default function BulletScreenDrawPage() {
       setConfig(parsedConfig)
     } catch (error) {
       toast({
-        title: "加载失败",
-        description: "无法加载抽奖配置",
+        title: t('bulletScreen.loadFailed'),
+        description: t('bulletScreen.configLoadError'),
         variant: "destructive",
       })
       router.push("/draw-config")
@@ -176,7 +180,7 @@ export default function BulletScreenDrawPage() {
   const getDrawResult = (): DrawResult => ({
     winners,
     timestamp: new Date().toISOString(),
-    mode: "弹幕滚动式",
+    mode: t('bulletScreen.modeDisplayName'),
     totalItems: config?.items.length || 0,
   })
 
@@ -185,7 +189,7 @@ export default function BulletScreenDrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">加载中...</p>
+          <p className="text-gray-600 mt-4">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -205,13 +209,13 @@ export default function BulletScreenDrawPage() {
               disabled={drawState === "scrolling" || drawState === "slowing"}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {t('bulletScreen.back')}
             </Button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800">弹幕滚动抽奖</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('bulletScreen.title')}</h1>
             </div>
           </div>
 
@@ -228,11 +232,11 @@ export default function BulletScreenDrawPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-green-100 text-green-700">
                 <Users className="w-3 h-3 mr-1" />
-                {config.items.length} 项目
+                {t('bulletScreen.itemCount', { count: config.items.length })}
               </Badge>
               <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                 <Hash className="w-3 h-3 mr-1" />
-                抽取 {config.quantity} 个
+                {t('bulletScreen.drawQuantity', { quantity: config.quantity })}
               </Badge>
             </div>
           </div>
@@ -246,15 +250,15 @@ export default function BulletScreenDrawPage() {
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2 text-2xl">
                 <MessageSquare className="w-6 h-6 text-green-600" />
-                {drawState === "idle" && "准备开始"}
-                {drawState === "scrolling" && "弹幕滚动中..."}
-                {drawState === "slowing" && "即将定格..."}
-                {drawState === "finished" && "抽奖完成！"}
+                {drawState === "idle" && t('bulletScreen.readyToStart')}
+                {drawState === "scrolling" && t('bulletScreen.scrolling')}
+                {drawState === "slowing" && t('bulletScreen.aboutToStop')}
+                {drawState === "finished" && t('bulletScreen.drawComplete')}
               </CardTitle>
               {drawState === "scrolling" && (
                 <CardDescription>
                   <Progress value={progress} className="w-64 mx-auto mt-4" />
-                  <p className="mt-2 text-sm text-gray-600">弹幕快速滚动中，请稍候...</p>
+                  <p className="mt-2 text-sm text-gray-600">{t('bulletScreen.scrollingInProgress')}</p>
                 </CardDescription>
               )}
             </CardHeader>
@@ -279,7 +283,7 @@ export default function BulletScreenDrawPage() {
             <div className="text-center">
               <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-full shadow-lg">
                 <div className="text-white font-bold text-xl">💬</div>
-                <div className="text-white font-bold text-lg">弹幕滚动抽奖</div>
+                <div className="text-white font-bold text-lg">{t('bulletScreen.title')}</div>
                 <div className="text-white font-bold text-xl">💬</div>
               </div>
             </div>
@@ -294,7 +298,7 @@ export default function BulletScreenDrawPage() {
                 className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-12 py-4 text-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Play className="w-6 h-6 mr-3" />
-                开始抽奖
+                {t('bulletScreen.startDraw')}
               </Button>
             )}
 
@@ -305,15 +309,15 @@ export default function BulletScreenDrawPage() {
                 className="bg-gray-400 text-white px-12 py-4 text-xl font-bold cursor-not-allowed"
               >
                 <Pause className="w-6 h-6 mr-3" />
-                滚动中...
+                {t('bulletScreen.scrollingStatus')}
               </Button>
             )}
 
             {drawState === "finished" && !showResult && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                <p className="text-2xl font-bold text-gray-800 mb-4">抽奖完成！</p>
-                <p className="text-gray-600">结果即将显示...</p>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('bulletScreen.drawComplete')}</p>
+                <p className="text-gray-600">{t('bulletScreen.resultWillShow')}</p>
               </div>
             )}
           </div>

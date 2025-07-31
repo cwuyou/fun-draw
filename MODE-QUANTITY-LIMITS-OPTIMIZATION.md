@@ -45,8 +45,6 @@ const getMaxQuantityForMode = (mode: DrawingMode, allowRepeat: boolean, itemCoun
       return Math.min(12, allowRepeat ? 100 : itemCount) // 老虎机：最多12个滚轮
     case 'bullet-screen':
       return Math.min(20, allowRepeat ? 100 : itemCount) // 弹幕：最多20行
-    case 'blind-box':
-    case 'gashapon':
     default:
       return allowRepeat ? 100 : itemCount // 其他模式：保持原有逻辑
   }
@@ -66,8 +64,6 @@ const getQuantityLimitDescription = (mode: DrawingMode, allowRepeat: boolean, it
       return `老虎机模式最多${maxQuantity}个（避免滚轮过窄）`
     case 'bullet-screen':
       return `弹幕模式最多${maxQuantity}个（垂直空间限制）`
-    case 'blind-box':
-    case 'gashapon':
     default:
       return `最多 ${maxQuantity} 个`
   }

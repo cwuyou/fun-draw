@@ -10,10 +10,23 @@ import { Play, Pause, ArrowLeft, Volume2, VolumeX, Hash, Users, Timer } from "lu
 import type { DrawingConfig, ListItem, GridLotteryState, GridLotteryPhase, GridCell } from "@/types"
 import type { DrawResult } from "@/lib/draw-utils"
 import { performDraw } from "@/lib/draw-utils"
+import { 
+  determineOptimalGridSize, 
+  getGridColumns, 
+  getGridRows, 
+  fillGridCells, 
+  createGridCells,
+  validateGridConfiguration,
+  getValidDrawItems,
+  findItemInGrid
+} from "@/lib/grid-layout-utils"
 import { DrawResultModal } from "@/components/draw-result-modal"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { soundManager } from "@/lib/sound-manager"
+import { loadAndMigrateConfig } from "@/lib/config-migration"
+import { getCurrentExperienceSession } from "@/lib/experience-manager"
+import ExperienceFeedback from "@/components/experience-feedback"
 
 export default function GridLotteryDrawPage() {
   const router = useRouter()
@@ -29,17 +42,28 @@ export default function GridLotteryDrawPage() {
   })
   const [showResult, setShowResult] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [isExperienceMode, setIsExperienceMode] = useState(false)
+  const [experienceSession, setExperienceSession] = useState<any>(null)
+  const [showExperienceFeedback, setShowExperienceFeedback] = useState(false)
 
   const animationRef = useRef<NodeJS.Timeout | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
+  const isFinishedRef = useRef<boolean>(false)
 
   useEffect(() => {
     loadDrawConfig()
     soundManager.setEnabled(soundEnabled)
 
     return () => {
-      if (animationRef.current) clearTimeout(animationRef.current)
-      if (countdownRef.current) clearTimeout(countdownRef.current)
+      // 组件卸载时清理所有定时器和音效
+      if (animationRef.current) {
+        clearTimeout(animationRef.current)
+        animationRef.current = null
+      }
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current)
+        countdownRef.current = null
+      }
       soundManager.stopAll()
     }
   }, [])
@@ -53,8 +77,27 @@ export default function GridLotteryDrawPage() {
 
   const loadDrawConfig = () => {
     try {
-      const configData = localStorage.getItem("draw-config")
-      if (!configData) {
+      // 检查是否为体验模式
+      const experienceSession = getCurrentExperienceSession()
+      if (experienceSession && experienceSession.isDemo) {
+        if (experienceSession.config.mode === "grid-lottery") {
+          setIsExperienceMode(true)
+          setExperienceSession(experienceSession)
+          setConfig(experienceSession.config)
+          initializeGrid(experienceSession.config)
+          
+          // 显示体验开始提示
+          toast({
+            title: `欢迎体验"${experienceSession.template.name}"`,
+            description: "这是演示数据，您可以直接开始抽奖体验",
+          })
+          return
+        }
+      }
+
+      // 常规模式：使用迁移函数加载配置
+      const migratedConfig = loadAndMigrateConfig("draw-config")
+      if (!migratedConfig) {
         toast({
           title: "配置丢失",
           description: "请重新配置抽奖参数",
@@ -64,8 +107,7 @@ export default function GridLotteryDrawPage() {
         return
       }
 
-      const parsedConfig: DrawingConfig = JSON.parse(configData)
-      if (parsedConfig.mode !== "grid-lottery") {
+      if (migratedConfig.mode !== "grid-lottery") {
         toast({
           title: "模式错误",
           description: "当前页面仅支持多宫格抽奖模式",
@@ -75,8 +117,16 @@ export default function GridLotteryDrawPage() {
         return
       }
 
-      setConfig(parsedConfig)
-      initializeGrid(parsedConfig)
+      // 多宫格模式特殊验证：确保数量为1
+      if (migratedConfig.quantity !== 1) {
+        console.warn(`[Grid Lottery] 配置数量异常: ${migratedConfig.quantity}, 已修正为1`)
+        migratedConfig.quantity = 1
+        // 保存修正后的配置
+        localStorage.setItem("draw-config", JSON.stringify(migratedConfig))
+      }
+
+      setConfig(migratedConfig)
+      initializeGrid(migratedConfig)
     } catch (error) {
       toast({
         title: "加载失败",
@@ -88,26 +138,37 @@ export default function GridLotteryDrawPage() {
   }
 
   const initializeGrid = (config: DrawingConfig) => {
-    // 根据数量确定最佳的宫格布局
-    const gridSize = determineGridSize(config.quantity)
-    const selectedItems = config.items.slice(0, gridSize)
+    // 验证配置
+    const validation = validateGridConfiguration(config.items, config.allowRepeat)
     
-    // 如果项目不足，用重复项目填充
-    while (selectedItems.length < gridSize) {
-      selectedItems.push(...config.items.slice(0, gridSize - selectedItems.length))
+    if (!validation.isValid) {
+      validation.errors.forEach(error => {
+        toast({
+          title: "配置错误",
+          description: error,
+          variant: "destructive",
+        })
+      })
+      return
     }
+    
+    // 显示警告信息
+    validation.warnings.forEach(warning => {
+      toast({
+        title: "配置提醒",
+        description: warning,
+        variant: "default",
+      })
+    })
 
-    const cells: GridCell[] = selectedItems.map((item, index) => ({
-      id: `cell-${index}`,
-      index,
-      item,
-      isHighlighted: false,
-      isWinner: false,
-      position: {
-        row: Math.floor(index / getGridColumns(gridSize)),
-        col: index % getGridColumns(gridSize)
-      }
-    }))
+    // 根据名称数量确定最佳的宫格布局
+    const gridSize = determineOptimalGridSize(config.items.length)
+    
+    // 根据配置填充宫格
+    const filledItems = fillGridCells(config.items, gridSize, config.allowRepeat)
+    
+    // 创建宫格单元格
+    const cells = createGridCells(filledItems, gridSize)
 
     setGameState(prev => ({
       ...prev,
@@ -118,33 +179,7 @@ export default function GridLotteryDrawPage() {
     }))
   }
 
-  const determineGridSize = (quantity: number): number => {
-    // 根据抽取数量确定合适的宫格数
-    if (quantity <= 6) return 6
-    if (quantity <= 9) return 9
-    if (quantity <= 12) return 12
-    return 15
-  }
 
-  const getGridColumns = (gridSize: number): number => {
-    switch (gridSize) {
-      case 6: return 3  // 2x3
-      case 9: return 3  // 3x3
-      case 12: return 4 // 3x4
-      case 15: return 5 // 3x5
-      default: return 3
-    }
-  }
-
-  const getGridRows = (gridSize: number): number => {
-    switch (gridSize) {
-      case 6: return 2
-      case 9: return 3
-      case 12: return 3
-      case 15: return 3
-      default: return 3
-    }
-  }
 
   const playSound = (type: "countdown" | "highlight" | "spin" | "win") => {
     if (!soundEnabled) return
@@ -152,33 +187,57 @@ export default function GridLotteryDrawPage() {
   }
 
   const startCountdown = () => {
+    console.log('开始倒计时，设置为3')
     setGameState(prev => ({ ...prev, phase: 'countdown', countdown: 3 }))
     playSound("countdown")
 
-    const countdown = () => {
-      setGameState(prev => {
-        if (prev.countdown > 1) {
-          playSound("countdown")
-          countdownRef.current = setTimeout(countdown, 1000)
-          return { ...prev, countdown: prev.countdown - 1 }
-        } else {
+    // 倒计时3
+    countdownRef.current = setTimeout(() => {
+      console.log('显示倒计时2')
+      setGameState(prev => ({ ...prev, countdown: 2 }))
+      playSound("countdown")
+      
+      // 倒计时2
+      countdownRef.current = setTimeout(() => {
+        console.log('显示倒计时1')
+        setGameState(prev => ({ ...prev, countdown: 1 }))
+        playSound("countdown")
+        
+        // 倒计时1
+        countdownRef.current = setTimeout(() => {
+          console.log('倒计时结束，开始抽奖')
           startSpinning()
-          return { ...prev, countdown: 0 }
-        }
-      })
-    }
-
-    countdownRef.current = setTimeout(countdown, 1000)
+        }, 1000)
+      }, 1000)
+    }, 1000)
   }
 
   const startSpinning = () => {
     if (!config) return
 
+    console.log('开始抽奖动画')
+    
+    // 重置完成标志
+    isFinishedRef.current = false
+    
     setGameState(prev => ({ ...prev, phase: 'spinning' }))
     playSound("spin")
 
-    // 执行抽奖逻辑
-    const winners = performDraw(config)
+    // 获取有效的抽奖名称（排除占位符）
+    const validItems = getValidDrawItems(gameState.cells)
+    
+    if (validItems.length === 0) {
+      toast({
+        title: "抽奖失败",
+        description: "没有有效的抽奖名称",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // 从有效名称中执行抽奖逻辑
+    const configWithValidItems = { ...config, items: validItems }
+    const winners = performDraw(configWithValidItems)
     const winnerItem = winners[0] // 多宫格抽奖只选择一个获奖者
 
     let currentIndex = 0
@@ -187,6 +246,11 @@ export default function GridLotteryDrawPage() {
     const maxSpins = 30 + Math.floor(Math.random() * 20) // 30-50次跳转
 
     const spin = () => {
+      // 检查是否已经完成，如果是则立即停止
+      if (isFinishedRef.current) {
+        return
+      }
+
       setGameState(prev => ({
         ...prev,
         cells: prev.cells.map((cell, index) => ({
@@ -200,15 +264,15 @@ export default function GridLotteryDrawPage() {
       currentIndex = (currentIndex + 1) % gameState.cells.length
       totalSpins++
 
-      if (totalSpins < maxSpins) {
+      if (totalSpins < maxSpins && !isFinishedRef.current) {
         // 逐渐减速
         if (totalSpins > maxSpins * 0.7) {
           speed = Math.min(speed + 50, 500)
         }
         animationRef.current = setTimeout(spin, speed)
-      } else {
+      } else if (!isFinishedRef.current) {
         // 找到获奖者在格子中的位置
-        const winnerIndex = gameState.cells.findIndex(cell => cell.item.id === winnerItem.id)
+        const winnerIndex = findItemInGrid(gameState.cells, winnerItem)
         const finalIndex = winnerIndex >= 0 ? winnerIndex : Math.floor(Math.random() * gameState.cells.length)
         
         finishSpinning(finalIndex, winnerItem)
@@ -219,23 +283,50 @@ export default function GridLotteryDrawPage() {
   }
 
   const finishSpinning = (winnerIndex: number, winner: ListItem) => {
-    setGameState(prev => ({
-      ...prev,
+    // 立即设置完成标志，防止任何后续的spin调用
+    isFinishedRef.current = true
+    
+    // 立即清除所有动画定时器，防止后续调用
+    if (animationRef.current) {
+      clearTimeout(animationRef.current)
+      animationRef.current = null
+    }
+    if (countdownRef.current) {
+      clearTimeout(countdownRef.current)
+      countdownRef.current = null
+    }
+
+    // 停止所有音效
+    soundManager.stop("spin")
+    soundManager.stop("highlight")
+    
+    // 立即设置最终状态，确保状态不再变化
+    setGameState({
       phase: 'finished',
-      cells: prev.cells.map((cell, index) => ({
+      cells: gameState.cells.map((cell, index) => ({
         ...cell,
         isHighlighted: index === winnerIndex,
         isWinner: index === winnerIndex
       })),
       currentHighlight: winnerIndex,
-      winner
-    }))
+      winner,
+      countdown: 0
+    })
 
-    soundManager.stop("spin")
+    // 播放获奖音效
     playSound("win")
 
+    // 延迟显示结果对话框
     setTimeout(() => {
       setShowResult(true)
+      
+      // 如果是体验模式，延迟显示反馈
+      if (isExperienceMode) {
+        setTimeout(() => {
+          setShowResult(false)
+          setShowExperienceFeedback(true)
+        }, 3000) // 3秒后显示体验反馈
+      }
     }, 2000)
   }
 
@@ -245,18 +336,32 @@ export default function GridLotteryDrawPage() {
   }
 
   const handleDrawAgain = () => {
-    if (animationRef.current) clearTimeout(animationRef.current)
-    if (countdownRef.current) clearTimeout(countdownRef.current)
+    // 重置完成标志
+    isFinishedRef.current = false
     
+    // 清除所有定时器
+    if (animationRef.current) {
+      clearTimeout(animationRef.current)
+      animationRef.current = null
+    }
+    if (countdownRef.current) {
+      clearTimeout(countdownRef.current)
+      countdownRef.current = null
+    }
+    
+    // 停止所有音效
+    soundManager.stopAll()
+    
+    // 重新初始化宫格布局（重新洗牌）
+    if (config) {
+      initializeGrid(config)
+    }
+    
+    // 重置状态
     setShowResult(false)
     setGameState(prev => ({
       ...prev,
       phase: 'idle',
-      cells: prev.cells.map(cell => ({
-        ...cell,
-        isHighlighted: false,
-        isWinner: false
-      })),
       currentHighlight: -1,
       winner: null,
       countdown: 3
@@ -270,7 +375,7 @@ export default function GridLotteryDrawPage() {
   const getDrawResult = (): DrawResult => ({
     winners: gameState.winner ? [gameState.winner] : [],
     timestamp: new Date().toISOString(),
-    mode: "多宫格抽奖",
+    mode: "多宫格抽奖（单次抽取）",
     totalItems: config?.items.length || 0,
   })
 
@@ -285,7 +390,7 @@ export default function GridLotteryDrawPage() {
     )
   }
 
-  const gridSize = determineGridSize(config.quantity)
+  const gridSize = determineOptimalGridSize(config.items.length)
   const gridCols = getGridColumns(gridSize)
   const gridRows = getGridRows(gridSize)
 
@@ -298,18 +403,31 @@ export default function GridLotteryDrawPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => {
+                if (isExperienceMode) {
+                  router.push("/") // 体验模式返回首页
+                } else {
+                  router.back() // 常规模式返回上一页
+                }
+              }}
               className="text-gray-600 hover:text-indigo-600"
               disabled={gameState.phase === "spinning" || gameState.phase === "countdown"}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {isExperienceMode ? "返回首页" : "返回"}
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <Hash className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800">多宫格抽奖</h1>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">多宫格抽奖</h1>
+                <p className="text-sm text-gray-600">单次抽取模式 - 灯光跳转选择一位获奖者</p>
+              </div>
+              <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 text-sm border border-indigo-200">
+                <Hash className="w-3 h-3 mr-1" />
+                单次抽取
+              </Badge>
             </div>
           </div>
 
@@ -326,7 +444,7 @@ export default function GridLotteryDrawPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
                 <Users className="w-3 h-3 mr-1" />
-                {config.items.length} 项目
+                {config.items.length} 名称
               </Badge>
               <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                 <Hash className="w-3 h-3 mr-1" />
@@ -385,26 +503,35 @@ export default function GridLotteryDrawPage() {
                 gridTemplateRows: `repeat(${gridRows}, 1fr)`
               }}
             >
-              {gameState.cells.map((cell) => (
-                <div
-                  key={cell.id}
-                  className={`
-                    aspect-square rounded-xl border-2 flex items-center justify-center text-center p-4 transition-all duration-300 transform
-                    ${cell.isHighlighted 
-                      ? 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-500 shadow-lg scale-105 text-white font-bold' 
-                      : 'bg-white border-gray-200 hover:border-indigo-300 text-gray-800'
-                    }
-                    ${cell.isWinner 
-                      ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-green-500 shadow-xl scale-110 text-white font-bold animate-pulse' 
-                      : ''
-                    }
-                  `}
-                >
-                  <div className="text-sm font-medium break-words">
-                    {cell.item.name}
+              {gameState.cells.map((cell) => {
+                const isPlaceholder = cell.item.id.startsWith('placeholder-')
+                return (
+                  <div
+                    key={cell.id}
+                    className={`
+                      aspect-square rounded-xl border-2 flex items-center justify-center text-center p-4 transition-all duration-300 transform
+                      ${cell.isHighlighted 
+                        ? 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-500 shadow-lg scale-105 text-white font-bold' 
+                        : isPlaceholder
+                          ? 'bg-gray-50 border-gray-300 text-gray-400'
+                          : 'bg-white border-gray-200 hover:border-indigo-300 text-gray-800'
+                      }
+                      ${cell.isWinner 
+                        ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-green-500 shadow-xl scale-110 text-white font-bold animate-pulse' 
+                        : ''
+                      }
+                    `}
+                  >
+                    <div className={`text-sm font-medium break-words ${isPlaceholder ? 'italic' : ''}`}>
+                      {isPlaceholder ? (
+                        <span className="text-gray-400">—</span>
+                      ) : (
+                        cell.item.name
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* 装饰性元素 */}
@@ -460,6 +587,17 @@ export default function GridLotteryDrawPage() {
         onDrawAgain={handleDrawAgain}
         onGoHome={handleGoHome}
       />
+
+      {/* Experience Feedback Modal */}
+      {isExperienceMode && experienceSession && (
+        <ExperienceFeedback
+          isOpen={showExperienceFeedback}
+          onClose={() => setShowExperienceFeedback(false)}
+          sessionId={experienceSession.templateId}
+          templateName={experienceSession.template.name}
+        />
+      )}
+
       <Toaster />
     </div>
   )

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ interface DrawResultModalProps {
 }
 
 export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome }: DrawResultModalProps) {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const [isExporting, setIsExporting] = useState(false)
 
@@ -29,13 +31,13 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
 
     if (success) {
       toast({
-        title: "复制成功",
-        description: "中奖名单已复制到剪贴板",
+        title: t('drawResult.copySuccess'),
+        description: t('drawResult.copySuccessDescription'),
       })
     } else {
       toast({
-        title: "复制失败",
-        description: "请手动复制结果",
+        title: t('drawResult.copyFailed'),
+        description: t('drawResult.copyFailedDescription'),
         variant: "destructive",
       })
     }
@@ -46,13 +48,13 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
     try {
       exportResults(result)
       toast({
-        title: "导出成功",
-        description: "抽奖结果已保存为文件",
+        title: t('drawResult.exportSuccess'),
+        description: t('drawResult.exportSuccessDescription'),
       })
     } catch (error) {
       toast({
-        title: "导出失败",
-        description: "请稍后重试",
+        title: t('drawResult.exportFailed'),
+        description: t('drawResult.exportFailedDescription'),
         variant: "destructive",
       })
     } finally {
@@ -78,10 +80,12 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
           </div>
 
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-            🎉 抽奖结果
+            🎉 {t('drawResult.title')}
           </CardTitle>
 
-          <CardDescription className="text-lg text-gray-600">恭喜以下幸运儿！</CardDescription>
+          <CardDescription className="text-lg text-gray-600">
+            {result.winners.length === 1 ? t('drawResult.congratulations') : t('drawResult.congratulationsMultiple')}
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -93,13 +97,15 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
             </Badge>
             <Badge variant="secondary" className="bg-green-100 text-green-700 px-4 py-2">
               <CheckCircle className="w-4 h-4 mr-2" />
-              {result.winners.length} 位中奖
+              {result.winners.length === 1 ? t('drawResult.oneWinner') : t('drawResult.multipleWinners', { count: result.winners.length })}
             </Badge>
           </div>
 
           {/* 中奖名单 */}
           <div className="space-y-3">
-            <h3 className="text-xl font-semibold text-center text-gray-800 mb-4">中奖名单</h3>
+            <h3 className="text-xl font-semibold text-center text-gray-800 mb-4">
+              {result.winners.length === 1 ? t('drawResult.winner') : t('drawResult.winnersList')}
+            </h3>
             <div className="grid gap-3 max-h-60 overflow-y-auto">
               {result.winners.map((winner, index) => (
                 <div
@@ -126,7 +132,7 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
               className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
             >
               <Copy className="w-4 h-4 mr-2" />
-              复制结果
+              {t('drawResult.copyResult')}
             </Button>
 
             <Button
@@ -136,7 +142,7 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
               className="flex-1 border-green-200 text-green-600 hover:bg-green-50 bg-transparent"
             >
               <Download className="w-4 h-4 mr-2" />
-              {isExporting ? "导出中..." : "导出文件"}
+              {isExporting ? t('drawResult.exporting') : t('drawResult.exportFile')}
             </Button>
           </div>
 
@@ -147,7 +153,7 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg py-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
-              🎲 再抽一次
+              {t('drawResult.drawAgain')}
             </Button>
 
             <Button
@@ -157,7 +163,7 @@ export function DrawResultModal({ result, isOpen, onClose, onDrawAgain, onGoHome
               className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50 bg-transparent py-3 font-medium"
             >
               <Home className="w-4 h-4 mr-2" />
-              返回首页
+              {t('drawResult.goHome')}
             </Button>
           </div>
         </CardContent>

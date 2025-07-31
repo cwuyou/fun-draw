@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Play, Pause, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react'
+import { useTranslation } from '@/hooks/use-translation'
 import { BlinkingGameState, BlinkingConfig } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +12,7 @@ interface BlinkingControlPanelProps {
   soundEnabled: boolean
   onStart: () => void
   onStop: () => void
+  onResume?: () => void
   onReset: () => void
   onContinue?: () => void
   onSoundToggle: (enabled: boolean) => void
@@ -24,12 +26,14 @@ export function BlinkingControlPanel({
   soundEnabled,
   onStart,
   onStop,
+  onResume,
   onReset,
   onContinue,
   onSoundToggle,
   onConfigChange,
   className
 }: BlinkingControlPanelProps) {
+  const { t } = useTranslation()
   const [showSettings, setShowSettings] = useState(false)
   const [tempConfig, setTempConfig] = useState(config)
 
@@ -47,18 +51,64 @@ export function BlinkingControlPanel({
   // 渲染游戏状态
   const renderGameStatus = () => {
     const statusConfig = {
-      'idle': { text: '准备开始', color: 'text-gray-600', icon: null },
-      'blinking': { text: '正在闪烁选择中...', color: 'text-blue-600', icon: '⚡' },
-      'slowing': { text: '即将停止...', color: 'text-orange-600', icon: '⏳' },
-      'stopped': { text: '选择完成！', color: 'text-green-600', icon: '✅' },
-      'finished': { text: '全部完成！', color: 'text-purple-600', icon: '🎉' }
+      'idle': { 
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.idle.text'), 
+        color: 'text-gray-600', 
+        bgColor: 'bg-gray-100', 
+        icon: '🎯',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.idle.description')
+      },
+      'blinking': { 
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.blinking.text'), 
+        color: 'text-blue-600', 
+        bgColor: 'bg-blue-100', 
+        icon: '⚡',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.blinking.description')
+      },
+      'slowing': { 
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.slowing.text'), 
+        color: 'text-orange-600', 
+        bgColor: 'bg-orange-100', 
+        icon: '⏳',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.slowing.description')
+      },
+      'paused': {
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.paused.text'),
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-100',
+        icon: '⏸️',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.paused.description')
+      },
+      'stopped': { 
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.stopped.text'), 
+        color: 'text-green-600', 
+        bgColor: 'bg-green-100', 
+        icon: '✅',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.stopped.description')
+      },
+      'finished': { 
+        text: t('drawingComponents.blinkingNamePicker.controlPanel.finished.text'), 
+        color: 'text-purple-600', 
+        bgColor: 'bg-purple-100', 
+        icon: '🎉',
+        description: t('drawingComponents.blinkingNamePicker.controlPanel.finished.description')
+      }
     }
 
     const status = statusConfig[gameState.phase]
     return (
-      <div className={cn("flex items-center gap-2 text-lg font-medium", status.color)}>
-        {status.icon && <span>{status.icon}</span>}
-        <span>{status.text}</span>
+      <div className="flex flex-col gap-1">
+        <div className={cn("flex items-center gap-2 text-lg font-medium transition-all duration-300", status.color)}>
+          {status.icon && (
+            <span className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300", status.bgColor)}>
+              {status.icon}
+            </span>
+          )}
+          <span className="transition-all duration-300">{status.text}</span>
+        </div>
+        <div className="text-xs text-gray-500 ml-10">
+          {status.description}
+        </div>
       </div>
     )
   }
@@ -160,7 +210,8 @@ export function BlinkingControlPanel({
             {gameState.phase === 'idle' && (
               <button
                 onClick={onStart}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                title="开始闪烁点名抽奖"
               >
                 <Play className="w-4 h-4" />
                 开始闪烁
@@ -170,17 +221,30 @@ export function BlinkingControlPanel({
             {(gameState.phase === 'blinking' || gameState.phase === 'slowing') && (
               <button
                 onClick={onStop}
-                className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg animate-pulse"
+                title="暂停闪烁，可以恢复继续"
               >
                 <Pause className="w-4 h-4" />
-                停止
+                暂停
+              </button>
+            )}
+            
+            {gameState.phase === 'paused' && onResume && (
+              <button
+                onClick={onResume}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                title="恢复闪烁抽奖"
+              >
+                <Play className="w-4 h-4" />
+                恢复闪烁
               </button>
             )}
             
             {(gameState.phase === 'stopped' || gameState.phase === 'finished') && (
               <button
                 onClick={onReset}
-                className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                title="重新开始抽奖，清空所有结果"
               >
                 <RotateCcw className="w-4 h-4" />
                 重新开始
@@ -191,7 +255,8 @@ export function BlinkingControlPanel({
             {gameState.phase === 'stopped' && getRemainingRounds() > 0 && onContinue && (
               <button
                 onClick={onContinue}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105 animate-bounce"
+                title={`继续抽取剩余的 ${getRemainingRounds()} 个名称`}
               >
                 <Play className="w-4 h-4" />
                 继续下一轮
@@ -202,9 +267,9 @@ export function BlinkingControlPanel({
             <button
               onClick={() => onSoundToggle(!soundEnabled)}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200",
                 soundEnabled
-                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200 shadow-sm"
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
               )}
               title={soundEnabled ? "关闭音效" : "开启音效"}
@@ -356,6 +421,8 @@ export function BlinkingControlPanel({
             </div>
           </div>
         )}
+
+
       </div>
     </div>
   )

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function ListLibraryPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const { toast } = useToast()
 
   const [lists, setLists] = useState<SavedList[]>([])
@@ -31,8 +33,8 @@ export default function ListLibraryPage() {
       setLists(savedLists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()))
     } catch (error) {
       toast({
-        title: "加载失败",
-        description: "无法加载名单库",
+        title: t('listLibrary.loadFailed'),
+        description: t('listLibrary.loadFailedDescription'),
         variant: "destructive",
       })
     } finally {
@@ -41,16 +43,16 @@ export default function ListLibraryPage() {
   }
 
   const handleDeleteList = (id: string, name: string) => {
-    if (confirm(`确定要删除名单"${name}"吗？此操作无法撤销。`)) {
+    if (confirm(t('listLibrary.deleteConfirm', { name }))) {
       if (deleteList(id)) {
         setLists((prev) => prev.filter((list) => list.id !== id))
         toast({
-          title: "删除成功",
-          description: `名单"${name}"已删除`,
+          title: t('listLibrary.deleteSuccess'),
+          description: t('listLibrary.deleteSuccessDescription', { name }),
         })
       } else {
         toast({
-          title: "删除失败",
+          title: t('listLibrary.deleteFailed'),
           variant: "destructive",
         })
       }
@@ -67,7 +69,8 @@ export default function ListLibraryPage() {
   const filteredLists = lists.filter((list) => list.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("zh-CN", {
+    const locale = t('common.locale') === 'zh' ? 'zh-CN' : 'en-US'
+    return new Date(dateString).toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -102,7 +105,7 @@ export default function ListLibraryPage() {
   const handleBatchDelete = () => {
     if (selectedLists.size === 0) return
 
-    if (confirm(`确定要删除选中的 ${selectedLists.size} 个名单吗？此操作无法撤销。`)) {
+    if (confirm(t('listLibrary.batchDeleteConfirm', { count: selectedLists.size }))) {
       let successCount = 0
       selectedLists.forEach(id => {
         if (deleteList(id)) {
@@ -114,8 +117,8 @@ export default function ListLibraryPage() {
       setSelectedLists(new Set())
 
       toast({
-        title: "批量删除成功",
-        description: `已删除 ${successCount} 个名单`,
+        title: t('listLibrary.batchDeleteSuccess'),
+        description: t('listLibrary.batchDeleteSuccessDescription', { count: successCount }),
       })
     }
   }
@@ -133,9 +136,9 @@ export default function ListLibraryPage() {
               className="text-gray-600 hover:text-purple-600"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {t('listLibrary.back')}
             </Button>
-            <h1 className="text-2xl font-bold text-gray-800">名单库</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{t('listLibrary.title')}</h1>
           </div>
           <div className="flex items-center gap-2">
             {filteredLists.length > 0 && (
@@ -146,7 +149,7 @@ export default function ListLibraryPage() {
                   onClick={toggleSelectAll}
                   className="text-gray-600"
                 >
-                  {selectedLists.size === filteredLists.length ? "取消全选" : "全选"}
+                  {selectedLists.size === filteredLists.length ? t('listLibrary.deselectAll') : t('listLibrary.selectAll')}
                 </Button>
                 {selectedLists.size > 0 && (
                   <Button
@@ -155,14 +158,14 @@ export default function ListLibraryPage() {
                     onClick={handleBatchDelete}
                     className="bg-red-500 hover:bg-red-600"
                   >
-                    删除所选 ({selectedLists.size})
+                    {t('listLibrary.deleteSelected', { count: selectedLists.size })}
                   </Button>
                 )}
               </>
             )}
             <Button onClick={() => router.push("/create-list")} className="bg-purple-600 hover:bg-purple-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
-              新建名单
+              {t('listLibrary.newList')}
             </Button>
           </div>
         </div>
@@ -176,7 +179,7 @@ export default function ListLibraryPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="搜索名单..."
+                  placeholder={t('listLibrary.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -189,17 +192,17 @@ export default function ListLibraryPage() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="text-gray-600 mt-4">加载中...</p>
+              <p className="text-gray-600 mt-4">{t('listLibrary.loading')}</p>
             </div>
           ) : filteredLists.length === 0 ? (
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardContent className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  {searchQuery ? "未找到匹配的名单" : "还没有保存的名单"}
+                  {searchQuery ? t('listLibrary.noListsFound') : t('listLibrary.noListsYet')}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  {searchQuery ? "尝试使用其他关键词搜索" : "创建您的第一个名单开始使用吧"}
+                  {searchQuery ? t('listLibrary.tryOtherKeywords') : t('listLibrary.createFirstList')}
                 </p>
                 {!searchQuery && (
                   <Button
@@ -207,7 +210,7 @@ export default function ListLibraryPage() {
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    创建名单
+                    {t('listLibrary.createList')}
                   </Button>
                 )}
               </CardContent>
@@ -233,7 +236,7 @@ export default function ListLibraryPage() {
                         <CardDescription className="flex items-center gap-4 mt-2">
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
-                            {list.items.length} 个项目
+                            {t('listLibrary.itemsCount', { count: list.items.length })}
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -265,7 +268,7 @@ export default function ListLibraryPage() {
                         className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                       >
                         <Play className="w-3 h-3 mr-1" />
-                        使用
+                        {t('listLibrary.use')}
                       </Button>
                       <Button
                         size="sm"

@@ -1,21 +1,27 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Dices, Gift, CreditCard, MessageSquare, Gamepad2, ArrowLeft, Users, Settings, Play, Hash, Save, Sparkles } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dices, CreditCard, MessageSquare, ArrowLeft, Users, Settings, Play, Hash, Save, Sparkles } from "lucide-react"
 import type { DrawingMode, DrawingModeInfo, ListItem, DrawingConfig } from "@/types"
 import { useToast } from "@/hooks/use-toast"
 import { saveList, generateUniqueListName, generateDefaultTempName } from "@/lib/storage"
+import { getModeSpecificConfig, getMaxQuantityForMode, validateModeConfig } from "@/lib/mode-config"
+import { preprocessConfigForSave } from "@/lib/config-migration"
 import { Toaster } from "@/components/ui/toaster"
+import QuickConfiguration from "@/components/quick-configuration"
 
 export default function DrawConfigPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const { toast } = useToast()
   const [listName, setListName] = useState("")
   const [items, setItems] = useState<ListItem[]>([])
@@ -25,50 +31,86 @@ export default function DrawConfigPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [initialized, setInitialized] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [configMode, setConfigMode] = useState<'quick' | 'detailed'>('quick')
 
   console.log("DrawConfigPage 组件渲染");
 
-  // 根据抽奖模式获取最大数量限制
-  const getMaxQuantityForMode = (mode: DrawingMode, allowRepeat: boolean, itemCount: number): number => {
-    switch (mode) {
-      case 'card-flip':
-        return 10 // 卡牌模式：布局限制
-      case 'slot-machine':
-        return Math.min(12, allowRepeat ? 100 : itemCount) // 老虎机：最多12个滚轮，避免过窄
-      case 'bullet-screen':
-        return Math.min(20, allowRepeat ? 100 : itemCount) // 弹幕：最多20行，垂直空间限制
-      case 'grid-lottery':
-        return Math.min(15, allowRepeat ? 100 : itemCount) // 多宫格：最多15个格子（3x5或5x3布局）
-      case 'blinking-name-picker':
-        return Math.min(50, allowRepeat ? 100 : itemCount) // 闪烁点名：最多50个项目（虚拟滚动支持）
-      case 'blind-box':
-      case 'gashapon':
-      default:
-        return allowRepeat ? 100 : itemCount // 其他模式：保持原有逻辑
+  // 获取当前模式的特定配置
+  const modeConfig = getModeSpecificConfig(selectedMode, items.length, allowRepeat)
+
+  // 处理快速配置选择
+  const handleQuickConfigSelect = (config: DrawingConfig) => {
+    setSelectedMode(config.mode)
+    setQuantity(config.quantity)
+    setAllowRepeat(config.allowRepeat)
+    
+    toast({
+      title: "快速配置已应用",
+      description: `已设置为${getModeDisplayName(config.mode)}模式，抽取${config.quantity}个`,
+    })
+    
+    // 切换到详细配置标签页以便用户查看和微调
+    setConfigMode('detailed')
+  }
+
+  // 获取模式显示名称
+  const getModeDisplayName = (mode: DrawingMode): string => {
+    const modeNames = {
+      'slot-machine': '老虎机',
+      'card-flip': '翻牌',
+      'bullet-screen': '弹幕',
+      'grid-lottery': '宫格',
+      'blinking-name-picker': '闪烁'
+    }
+    return modeNames[mode] || mode
+  }
+
+  // 处理模式切换的函数
+  const handleModeChange = (newMode: DrawingMode) => {
+    const previousMode = selectedMode
+    setSelectedMode(newMode)
+    
+    // 模式切换时的状态重置逻辑
+    if (newMode === 'grid-lottery') {
+      // 多宫格模式：强制设置数量为1
+      setQuantity(1)
+    } else if (previousMode === 'grid-lottery') {
+      // 从多宫格模式切换到其他模式：重置为合理的默认值
+      const newModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat)
+      if (newModeConfig.quantityEditable) {
+        // 如果新模式支持编辑数量，设置为1作为起始值
+        setQuantity(1)
+      }
+    }
+    
+    // 如果切换到的模式有固定数量值，应用该值
+    const targetModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat)
+    if (!targetModeConfig.quantityEditable && typeof targetModeConfig.quantityValue === 'number') {
+      setQuantity(targetModeConfig.quantityValue)
     }
   }
 
-  // 获取数量限制的描述文本
-  const getQuantityLimitDescription = (mode: DrawingMode, allowRepeat: boolean, itemCount: number): string => {
-    const maxQuantity = getMaxQuantityForMode(mode, allowRepeat, itemCount)
-    
-    switch (mode) {
-      case 'card-flip':
-        return '卡牌模式最多10个'
-      case 'slot-machine':
-        return `老虎机模式最多${maxQuantity}个（避免滚轮过窄）`
-      case 'bullet-screen':
-        return `弹幕模式最多${maxQuantity}个（垂直空间限制）`
-      case 'grid-lottery':
-        return `多宫格模式最多${maxQuantity}个（支持6、9、12、15宫格）`
-      case 'blinking-name-picker':
-        return `闪烁点名模式最多${maxQuantity}个（支持虚拟滚动）`
-      case 'blind-box':
-      case 'gashapon':
-      default:
-        return `最多 ${maxQuantity} 个`
+  // 配置数据清理和验证函数
+  const cleanAndValidateConfig = () => {
+    if (selectedMode === 'grid-lottery') {
+      // 多宫格模式：确保数量为1
+      if (quantity !== 1) {
+        setQuantity(1)
+      }
     }
   }
+
+  // 当选择多宫格模式时，自动设置数量为1（保留作为备用）
+  useEffect(() => {
+    if (selectedMode === 'grid-lottery') {
+      setQuantity(1)
+    }
+  }, [selectedMode])
+
+  // 定期清理配置数据
+  useEffect(() => {
+    cleanAndValidateConfig()
+  }, [selectedMode, items.length, allowRepeat])
 
   // 去重工具函数
   const removeDuplicateItems = (itemsToProcess: ListItem[]): { uniqueItems: ListItem[], duplicateCount: number } => {
@@ -158,8 +200,8 @@ export default function DrawConfigPage() {
       // 没有找到有效的名单数据，跳转到创建页面
       console.log("没有找到有效的名单数据，准备跳转...");
       toast({
-        title: "请先创建名单",
-        description: "需要先创建或选择一个名单才能开始抽奖",
+        title: t('drawConfig.pleaseCreateList'),
+        description: t('drawConfig.pleaseCreateListDescription'),
       })
       
       // 使用客户端导航
@@ -170,8 +212,8 @@ export default function DrawConfigPage() {
     } catch (error) {
       console.error("加载名单数据失败:", error)
       toast({
-        title: "加载失败",
-        description: "无法加载名单数据，请重新创建名单",
+        title: t('drawConfig.loadFailed'),
+        description: t('drawConfig.loadFailedDescription'),
         variant: "destructive",
       })
       
@@ -201,50 +243,36 @@ export default function DrawConfigPage() {
   const drawingModes: DrawingModeInfo[] = [
     {
       id: "slot-machine",
-      name: "老虎机式",
-      description: "经典滚轮动画，紧张刺激的抽奖体验",
+      name: t('drawingModes.slotMachine.shortTitle'),
+      description: t('drawingModes.slotMachine.description'),
       icon: <Dices className="w-6 h-6" />,
       color: "bg-red-500",
     },
     {
-      id: "blind-box",
-      name: "盲盒式",
-      description: "神秘开箱动画，充满惊喜的揭晓时刻",
-      icon: <Gift className="w-6 h-6" />,
-      color: "bg-purple-500",
-    },
-    {
       id: "card-flip",
-      name: "卡牌抽取式",
-      description: "优雅翻牌动画，如同魔术师的表演",
+      name: t('drawingModes.cardFlip.shortTitle'),
+      description: t('drawingModes.cardFlip.description'),
       icon: <CreditCard className="w-6 h-6" />,
       color: "bg-blue-500",
     },
     {
       id: "bullet-screen",
-      name: "弹幕滚动式",
-      description: "快速滚动定格，动感十足的选择过程",
+      name: t('drawingModes.bulletScreen.title'),
+      description: t('drawingModes.bulletScreen.description'),
       icon: <MessageSquare className="w-6 h-6" />,
       color: "bg-green-500",
     },
     {
-      id: "gashapon",
-      name: "扭蛋机式",
-      description: "可爱扭蛋动画，童趣满满的抽奖方式",
-      icon: <Gamepad2 className="w-6 h-6" />,
-      color: "bg-orange-500",
-    },
-    {
       id: "grid-lottery",
-      name: "多宫格抽奖",
-      description: "电视节目风格，灯光跳转定格，仪式感满满",
+      name: t('drawingModes.gridLottery.shortTitle'),
+      description: t('drawingModes.gridLottery.description'),
       icon: <Hash className="w-6 h-6" />,
       color: "bg-indigo-500",
     },
     {
       id: "blinking-name-picker",
-      name: "闪烁点名式",
-      description: "快速闪烁定格，公平随机的点名体验",
+      name: t('drawingModes.blinkingNamePicker.title'),
+      description: t('drawingModes.blinkingNamePicker.description'),
       icon: <Sparkles className="w-6 h-6" />,
       color: "bg-pink-500",
     },
@@ -253,8 +281,8 @@ export default function DrawConfigPage() {
   const handleSaveCurrentList = async () => {
     if (items.length === 0) {
       toast({
-        title: "名单为空",
-        description: "当前没有可保存的项目",
+        title: t('drawConfig.listEmpty'),
+        description: t('drawConfig.listEmptyDescription'),
         variant: "destructive",
       })
       return
@@ -265,6 +293,22 @@ export default function DrawConfigPage() {
     try {
       // 保存前先去重
       const { uniqueItems, duplicateCount } = removeDuplicateItems(items)
+      
+      // 多宫格模式的数据验证和清理
+      if (selectedMode === 'grid-lottery') {
+        // 确保数量设置为1
+        if (quantity !== 1) {
+          setQuantity(1)
+        }
+        
+        // 检查名称数量并给出相应提示
+        if (uniqueItems.length > 15) {
+          toast({
+            title: t('drawConfig.saveHint'),
+            description: t('drawConfig.saveHintDescription', { count: uniqueItems.length }),
+          })
+        }
+      }
       
       // 如果是临时名单，生成一个新的名称；否则使用当前名称
       const finalName = listName === generateDefaultTempName() 
@@ -284,20 +328,22 @@ export default function DrawConfigPage() {
       localStorage.removeItem("temp-draw-list")
 
       // 显示保存结果
-      let description = `名单"${savedList.name}"已保存到名单库`
-      if (duplicateCount > 0) {
-        description += `，已自动去除 ${duplicateCount} 个重复项目`
-      }
+      const description = duplicateCount > 0 
+        ? t('drawConfig.saveSuccessWithDuplicates', { 
+            message: t('drawConfig.saveSuccessDescription', { name: savedList.name }), 
+            duplicates: duplicateCount 
+          })
+        : t('drawConfig.saveSuccessDescription', { name: savedList.name })
 
       toast({
-        title: "名单保存成功",
+        title: t('drawConfig.saveSuccess'),
         description,
       })
 
     } catch (error) {
       toast({
-        title: "保存失败",
-        description: "请稍后重试",
+        title: t('drawConfig.saveFailed'),
+        description: t('drawConfig.saveFailedDescription'),
         variant: "destructive",
       })
     } finally {
@@ -308,8 +354,8 @@ export default function DrawConfigPage() {
   const handleStartDraw = () => {
     if (items.length === 0) {
       toast({
-        title: "名单为空",
-        description: "请先添加抽奖项目",
+        title: t('drawConfig.listEmpty'),
+        description: t('drawConfig.listEmptyDrawDescription'),
         variant: "destructive",
       })
       return
@@ -323,44 +369,74 @@ export default function DrawConfigPage() {
       setQuantity(numQuantity)
     }
 
-    // 各模式的数量限制验证
-    const maxQuantity = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
-    if (numQuantity > maxQuantity) {
-      const modeNames = {
-        'card-flip': '卡牌抽奖',
-        'slot-machine': '老虎机',
-        'bullet-screen': '弹幕滚动',
-        'grid-lottery': '多宫格抽奖',
-        'blinking-name-picker': '闪烁点名',
-        'blind-box': '盲盒',
-        'gashapon': '扭蛋机'
-      }
-      
-      toast({
-        title: "数量错误",
-        description: `${modeNames[selectedMode] || '当前'}模式最多支持${maxQuantity}个`,
-        variant: "destructive",
-      })
-      return
-    }
+    // 对于多宫格模式，强制设置数量为1
+    const finalQuantity = selectedMode === 'grid-lottery' ? 1 : numQuantity
 
-    if (numQuantity > items.length && !allowRepeat) {
-      toast({
-        title: "抽取数量过多",
-        description: "在不允许重复的情况下，抽取数量不能超过项目总数",
-        variant: "destructive",
-      })
-      return
+    // 多宫格模式的特殊验证
+    if (selectedMode === 'grid-lottery') {
+      // 确保数量始终为1
+      if (finalQuantity !== 1) {
+        toast({
+          title: t('drawConfig.configError'),
+          description: t('drawConfig.gridLotteryOnlyOne'),
+          variant: "destructive",
+        })
+        setQuantity(1)
+        return
+      }
+
+      // 检查名称数量并给出相应提示
+      if (items.length > 15) {
+        toast({
+          title: t('drawConfig.nameCountHint'),
+          description: t('drawConfig.nameCountHintDescription', { count: items.length }),
+        })
+      } else if (items.length < 6 && !allowRepeat) {
+        toast({
+          title: t('drawConfig.gridLotteryTip'),
+          description: t('drawConfig.gridLotteryTipDescription', { count: items.length }),
+        })
+      }
     }
 
     const config: DrawingConfig = {
       mode: selectedMode,
-      quantity: numQuantity,
+      quantity: finalQuantity,
       allowRepeat,
       items,
     }
 
-    localStorage.setItem("draw-config", JSON.stringify(config))
+    // 预处理配置以确保兼容性
+    const processedConfig = preprocessConfigForSave(config)
+
+    // 使用新的验证系统
+    const validationResult = validateModeConfig(processedConfig)
+    
+    if (!validationResult.isValid) {
+      toast({
+        title: t('drawConfig.configError'),
+        description: validationResult.errors[0],
+        variant: "destructive",
+      })
+      
+      // 如果有修正配置，应用它
+      if (validationResult.correctedConfig) {
+        if (validationResult.correctedConfig.quantity !== undefined) {
+          setQuantity(validationResult.correctedConfig.quantity)
+        }
+      }
+      return
+    }
+
+    // 显示警告信息（如果有）
+    if (validationResult.warnings.length > 0) {
+      toast({
+        title: t('drawConfig.gridLotteryTip'),
+        description: validationResult.warnings[0],
+      })
+    }
+
+    localStorage.setItem("draw-config", JSON.stringify(processedConfig))
 
     // 根据选择的模式跳转到对应页面
     router.push(`/draw/${selectedMode}`)
@@ -371,7 +447,7 @@ export default function DrawConfigPage() {
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">加载中...</p>
+          <p className="text-gray-600 mt-4">{t('drawConfig.loading')}</p>
         </div>
       </div>
     )
@@ -386,18 +462,18 @@ export default function DrawConfigPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => router.push("/")}
               className="text-gray-600 hover:text-purple-600"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              {t('drawConfig.back')}
             </Button>
-            <h1 className="text-2xl font-bold text-gray-800">抽奖配置</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{t('drawConfig.title')}</h1>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="bg-purple-100 text-purple-700">
               <Users className="w-3 h-3 mr-1" />
-              {items.length} 个项目
+              {t('drawConfig.itemsCount', { count: items.length })}
             </Badge>
           </div>
         </div>
@@ -410,123 +486,212 @@ export default function DrawConfigPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-600" />
-                当前名单：{listName}
+                {t('drawConfig.currentList', { name: listName })}
               </CardTitle>
               <CardDescription>
-                共 {items.length} 个项目：
-                {items
-                  .slice(0, 5)
-                  .map((item) => item.name)
-                  .join("、")}
-                {items.length > 5 && "..."}
+                {t('drawConfig.itemsPreview', { 
+                  count: items.length,
+                  preview: items
+                    .slice(0, 5)
+                    .map((item) => item.name)
+                    .join("、") + (items.length > 5 ? "..." : "")
+                })}
               </CardDescription>
             </CardHeader>
           </Card>
 
-          {/* Drawing Mode Selection */}
+          {/* Configuration Tabs */}
           <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5 text-purple-600" />
-                选择抽奖模式
+                {t('drawConfig.configurationSettings')}
               </CardTitle>
-              <CardDescription>每种模式都有独特的动画效果和体验</CardDescription>
+              <CardDescription>{t('drawConfig.configurationSettingsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {drawingModes.map((mode) => (
-                  <Card
-                    key={mode.id}
-                    className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                      selectedMode === mode.id ? "ring-2 ring-purple-500 bg-purple-50" : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => setSelectedMode(mode.id)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-10 h-10 ${mode.color} rounded-lg flex items-center justify-center flex-shrink-0`}
+              <Tabs value={configMode} onValueChange={(value) => setConfigMode(value as 'quick' | 'detailed')}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="quick" className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {t('drawConfig.quickConfig')}
+                  </TabsTrigger>
+                  <TabsTrigger value="detailed" className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    {t('drawConfig.detailedConfig')}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="quick" className="space-y-6">
+                  <QuickConfiguration
+                    items={items}
+                    onConfigSelect={handleQuickConfigSelect}
+                    showRecommendations={true}
+                    maxRecommendations={4}
+                  />
+                </TabsContent>
+
+                <TabsContent value="detailed" className="space-y-6">
+                  {/* Drawing Mode Selection */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Hash className="w-5 h-5 text-purple-600" />
+                      {t('drawConfig.selectMode')}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{t('drawConfig.selectModeDescription')}</p>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {drawingModes.map((mode) => (
+                        <Card
+                          key={mode.id}
+                          className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                            selectedMode === mode.id ? "ring-2 ring-purple-500 bg-purple-50" : "hover:bg-gray-50"
+                          }`}
+                          onClick={() => handleModeChange(mode.id)}
                         >
-                          <div className="text-white">{mode.icon}</div>
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div
+                                className={`w-10 h-10 ${mode.color} rounded-lg flex items-center justify-center flex-shrink-0`}
+                              >
+                                <div className="text-white">{mode.icon}</div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-gray-800 mb-1">{mode.name}</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed">{mode.description}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Drawing Settings */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Hash className="w-5 h-5 text-purple-600" />
+                      {t('drawConfig.drawSettings')}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{t('drawConfig.drawSettingsDescription')}</p>
+                    
+                    <div className="space-y-6">
+                      {/* 多宫格模式特殊说明 */}
+                      {selectedMode === 'grid-lottery' && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Hash className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-blue-900 mb-2">{t('drawConfig.gridLotteryFeatures')}</h4>
+                              <ul className="text-sm text-blue-800 space-y-1">
+                                <li>• {t('drawConfig.gridLotteryFeature1')}</li>
+                                <li>• {t('drawConfig.gridLotteryFeature2')}</li>
+                                <li>• {t('drawConfig.gridLotteryFeature3')}</li>
+                                <li>• {t('drawConfig.gridLotteryFeature4')}</li>
+                                <li>• {t('drawConfig.gridLotteryFeature5')}</li>
+                              </ul>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-800 mb-1">{mode.name}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{mode.description}</p>
+                      )}
+
+                      {/* 数量设置区域 */}
+                      {selectedMode === 'grid-lottery' ? (
+                        <div className="space-y-2">
+                          <Label htmlFor="quantity">{t('drawConfig.drawQuantity')}</Label>
+                          <div className="flex items-center gap-3">
+                            <div className="w-32 px-3 py-2 border border-blue-300 rounded-md bg-blue-50 text-blue-700 font-semibold">
+                              {t('drawConfig.oneWinner')}
+                            </div>
+                            <div className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                              {t('drawConfig.fixedQuantity')}
+                            </div>
+                          </div>
+                          <p className="text-sm text-blue-600">
+                            {t('drawConfig.gridLotteryQuantityDescription')}
+                          </p>
                         </div>
+                      ) : modeConfig.showQuantityInput && (
+                        <div className="space-y-2">
+                          <Label htmlFor="quantity">{t('drawConfig.drawQuantity')}</Label>
+                          {modeConfig.quantityEditable ? (
+                            <Input
+                              id="quantity"
+                              type="number"
+                              min="1"
+                              max={getMaxQuantityForMode(selectedMode, allowRepeat, items.length)}
+                              value={quantity}
+                              onChange={(e) => {
+                                const inputValue = e.target.value
+                                
+                                // 允许空值，让用户可以清空输入框
+                                if (inputValue === '') {
+                                  setQuantity('')
+                                  return
+                                }
+                                
+                                const numValue = Number.parseInt(inputValue)
+                                
+                                // 如果输入的不是有效数字，保持当前值
+                                if (isNaN(numValue)) {
+                                  return
+                                }
+                                
+                                const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
+                                
+                                // 允许用户输入，但在合理范围内
+                                if (numValue >= 1 && numValue <= maxValue) {
+                                  setQuantity(numValue)
+                                } else if (numValue > maxValue) {
+                                  setQuantity(maxValue)
+                                } else if (numValue < 1) {
+                                  setQuantity(1)
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // 当失去焦点时，如果是空值则设为1
+                                if (e.target.value === '' || isNaN(Number.parseInt(e.target.value))) {
+                                  setQuantity(1)
+                                }
+                              }}
+                              placeholder={t('drawConfig.quantityPlaceholder')}
+                              className="w-32"
+                            />
+                          ) : (
+                            <div className="w-32 px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 font-medium cursor-not-allowed">
+                              {modeConfig.quantityValue}
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-500">
+                            {modeConfig.description}
+                          </p>
+                          {modeConfig.helpText && (
+                            <p className="text-xs text-gray-400">
+                              {modeConfig.helpText}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 重复设置 - 多宫格模式特殊处理 */}
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <Label htmlFor="allow-repeat">{t('drawConfig.allowRepeat')}</Label>
+                          {selectedMode === 'grid-lottery' ? (
+                            <p className="text-sm text-blue-600">
+                              {t('drawConfig.gridLotteryRepeatDescription')}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-500">{t('drawConfig.allowRepeatDescription')}</p>
+                          )}
+                        </div>
+                        <Switch id="allow-repeat" checked={allowRepeat} onCheckedChange={setAllowRepeat} />
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Drawing Settings */}
-          <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Hash className="w-5 h-5 text-purple-600" />
-                抽奖设置
-              </CardTitle>
-              <CardDescription>配置抽奖的具体参数</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="quantity">抽取数量</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  max={getMaxQuantityForMode(selectedMode, allowRepeat, items.length)}
-                  value={quantity}
-                  onChange={(e) => {
-                    const inputValue = e.target.value
-                    
-                    // 允许空值，让用户可以清空输入框
-                    if (inputValue === '') {
-                      setQuantity('')
-                      return
-                    }
-                    
-                    const numValue = Number.parseInt(inputValue)
-                    
-                    // 如果输入的不是有效数字，保持当前值
-                    if (isNaN(numValue)) {
-                      return
-                    }
-                    
-                    const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
-                    
-                    // 允许用户输入，但在合理范围内
-                    if (numValue >= 1 && numValue <= maxValue) {
-                      setQuantity(numValue)
-                    } else if (numValue > maxValue) {
-                      setQuantity(maxValue)
-                    } else if (numValue < 1) {
-                      setQuantity(1)
-                    }
-                  }}
-                  onBlur={(e) => {
-                    // 当失去焦点时，如果是空值则设为1
-                    if (e.target.value === '' || isNaN(Number.parseInt(e.target.value))) {
-                      setQuantity(1)
-                    }
-                  }}
-                  placeholder="请输入数量"
-                  className="w-32"
-                />
-                <p className="text-sm text-gray-500">
-                  单次抽取的项目数量（{getQuantityLimitDescription(selectedMode, allowRepeat, items.length)}）
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="allow-repeat">允许重复中奖</Label>
-                  <p className="text-sm text-gray-500">开启后，同一个项目可以被多次抽中</p>
-                </div>
-                <Switch id="allow-repeat" checked={allowRepeat} onCheckedChange={setAllowRepeat} />
-              </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
@@ -542,7 +707,7 @@ export default function DrawConfigPage() {
                 className="border-purple-200 text-purple-600 hover:bg-purple-50 px-8 bg-transparent"
               >
                 <Save className="w-5 h-5 mr-2" />
-                {isSaving ? "保存中..." : "保存到名单库"}
+                {isSaving ? t('drawConfig.saving') : t('drawConfig.saveToLibrary')}
               </Button>
             )}
             
@@ -552,7 +717,7 @@ export default function DrawConfigPage() {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-4 text-lg font-semibold"
             >
               <Play className="w-6 h-6 mr-3" />
-              开始抽奖
+              {t('drawConfig.startDraw')}
             </Button>
           </div>
         </div>
