@@ -223,7 +223,7 @@
     "gridLottery": {
       "title": "Multi-Grid Lottery",
       "shortTitle": "Grid Lottery",
-      "description": "TV show style, light jumping freeze, full of ceremony",
+      "description": "Single draw mode - Light jumping to select one winner",
       "altDescription": "Classic grid jumping, single draw for one lucky winner",
       "features": [
         "Classic grid light jumping",
@@ -246,35 +246,32 @@
           "Single major prize distribution",
           "VIP customer selection"
         ]
-      }
-    },
-    "blinkingNamePicker": {
-      "title": "Blinking Name Calling",
-      "shortTitle": "Blinking Name Picker",
-      "description": "Fast blinking freeze, fair random name calling experience",
-      "altDescription": "Fast blinking highlight, suitable for classroom name calling",
-      "features": [
-        "Fast blinking highlight effects",
-        "Configurable blink speed and colors",
-        "Support multiple selection",
-        "Suitable for teaching and team scenarios"
-      ],
-      "detailed": {
-        "howItWorks": "Blinking name picker rapidly highlights names, then gradually slows down until stopping on a randomly selected name",
-        "bestFor": "Best suited for classroom teaching, team meetings, random name calling and other scenarios requiring fair selection",
-        "tips": [
-          "Use spacebar to control start and stop",
-          "Supports multiple consecutive rounds",
-          "Blinking speed automatically adjusts to build suspense",
-          "Works best on large screens for better effect"
-        ],
-        "scenarios": [
-          "Random classroom name calling for questions",
-          "Selecting speakers in meetings",
-          "Team activity group selection",
-          "Interactive training sessions"
-        ]
-      }
+      },
+      "back": "Back",
+      "backToHome": "Back to Home",
+      "welcomeExperience": "Welcome to experience \"{{name}}\"",
+      "demoDescription": "This is demo data, you can start drawing experience directly",
+      "configLost": "Configuration Lost",
+      "reconfigureRequired": "Please reconfigure drawing parameters",
+      "modeError": "Mode Error",
+      "gridLotteryOnly": "This page only supports multi-grid lottery mode",
+      "loadFailed": "Load Failed",
+      "configLoadError": "Unable to load drawing configuration",
+      "configError": "Configuration Error",
+      "configReminder": "Configuration Reminder",
+      "singleDraw": "Single Draw",
+      "itemCount": "{{count}} names",
+      "gridSize": "{{size}} grid",
+      "readyToStart": "Ready to Start",
+      "countdown": "Countdown {{count}}",
+      "lightJumping": "Light Jumping...",
+      "drawComplete": "Draw Complete!",
+      "lightJumpingDescription": "Light is jumping rapidly, about to freeze...",
+      "startDraw": "Start Draw",
+      "countdownInProgress": "Countdown in progress...",
+      "drawingInProgress": "Drawing in progress...",
+      "winner": "Winner: {{name}}",
+      "modeDisplayName": "Multi-Grid Lottery (Single Draw)"
     }
   },
 
@@ -349,6 +346,32 @@
     "dataRestored": "Data restored",
     "dataRestoredDescription": "Restored {{count}} previously edited names"
   },
+  "listLibrary": {
+    "title": "List Library",
+    "back": "Back",
+    "newList": "New List",
+    "searchPlaceholder": "Search lists...",
+    "loading": "Loading...",
+    "noListsYet": "No lists yet",
+    "noListsFound": "No lists found",
+    "createFirstList": "Create your first list to get started",
+    "tryOtherKeywords": "Try different keywords or create a new list",
+    "createList": "Create List",
+    "itemsCount": "{{count}} items",
+    "use": "Use",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
+    "batchDeleteConfirm": "Are you sure you want to delete {{count}} selected lists?",
+    "deleteSuccess": "Delete successful",
+    "deleteSuccessDescription": "List \"{{name}}\" has been deleted",
+    "batchDeleteSuccess": "Batch delete successful",
+    "batchDeleteSuccessDescription": "Successfully deleted {{count}} lists",
+    "deleteFailed": "Delete failed",
+    "loadFailed": "Load failed",
+    "loadFailedDescription": "Unable to load list data, please refresh and try again"
+  },
   "slotMachine": {
     "title": "Slot Machine",
     "back": "Back",
@@ -388,7 +411,27 @@
     "loadFailed": "Load Failed",
     "configLoadError": "Unable to load drawing configuration, please reconfigure",
     "cannotDrawAgain": "Cannot Draw Again",
-    "insufficientRemaining": "Insufficient remaining names, need {{needed}} names but only {{remaining}} left"
+    "insufficientRemaining": "Insufficient remaining names, need {{needed}} names but only {{remaining}} left",
+    "loading": "Loading...",
+    "back": "Back",
+    "title": "Card Drawing",
+    "soundSettings": "Sound Settings",
+    "soundSettingsDescription": "Adjust sound volume and test sound effects",
+    "masterVolume": "Master Volume",
+    "testSound": "Test Sound",
+    "shuffle": "Shuffle",
+    "deal": "Deal",
+    "flip": "Flip",
+    "reveal": "Reveal",
+    "soundStatus": "Sound Status",
+    "ready": "Ready",
+    "initializing": "Initializing...",
+    "namesCount": "{{count}} names",
+    "drawQuantity": "Draw {{quantity}} items",
+    "remaining": "{{count}} remaining",
+    "description": "Click cards to flip them and experience the elegant drawing process",
+    "modeName": "Card Drawing",
+    "clickToStart": "Click button to start card drawing"
   },
   "quickConfig": {
     "title": "Quick Configuration",
@@ -456,7 +499,9 @@
     "saveFailed": "Save Failed",
     "saveFailedDescription": "An error occurred while saving the list, please try again",
     "saveHint": "Save Hint",
-    "saveHintDescription": "Currently have {{count}} participants, suitable for multi-grid lottery"
+    "saveHintDescription": "Currently have {{count}} participants, suitable for multi-grid lottery",
+    "quickConfigApplied": "Quick Configuration Applied",
+    "quickConfigAppliedDescription": "Set to {{mode}} mode, drawing {{quantity}} items"
   },
   "drawResult": {
     "title": "Draw Results",
@@ -731,6 +776,63 @@
       "scrollStopped": "Bullet screen stopped, triggering completion callback"
     },
     "blinkingNamePicker": {
+      "title": "Blinking Name Picker",
+      "shortTitle": "Blinking Name Picker",
+      "description": "Fast blinking freeze, fair random name calling experience",
+      "loading": "Loading...",
+      "experienceDataError": "Experience Data Error",
+      "experienceDataErrorDescription": "Invalid experience configuration data",
+      "experienceTemplateError": "Experience Template Error", 
+      "experienceTemplateErrorDescription": "Invalid experience template data",
+      "welcomeExperience": "Welcome to experience \"{{name}}\"",
+      "welcomeExperienceDescription": "This is demo data, you can start drawing experience directly",
+      "loadFailed": "Load Failed",
+      "loadFailedDescription": "Unable to load drawing configuration",
+      "configLoadFailed": "Configuration load failed",
+      "backToConfig": "Back to Config",
+      "backToHome": "Back to Home",
+      "backToConfigPage": "Back to Config Page",
+      "participants": "{{count}} participants",
+      "drawCount": "Draw {{count}} items",
+      "allowRepeat": "Allow repeat",
+      "noRepeat": "No repeat",
+      "restartTooltip": "Restart game",
+      "restart": "Restart",
+      "startBlinking": "Start Blinking",
+      "startBlinkingTooltip": "Start blinking name picker draw",
+      "pause": "Pause",
+      "pauseBlinkingTooltip": "Pause blinking, can resume to continue",
+      "resumeBlinking": "Resume Blinking",
+      "resumeBlinkingTooltip": "Resume blinking draw",
+      "continueNextRound": "Continue Next Round",
+      "continueNextRoundTooltip": "Continue drawing remaining {{count}} names",
+      "turnOffSound": "Turn off sound",
+      "turnOnSound": "Turn on sound",
+      "settings": "Settings",
+      "blinkingSettings": "Blinking Settings",
+      "initialSpeed": "Initial Speed ({{speed}}ms)",
+      "features": [
+        "Fast blinking highlight effects",
+        "Configurable blink speed and colors",
+        "Support multiple selection",
+        "Suitable for teaching and team scenarios"
+      ],
+      "detailed": {
+        "howItWorks": "Blinking name picker rapidly highlights names, then gradually slows down until stopping on a randomly selected name",
+        "bestFor": "Best suited for classroom teaching, team meetings, random name calling and other scenarios requiring fair selection",
+        "tips": [
+          "Use spacebar to control start and stop",
+          "Supports multiple consecutive rounds",
+          "Blinking speed automatically adjusts to build suspense",
+          "Works best on large screens for better effect"
+        ],
+        "scenarios": [
+          "Random classroom name calling for questions",
+          "Selecting speakers in meetings",
+          "Team activity group selection",
+          "Interactive training sessions"
+        ]
+      },
       "emptyListError": "Name list is empty, cannot start game",
       "animationControllerError": "Animation controller not initialized, please restart",
       "blinkingStatus": "Blinking selection in progress...",

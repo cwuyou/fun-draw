@@ -1,5 +1,8 @@
 import { ExperienceTemplate, DrawingConfig, ListItem } from '@/types'
-import { EXPERIENCE_TEMPLATES, recordTemplateUsage } from './experience-templates'
+import { EXPERIENCE_TEMPLATES, createExperienceTemplates, recordTemplateUsage } from './experience-templates'
+
+// 翻译函数类型定义
+type TranslationFunction = (key: string, params?: Record<string, any>) => string
 
 /**
  * 一键体验功能的状态管理和业务逻辑
@@ -69,9 +72,10 @@ export const saveUserPreferences = (preferences: Partial<ExperienceUserPreferenc
 /**
  * 创建体验会话
  */
-export const createExperienceSession = (templateId: string): ExperienceSession | null => {
+export const createExperienceSession = (templateId: string, t?: TranslationFunction): ExperienceSession | null => {
   try {
-    const template = EXPERIENCE_TEMPLATES.find(t => t.id === templateId)
+    const templates = t ? createExperienceTemplates(t) : EXPERIENCE_TEMPLATES
+    const template = templates.find(tmpl => tmpl.id === templateId)
     if (!template) {
       console.error('Template not found:', templateId)
       return null
@@ -215,7 +219,7 @@ export const getExperienceHistory = (): any[] => {
  * 获取推荐模板
  * 基于用户历史使用情况和偏好推荐模板
  */
-export const getRecommendedTemplates = (limit: number = 3): ExperienceTemplate[] => {
+export const getRecommendedTemplates = (limit: number = 3, t?: TranslationFunction): ExperienceTemplate[] => {
   try {
     const preferences = getUserPreferences()
     const history = getExperienceHistory()
@@ -251,8 +255,11 @@ export const getRecommendedTemplates = (limit: number = 3): ExperienceTemplate[]
       templateScores.set(session.templateId, (templateScores.get(session.templateId) || 0) + score * 0.5)
     })
     
+    // 获取模板列表（使用翻译函数或默认模板）
+    const templates = t ? createExperienceTemplates(t) : EXPERIENCE_TEMPLATES
+    
     // 获取得分最高的模板
-    const sortedTemplates = EXPERIENCE_TEMPLATES
+    const sortedTemplates = templates
       .map(template => ({
         template,
         score: templateScores.get(template.id) || 0
@@ -263,7 +270,7 @@ export const getRecommendedTemplates = (limit: number = 3): ExperienceTemplate[]
     
     // 如果没有足够的推荐，用默认模板补充
     if (sortedTemplates.length < limit) {
-      const defaultTemplates = EXPERIENCE_TEMPLATES
+      const defaultTemplates = templates
         .filter(t => !sortedTemplates.find(st => st.id === t.id))
         .slice(0, limit - sortedTemplates.length)
       
@@ -273,7 +280,8 @@ export const getRecommendedTemplates = (limit: number = 3): ExperienceTemplate[]
     return sortedTemplates
   } catch (error) {
     console.error('Failed to get recommended templates:', error)
-    return EXPERIENCE_TEMPLATES.slice(0, limit)
+    const templates = t ? createExperienceTemplates(t) : EXPERIENCE_TEMPLATES
+    return templates.slice(0, limit)
   }
 }
 

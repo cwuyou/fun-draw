@@ -973,7 +973,7 @@ export function CardFlipGame({
             🎲 开始抽奖
           </button>
           <p className={cn("text-sm text-gray-500", `mt-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
-            点击按钮开始卡牌抽奖
+{t('cardFlip.clickToStart')}
           </p>
         </div>
       )}

@@ -223,7 +223,7 @@
     "gridLottery": {
       "title": "多宫格抽奖",
       "shortTitle": "宫格抽奖",
-      "description": "电视节目风格，灯光跳跃定格，仪式感满满",
+      "description": "单次抽取模式 - 灯光跳转选择一位获奖者",
       "altDescription": "经典宫格跳跃，单次抽取一位幸运儿",
       "features": [
         "经典宫格灯光跳跃",
@@ -246,13 +246,90 @@
           "单一大奖分配",
           "VIP客户选择"
         ]
-      }
+      },
+      "back": "返回",
+      "backToHome": "返回首页",
+      "welcomeExperience": "欢迎体验\"{{name}}\"",
+      "demoDescription": "这是演示数据，您可以直接开始抽奖体验",
+      "configLost": "配置丢失",
+      "reconfigureRequired": "请重新配置抽奖参数",
+      "modeError": "模式错误",
+      "gridLotteryOnly": "当前页面仅支持多宫格抽奖模式",
+      "loadFailed": "加载失败",
+      "configLoadError": "无法加载抽奖配置",
+      "configError": "配置错误",
+      "configReminder": "配置提醒",
+      "singleDraw": "单次抽取",
+      "itemCount": "{{count}} 名称",
+      "gridSize": "{{size}} 宫格",
+      "readyToStart": "准备开始",
+      "countdown": "倒计时 {{count}}",
+      "lightJumping": "灯光跳转中...",
+      "drawComplete": "抽奖完成！",
+      "lightJumpingDescription": "灯光正在快速跳转，即将定格...",
+      "startDraw": "开始抽奖",
+      "countdownInProgress": "倒计时中...",
+      "drawingInProgress": "抽奖中...",
+      "winner": "获奖者：{{name}}",
+      "modeDisplayName": "多宫格抽奖（单次抽取）"
     },
     "blinkingNamePicker": {
       "title": "闪烁点名",
       "shortTitle": "闪烁点名",
       "description": "快速闪烁定格，公平的随机点名体验",
       "altDescription": "快速闪烁高亮，适合课堂点名",
+      "loading": "加载中...",
+      "experienceDataError": "体验数据错误",
+      "experienceDataErrorDescription": "体验配置数据无效",
+      "experienceTemplateError": "体验模板错误", 
+      "experienceTemplateErrorDescription": "体验模板数据无效",
+      "welcomeExperience": "欢迎体验\"{{name}}\"",
+      "welcomeExperienceDescription": "这是演示数据，您可以直接开始抽奖体验",
+      "loadFailed": "加载失败",
+      "loadFailedDescription": "无法加载抽奖配置",
+      "configLoadFailed": "配置加载失败",
+      "backToConfig": "返回配置",
+      "backToHome": "返回首页",
+      "backToConfigPage": "返回配置页面",
+      "participants": "{{count}} 个参与者",
+      "drawCount": "抽取 {{count}} 个",
+      "allowRepeat": "允许重复",
+      "noRepeat": "不允许重复",
+      "restartTooltip": "重新开始游戏",
+      "restart": "重新开始",
+      "startBlinking": "开始闪烁",
+      "startBlinkingTooltip": "开始闪烁点名抽奖",
+      "pause": "暂停",
+      "pauseBlinkingTooltip": "暂停闪烁，可以恢复继续",
+      "resumeBlinking": "恢复闪烁",
+      "resumeBlinkingTooltip": "恢复闪烁抽奖",
+      "continueNextRound": "继续下一轮",
+      "continueNextRoundTooltip": "继续抽取剩余的 {{count}} 个名称",
+      "turnOffSound": "关闭音效",
+      "turnOnSound": "开启音效",
+      "settings": "设置",
+      "blinkingSettings": "闪烁设置",
+      "initialSpeed": "初始速度 ({{speed}}ms)",
+      "emptyListError": "名称列表为空，无法开始游戏",
+      "animationControllerError": "动画控制器未初始化，请重新开始",
+      "blinkingStatus": "正在闪烁选择中...",
+      "slowingStatus": "即将停止...",
+      "stoppedStatus": "选择完成！",
+      "finishedStatus": "全部完成！",
+      "readyStatus": "准备开始",
+      "emptyListMessage": "请先添加参与者才能开始闪烁点名抽奖",
+      "emptyListTip": "💡 提示：返回配置页面添加参与者名单，然后就可以开始抽奖了！",
+      "preparingGame": "正在准备闪烁点名...",
+      "aboutToStart": "即将开始精彩的抽奖体验",
+      "gameInstructions": "闪烁点名游戏。使用空格键开始或停止游戏，使用回车键继续下一轮，使用Ctrl+R重置游戏。",
+      "blinkingInProgress": "正在闪烁选择中",
+      "aboutToStop": "即将停止",
+      "selectionComplete": "选择完成，选中了 {{name}}",
+      "gameComplete": "游戏完成，共选中 {{count}} 个名称",
+      "selectedNames": "已选中名称 ({{count}})",
+      "roundSelected": "第 {{round}} 轮选中",
+      "selectedCount": "选中名称",
+      "checkConfigRetry": "请检查配置后重试",
       "features": [
         "快速闪烁高亮效果",
         "可配置闪烁速度和颜色",
@@ -274,6 +351,32 @@
           "团队活动分组选择",
           "培训中的互动环节"
         ]
+      },
+      "controlPanel": {
+        "idle": {
+          "text": "准备开始",
+          "description": "点击\"开始闪烁\"开始抽奖"
+        },
+        "blinking": {
+          "text": "正在闪烁选择中...",
+          "description": "快速闪烁中，点击\"停止\"可立即选择"
+        },
+        "slowing": {
+          "text": "即将停止...",
+          "description": "闪烁速度正在减慢，即将选出结果"
+        },
+        "paused": {
+          "text": "已暂停",
+          "description": "闪烁已暂停，点击\"恢复闪烁\"或按空格键继续"
+        },
+        "stopped": {
+          "text": "选择完成",
+          "description": "已选中一个名称，点击\"继续\"进行下一轮或\"重新开始\""
+        },
+        "finished": {
+          "text": "全部完成",
+          "description": "所有轮次已完成，可以查看结果或重新开始"
+        }
       }
     }
   },
@@ -349,6 +452,32 @@
     "dataRestored": "数据已恢复",
     "dataRestoredDescription": "已恢复之前编辑的 {{count}} 个名称"
   },
+  "listLibrary": {
+    "title": "名单库",
+    "back": "返回",
+    "newList": "新建名单",
+    "searchPlaceholder": "搜索名单...",
+    "loading": "加载中...",
+    "noListsYet": "暂无名单",
+    "noListsFound": "未找到名单",
+    "createFirstList": "创建你的第一个名单开始使用",
+    "tryOtherKeywords": "尝试其他关键词或创建新名单",
+    "createList": "创建名单",
+    "itemsCount": "{{count}} 个项目",
+    "use": "使用",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "deleteSelected": "删除选中 ({{count}})",
+    "deleteConfirm": "确定要删除「{{name}}」吗？",
+    "batchDeleteConfirm": "确定要删除选中的 {{count}} 个名单吗？",
+    "deleteSuccess": "删除成功",
+    "deleteSuccessDescription": "名单「{{name}}」已删除",
+    "batchDeleteSuccess": "批量删除成功",
+    "batchDeleteSuccessDescription": "成功删除 {{count}} 个名单",
+    "deleteFailed": "删除失败",
+    "loadFailed": "加载失败",
+    "loadFailedDescription": "无法加载名单数据，请刷新后重试"
+  },
   "slotMachine": {
     "title": "老虎机抽奖",
     "back": "返回",
@@ -388,7 +517,27 @@
     "loadFailed": "加载失败",
     "configLoadError": "无法加载抽奖配置，请重新配置",
     "cannotDrawAgain": "无法再次抽奖",
-    "insufficientRemaining": "剩余名称不足，需要 {{needed}} 个名称，但只剩 {{remaining}} 个"
+    "insufficientRemaining": "剩余名称不足，需要 {{needed}} 个名称，但只剩 {{remaining}} 个",
+    "loading": "加载中...",
+    "back": "返回",
+    "title": "卡牌抽奖",
+    "soundSettings": "音效设置",
+    "soundSettingsDescription": "调整音效音量和测试音效",
+    "masterVolume": "主音量",
+    "testSound": "测试音效",
+    "shuffle": "洗牌",
+    "deal": "发牌",
+    "flip": "翻牌",
+    "reveal": "揭晓",
+    "soundStatus": "音效状态",
+    "ready": "已就绪",
+    "initializing": "初始化中...",
+    "namesCount": "{{count}} 名称",
+    "drawQuantity": "抽取 {{quantity}} 个",
+    "remaining": "剩余 {{count}} 个",
+    "description": "点击卡牌进行翻牌，体验优雅的抽奖过程",
+    "modeName": "卡牌抽取式",
+    "clickToStart": "点击按钮开始卡牌抽奖"
   },
   "quickConfig": {
     "title": "快速配置",
@@ -456,7 +605,9 @@
     "saveFailed": "保存失败",
     "saveFailedDescription": "保存名单时出现错误，请重试",
     "saveHint": "保存提示",
-    "saveHintDescription": "当前有 {{count}} 个参与者，适合多宫格抽奖"
+    "saveHintDescription": "当前有 {{count}} 个参与者，适合多宫格抽奖",
+    "quickConfigApplied": "快速配置已应用",
+    "quickConfigAppliedDescription": "已设置为{{mode}}模式，抽取{{quantity}}个"
   },
   "drawResult": {
     "title": "抽奖结果",
@@ -729,55 +880,6 @@
       "stopped": "已选中",
       "ready": "准备中",
       "scrollStopped": "弹幕滚动停止，触发完成回调"
-    },
-    "blinkingNamePicker": {
-      "emptyListError": "名称列表为空，无法开始游戏",
-      "animationControllerError": "动画控制器未初始化，请重新开始",
-      "blinkingStatus": "正在闪烁选择中...",
-      "slowingStatus": "即将停止...",
-      "stoppedStatus": "选择完成！",
-      "finishedStatus": "全部完成！",
-      "readyStatus": "准备开始",
-      "emptyListMessage": "请先添加参与者才能开始闪烁点名抽奖",
-      "emptyListTip": "💡 提示：返回配置页面添加参与者名单，然后就可以开始抽奖了！",
-      "preparingGame": "正在准备闪烁点名...",
-      "aboutToStart": "即将开始精彩的抽奖体验",
-      "gameInstructions": "闪烁点名游戏。使用空格键开始或停止游戏，使用回车键继续下一轮，使用Ctrl+R重置游戏。",
-      "blinkingInProgress": "正在闪烁选择中",
-      "aboutToStop": "即将停止",
-      "selectionComplete": "选择完成，选中了 {{name}}",
-      "gameComplete": "游戏完成，共选中 {{count}} 个名称",
-      "selectedNames": "已选中名称 ({{count}})",
-      "roundSelected": "第 {{round}} 轮选中",
-      "selectedCount": "选中名称",
-      "checkConfigRetry": "请检查配置后重试",
-      "restart": "重新开始",
-      "controlPanel": {
-        "idle": {
-          "text": "准备开始",
-          "description": "点击\"开始闪烁\"开始抽奖"
-        },
-        "blinking": {
-          "text": "正在闪烁选择中...",
-          "description": "快速闪烁中，点击\"停止\"可立即选择"
-        },
-        "slowing": {
-          "text": "即将停止...",
-          "description": "闪烁速度正在减慢，即将选出结果"
-        },
-        "paused": {
-          "text": "已暂停",
-          "description": "闪烁已暂停，点击\"恢复闪烁\"或按空格键继续"
-        },
-        "stopped": {
-          "text": "选择完成",
-          "description": "已选中一个名称，点击\"继续\"进行下一轮或\"重新开始\""
-        },
-        "finished": {
-          "text": "全部完成",
-          "description": "所有轮次已完成，可以查看结果或重新开始"
-        }
-      }
     }
   },
   "errors": {

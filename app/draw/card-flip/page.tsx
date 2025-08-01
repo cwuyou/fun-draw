@@ -207,7 +207,7 @@ export default function CardFlipDrawPage() {
   const getDrawResult = (): DrawResult => ({
     winners,
     timestamp: new Date().toISOString(),
-    mode: "卡牌抽取式",
+    mode: t('cardFlip.modeName'),
     totalItems: config?.items.length || 0,
   })
 
@@ -216,7 +216,7 @@ export default function CardFlipDrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">加载中...</p>
+          <p className="text-gray-600 mt-4">{t('cardFlip.loading')}</p>
         </div>
       </div>
     )
@@ -236,13 +236,13 @@ export default function CardFlipDrawPage() {
                 className="text-gray-600 hover:text-blue-600"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                返回
+{t('cardFlip.back')}
               </Button>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                   <Spade className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-800">卡牌抽奖</h1>
+                <h1 className="text-2xl font-bold text-gray-800">{t('cardFlip.title')}</h1>
               </div>
             </div>
 
@@ -273,9 +273,9 @@ export default function CardFlipDrawPage() {
                   <PopoverContent className="w-80" align="end">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <h4 className="font-medium leading-none">音效设置</h4>
+                        <h4 className="font-medium leading-none">{t('cardFlip.soundSettings')}</h4>
                         <p className="text-sm text-muted-foreground">
-                          调整音效音量和测试音效
+                          {t('cardFlip.soundSettingsDescription')}
                         </p>
                       </div>
 
@@ -283,7 +283,7 @@ export default function CardFlipDrawPage() {
                         {/* 主音量控制 */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium">主音量</label>
+                            <label className="text-sm font-medium">{t('cardFlip.masterVolume')}</label>
                             <span className="text-sm text-muted-foreground">
                               {Math.round(masterVolume * 100)}%
                             </span>
@@ -301,7 +301,7 @@ export default function CardFlipDrawPage() {
 
                         {/* 音效测试按钮 */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">测试音效</label>
+                          <label className="text-sm font-medium">{t('cardFlip.testSound')}</label>
                           <div className="grid grid-cols-2 gap-2">
                             <Button
                               variant="outline"
@@ -310,7 +310,7 @@ export default function CardFlipDrawPage() {
                               disabled={!soundEnabled || !soundInitialized}
                               className="text-xs"
                             >
-                              洗牌
+                              {t('cardFlip.shuffle')}
                             </Button>
                             <Button
                               variant="outline"
@@ -319,7 +319,7 @@ export default function CardFlipDrawPage() {
                               disabled={!soundEnabled || !soundInitialized}
                               className="text-xs"
                             >
-                              发牌
+                              {t('cardFlip.deal')}
                             </Button>
                             <Button
                               variant="outline"
@@ -328,7 +328,7 @@ export default function CardFlipDrawPage() {
                               disabled={!soundEnabled || !soundInitialized}
                               className="text-xs"
                             >
-                              翻牌
+                              {t('cardFlip.flip')}
                             </Button>
                             <Button
                               variant="outline"
@@ -337,7 +337,7 @@ export default function CardFlipDrawPage() {
                               disabled={!soundEnabled || !soundInitialized}
                               className="text-xs"
                             >
-                              揭晓
+                              {t('cardFlip.reveal')}
                             </Button>
                           </div>
                         </div>
@@ -345,9 +345,9 @@ export default function CardFlipDrawPage() {
                         {/* 音效状态指示 */}
                         <div className="pt-2 border-t">
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>音效状态:</span>
+                            <span>{t('cardFlip.soundStatus')}:</span>
                             <span className={soundInitialized ? "text-green-600" : "text-orange-600"}>
-                              {soundInitialized ? "已就绪" : "初始化中..."}
+                              {soundInitialized ? t('cardFlip.ready') : t('cardFlip.initializing')}
                             </span>
                           </div>
                         </div>
@@ -360,15 +360,15 @@ export default function CardFlipDrawPage() {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                   <Users className="w-3 h-3 mr-1" />
-                  {config.items.length} 名称
+{t('cardFlip.namesCount', { count: config.items.length })}
                 </Badge>
                 <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                   <Hash className="w-3 h-3 mr-1" />
-                  抽取 {config.quantity} 个
+{t('cardFlip.drawQuantity', { quantity: config.quantity })}
                 </Badge>
                 {!config.allowRepeat && drawnItems.size > 0 && (
                   <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                    剩余 {config.items.length - drawnItems.size} 个
+{t('cardFlip.remaining', { count: config.items.length - drawnItems.size })}
                   </Badge>
                 )}
               </div>
@@ -383,10 +383,10 @@ export default function CardFlipDrawPage() {
               <CardHeader className="text-center">
                 <CardTitle className="flex items-center justify-center gap-2 text-2xl">
                   <Spade className="w-6 h-6 text-blue-600" />
-                  卡牌抽奖
+                  {t('cardFlip.title')}
                 </CardTitle>
                 <CardDescription className="text-base">
-                  点击卡牌进行翻牌，体验优雅的抽奖过程
+                  {t('cardFlip.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -409,7 +409,7 @@ export default function CardFlipDrawPage() {
             <div className="text-center">
               <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-lg">
                 <div className="text-white font-bold text-xl">🃏</div>
-                <div className="text-white font-bold text-lg">卡牌抽奖</div>
+                <div className="text-white font-bold text-lg">{t('cardFlip.title')}</div>
                 <div className="text-white font-bold text-xl">🃏</div>
               </div>
             </div>

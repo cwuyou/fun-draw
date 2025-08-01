@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +31,7 @@ import ExperienceFeedback from "@/components/experience-feedback"
 
 export default function GridLotteryDrawPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const { toast } = useToast()
 
   const [config, setConfig] = useState<DrawingConfig | null>(null)
@@ -88,8 +90,8 @@ export default function GridLotteryDrawPage() {
           
           // 显示体验开始提示
           toast({
-            title: `欢迎体验"${experienceSession.template.name}"`,
-            description: "这是演示数据，您可以直接开始抽奖体验",
+            title: t('gridLottery.welcomeExperience', { name: experienceSession.template.name }),
+            description: t('gridLottery.demoDescription'),
           })
           return
         }
@@ -99,8 +101,8 @@ export default function GridLotteryDrawPage() {
       const migratedConfig = loadAndMigrateConfig("draw-config")
       if (!migratedConfig) {
         toast({
-          title: "配置丢失",
-          description: "请重新配置抽奖参数",
+          title: t('gridLottery.configLost'),
+          description: t('gridLottery.reconfigureRequired'),
           variant: "destructive",
         })
         router.push("/draw-config")
@@ -109,8 +111,8 @@ export default function GridLotteryDrawPage() {
 
       if (migratedConfig.mode !== "grid-lottery") {
         toast({
-          title: "模式错误",
-          description: "当前页面仅支持多宫格抽奖模式",
+          title: t('gridLottery.modeError'),
+          description: t('gridLottery.gridLotteryOnly'),
           variant: "destructive",
         })
         router.push("/draw-config")
@@ -129,8 +131,8 @@ export default function GridLotteryDrawPage() {
       initializeGrid(migratedConfig)
     } catch (error) {
       toast({
-        title: "加载失败",
-        description: "无法加载抽奖配置",
+        title: t('gridLottery.loadFailed'),
+        description: t('gridLottery.configLoadError'),
         variant: "destructive",
       })
       router.push("/draw-config")
@@ -144,7 +146,7 @@ export default function GridLotteryDrawPage() {
     if (!validation.isValid) {
       validation.errors.forEach(error => {
         toast({
-          title: "配置错误",
+          title: t('gridLottery.configError'),
           description: error,
           variant: "destructive",
         })
@@ -155,7 +157,7 @@ export default function GridLotteryDrawPage() {
     // 显示警告信息
     validation.warnings.forEach(warning => {
       toast({
-        title: "配置提醒",
+        title: t('gridLottery.configReminder'),
         description: warning,
         variant: "default",
       })
@@ -375,7 +377,7 @@ export default function GridLotteryDrawPage() {
   const getDrawResult = (): DrawResult => ({
     winners: gameState.winner ? [gameState.winner] : [],
     timestamp: new Date().toISOString(),
-    mode: "多宫格抽奖（单次抽取）",
+    mode: t('gridLottery.modeDisplayName'),
     totalItems: config?.items.length || 0,
   })
 
@@ -384,7 +386,7 @@ export default function GridLotteryDrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">加载中...</p>
+          <p className="text-gray-600 mt-4">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -414,19 +416,19 @@ export default function GridLotteryDrawPage() {
               disabled={gameState.phase === "spinning" || gameState.phase === "countdown"}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {isExperienceMode ? "返回首页" : "返回"}
+              {isExperienceMode ? t('gridLottery.backToHome') : t('gridLottery.back')}
             </Button>
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <Hash className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">多宫格抽奖</h1>
-                <p className="text-sm text-gray-600">单次抽取模式 - 灯光跳转选择一位获奖者</p>
+                <h1 className="text-2xl font-bold text-gray-800">{t('gridLottery.title')}</h1>
+                <p className="text-sm text-gray-600">{t('gridLottery.description')}</p>
               </div>
               <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 text-sm border border-indigo-200">
                 <Hash className="w-3 h-3 mr-1" />
-                单次抽取
+{t('gridLottery.singleDraw')}
               </Badge>
             </div>
           </div>
@@ -444,11 +446,11 @@ export default function GridLotteryDrawPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
                 <Users className="w-3 h-3 mr-1" />
-                {config.items.length} 名称
+{t('gridLottery.itemCount', { count: config.items.length })}
               </Badge>
               <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                 <Hash className="w-3 h-3 mr-1" />
-                {gridSize} 宫格
+{t('gridLottery.gridSize', { size: gridSize })}
               </Badge>
             </div>
           </div>
@@ -464,31 +466,31 @@ export default function GridLotteryDrawPage() {
                 {gameState.phase === "idle" && (
                   <>
                     <Hash className="w-6 h-6 text-indigo-600" />
-                    准备开始
+                    {t('gridLottery.readyToStart')}
                   </>
                 )}
                 {gameState.phase === "countdown" && (
                   <>
                     <Timer className="w-6 h-6 text-orange-600" />
-                    倒计时 {gameState.countdown}
+                    {t('gridLottery.countdown', { count: gameState.countdown })}
                   </>
                 )}
                 {gameState.phase === "spinning" && (
                   <>
                     <Hash className="w-6 h-6 text-purple-600 animate-spin" />
-                    灯光跳转中...
+                    {t('gridLottery.lightJumping')}
                   </>
                 )}
                 {gameState.phase === "finished" && (
                   <>
                     <Hash className="w-6 h-6 text-green-600" />
-                    抽奖完成！
+                    {t('gridLottery.drawComplete')}
                   </>
                 )}
               </CardTitle>
               {gameState.phase === "spinning" && (
                 <CardDescription>
-                  <p className="mt-2 text-sm text-gray-600">灯光正在快速跳转，即将定格...</p>
+                  <p className="mt-2 text-sm text-gray-600">{t('gridLottery.lightJumpingDescription')}</p>
                 </CardDescription>
               )}
             </CardHeader>
@@ -538,7 +540,7 @@ export default function GridLotteryDrawPage() {
             <div className="text-center mt-8">
               <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full shadow-lg">
                 <div className="text-white font-bold text-xl">🎯</div>
-                <div className="text-white font-bold text-lg">多宫格抽奖</div>
+                <div className="text-white font-bold text-lg">{t('gridLottery.title')}</div>
                 <div className="text-white font-bold text-xl">🎯</div>
               </div>
             </div>
@@ -553,7 +555,7 @@ export default function GridLotteryDrawPage() {
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-12 py-4 text-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Play className="w-6 h-6 mr-3" />
-                开始抽奖
+{t('gridLottery.startDraw')}
               </Button>
             )}
 
@@ -564,15 +566,15 @@ export default function GridLotteryDrawPage() {
                 className="bg-gray-400 text-white px-12 py-4 text-xl font-bold cursor-not-allowed"
               >
                 <Pause className="w-6 h-6 mr-3" />
-                {gameState.phase === "countdown" ? "倒计时中..." : "抽奖中..."}
+{gameState.phase === "countdown" ? t('gridLottery.countdownInProgress') : t('gridLottery.drawingInProgress')}
               </Button>
             )}
 
             {gameState.phase === "finished" && !showResult && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
-                <p className="text-2xl font-bold text-gray-800 mb-4">抽奖完成！</p>
-                <p className="text-gray-600">获奖者：{gameState.winner?.name}</p>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('gridLottery.drawComplete')}</p>
+                <p className="text-gray-600">{t('gridLottery.winner', { name: gameState.winner?.name })}</p>
               </div>
             )}
           </div>

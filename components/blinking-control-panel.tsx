@@ -211,10 +211,10 @@ export function BlinkingControlPanel({
               <button
                 onClick={onStart}
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-                title="开始闪烁点名抽奖"
+                title={t('blinkingNamePicker.startBlinkingTooltip')}
               >
                 <Play className="w-4 h-4" />
-                开始闪烁
+                {t('blinkingNamePicker.startBlinking')}
               </button>
             )}
             
@@ -222,10 +222,10 @@ export function BlinkingControlPanel({
               <button
                 onClick={onStop}
                 className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg animate-pulse"
-                title="暂停闪烁，可以恢复继续"
+                title={t('blinkingNamePicker.pauseBlinkingTooltip')}
               >
                 <Pause className="w-4 h-4" />
-                暂停
+                {t('blinkingNamePicker.pause')}
               </button>
             )}
             
@@ -233,10 +233,10 @@ export function BlinkingControlPanel({
               <button
                 onClick={onResume}
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-                title="恢复闪烁抽奖"
+                title={t('blinkingNamePicker.resumeBlinkingTooltip')}
               >
                 <Play className="w-4 h-4" />
-                恢复闪烁
+                {t('blinkingNamePicker.resumeBlinking')}
               </button>
             )}
             
@@ -244,10 +244,10 @@ export function BlinkingControlPanel({
               <button
                 onClick={onReset}
                 className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
-                title="重新开始抽奖，清空所有结果"
+                title={t('blinkingNamePicker.restartTooltip')}
               >
                 <RotateCcw className="w-4 h-4" />
-                重新开始
+                {t('blinkingNamePicker.restart')}
               </button>
             )}
 
@@ -256,10 +256,10 @@ export function BlinkingControlPanel({
               <button
                 onClick={onContinue}
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105 animate-bounce"
-                title={`继续抽取剩余的 ${getRemainingRounds()} 个名称`}
+                title={t('blinkingNamePicker.continueNextRoundTooltip', { count: getRemainingRounds() })}
               >
                 <Play className="w-4 h-4" />
-                继续下一轮
+                {t('blinkingNamePicker.continueNextRound')}
               </button>
             )}
 
@@ -272,7 +272,7 @@ export function BlinkingControlPanel({
                   ? "bg-blue-100 text-blue-700 hover:bg-blue-200 shadow-sm"
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
               )}
-              title={soundEnabled ? "关闭音效" : "开启音效"}
+              title={soundEnabled ? t('blinkingNamePicker.turnOffSound') : t('blinkingNamePicker.turnOnSound')}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
@@ -287,7 +287,7 @@ export function BlinkingControlPanel({
                     ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 )}
-                title="设置"
+                title={t('blinkingNamePicker.settings')}
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -298,13 +298,13 @@ export function BlinkingControlPanel({
         {/* 设置面板 */}
         {showSettings && onConfigChange && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">闪烁设置</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">{t('blinkingNamePicker.blinkingSettings')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 初始速度 */}
               <div>
                 <label className="block text-xs text-gray-600 mb-1">
-                  初始速度 ({tempConfig.initialSpeed}ms)
+                  {t('blinkingNamePicker.initialSpeed', { speed: tempConfig.initialSpeed })}
                 </label>
                 <input
                   type="range"

@@ -45,8 +45,11 @@ export default function DrawConfigPage() {
     setAllowRepeat(config.allowRepeat)
     
     toast({
-      title: "快速配置已应用",
-      description: `已设置为${getModeDisplayName(config.mode)}模式，抽取${config.quantity}个`,
+      title: t('drawConfig.quickConfigApplied'),
+      description: t('drawConfig.quickConfigAppliedDescription', { 
+        mode: getModeDisplayName(config.mode), 
+        quantity: config.quantity 
+      }),
     })
     
     // 切换到详细配置标签页以便用户查看和微调
@@ -56,11 +59,11 @@ export default function DrawConfigPage() {
   // 获取模式显示名称
   const getModeDisplayName = (mode: DrawingMode): string => {
     const modeNames = {
-      'slot-machine': '老虎机',
-      'card-flip': '翻牌',
-      'bullet-screen': '弹幕',
-      'grid-lottery': '宫格',
-      'blinking-name-picker': '闪烁'
+      'slot-machine': t('drawingModes.slotMachine.name'),
+      'card-flip': t('drawingModes.cardFlip.name'),
+      'bullet-screen': t('drawingModes.bulletScreen.name'),
+      'grid-lottery': t('drawingModes.gridLottery.name'),
+      'blinking-name-picker': t('drawingModes.blinkingNamePicker.name')
     }
     return modeNames[mode] || mode
   }

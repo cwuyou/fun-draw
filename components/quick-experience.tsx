@@ -41,7 +41,7 @@ export default function QuickExperience({
         const templates = createExperienceTemplates(t)
         setAllTemplates(templates)
         
-        const recommended = getRecommendedTemplates(6)
+        const recommended = getRecommendedTemplates(6, t)
         setRecommendedTemplates(recommended)
         setIsFirstTime(isFirstTimeUser())
       } catch (error) {
@@ -61,7 +61,7 @@ export default function QuickExperience({
 
     try {
       // 创建体验会话
-      const session = createExperienceSession(template.id)
+      const session = createExperienceSession(template.id, t)
       if (!session) {
         throw new Error('Failed to create experience session')
       }
@@ -121,7 +121,7 @@ export default function QuickExperience({
     return (
       <Card
         key={template.id}
-        className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+        className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden ${
           selectedTemplate?.id === template.id ? 'ring-2 ring-purple-500 bg-purple-50' : 'hover:bg-gray-50'
         } ${isRecommended ? 'border-purple-200 bg-purple-50/30' : ''}`}
         onClick={() => handleTemplateSelect(template)}
@@ -133,16 +133,20 @@ export default function QuickExperience({
                 <IconComponent className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
-                  {template.name}
+                <CardTitle className="text-lg text-gray-800 flex items-center gap-2 flex-wrap">
+                  <span className="truncate">{template.name}</span>
                   {isRecommended && (
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs">
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs flex-shrink-0">
                       <Star className="w-3 h-3 mr-1" />
                       {t('quickExperience.recommended')}
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-600 mt-1">
+                <CardDescription className="text-sm text-gray-600 mt-1 overflow-hidden break-words" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}>
                   {template.description}
                 </CardDescription>
               </div>
@@ -164,21 +168,21 @@ export default function QuickExperience({
             </div>
 
             {/* 标签 */}
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 overflow-hidden">
               {template.tags.slice(0, 3).map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
+                <Badge key={index} variant="outline" className="text-xs truncate max-w-20">
                   {tag}
                 </Badge>
               ))}
               {template.tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs flex-shrink-0">
                   +{template.tags.length - 3}
                 </Badge>
               )}
             </div>
 
             {/* 示例名称预览 */}
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 truncate break-words">
               {t('quickExperience.examplePreview', { preview: template.items.slice(0, 3).map(item => item.name).join('、') })}
               {template.items.length > 3 && '...'}
             </div>
@@ -203,7 +207,7 @@ export default function QuickExperience({
             {isLoading ? t('quickExperience.starting') : t('quickExperience.oneClickExperience')}
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />
@@ -245,7 +249,7 @@ export default function QuickExperience({
                   <Star className="w-4 h-4 text-yellow-500" />
                   {t('quickExperience.forYouRecommended')}
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {recommendedTemplates.slice(0, 4).map(template => 
                     renderTemplateCard(template, true)
                   )}
@@ -256,7 +260,7 @@ export default function QuickExperience({
             {/* 所有模板 */}
             <div>
               <h3 className="font-semibold text-gray-800 mb-3">{t('quickExperience.allScenes')}</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {allTemplates.map(template => 
                   renderTemplateCard(template, false)
                 )}
@@ -288,15 +292,15 @@ export default function QuickExperience({
               return (
                 <div
                   key={template.id}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors overflow-hidden"
                   onClick={() => handleTemplateSelect(template)}
                 >
                   <div className={`w-8 h-8 ${template.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
                     <IconComponent className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-800">{template.name}</div>
-                    <div className="text-sm text-gray-500 truncate">{template.description}</div>
+                    <div className="font-medium text-gray-800 truncate">{template.name}</div>
+                    <div className="text-sm text-gray-500 truncate break-words">{template.description}</div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-400" />
                 </div>
@@ -315,7 +319,7 @@ export default function QuickExperience({
         
         {/* Dialog for card variant */}
         <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto overflow-x-hidden">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
@@ -357,7 +361,7 @@ export default function QuickExperience({
                     <Star className="w-4 h-4 text-yellow-500" />
                     {t('quickExperience.forYouRecommended')}
                   </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {recommendedTemplates.slice(0, 4).map(template => 
                       renderTemplateCard(template, true)
                     )}
@@ -368,7 +372,7 @@ export default function QuickExperience({
               {/* 所有模板 */}
               <div>
                 <h3 className="font-semibold text-gray-800 mb-3">{t('quickExperience.allScenes')}</h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {allTemplates.map(template => 
                     renderTemplateCard(template, false)
                   )}

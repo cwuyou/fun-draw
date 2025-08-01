@@ -11,7 +11,9 @@
 
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 2. 实现QuickExperience组件
+- [x] 2. 实现QuickExperience组件
+
+
 
 
 
