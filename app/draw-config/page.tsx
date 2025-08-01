@@ -517,7 +517,7 @@ export default function DrawConfigPage() {
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="quick" className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    {t('drawConfig.quickConfig')}
+                    {t('drawConfig.quickConfigTab')}
                   </TabsTrigger>
                   <TabsTrigger value="detailed" className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />

@@ -180,31 +180,31 @@ export default function QuickConfiguration({
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
-            {/* 配置信息 */}
+            {/* Configuration info */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <Target className="w-3 h-3 text-gray-400" />
-                <span className="text-gray-500">抽取数量：</span>
+                <span className="text-gray-500">{t('quickConfig.drawQuantity')}：</span>
                 <span className="font-medium text-purple-600">
-                  {displayQuantity === 'auto' ? '智能' : displayQuantity}
+                  {displayQuantity === 'auto' ? t('quickConfig.intelligent') : displayQuantity}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-3 h-3 text-gray-400" />
-                <span className="text-gray-500">重复抽取：</span>
+                <span className="text-gray-500">{t('quickConfig.allowRepeat')}：</span>
                 <span className="font-medium">
-                  {template.allowRepeat ? '允许' : '不允许'}
+                  {template.allowRepeat ? t('quickConfig.allowRepeat') : t('quickConfig.notAllow')}
                 </span>
               </div>
             </div>
 
-            {/* 模式信息 */}
+            {/* Mode info */}
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Sparkles className="w-3 h-3" />
-              <span>抽奖模式：{getModeDisplayName(template.mode)}</span>
+              <span>{t('quickConfig.drawMode')}：{getModeDisplayName(template.mode)}</span>
             </div>
 
-            {/* 标签 */}
+            {/* Tags */}
             <div className="flex flex-wrap gap-1">
               {template.tags.slice(0, 3).map((tag, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
@@ -218,7 +218,7 @@ export default function QuickConfiguration({
               )}
             </div>
 
-            {/* 适用性提示 */}
+            {/* Applicability hint */}
             {items.length > 0 && (
               <div className="text-xs text-gray-400">
                 {getApplicabilityHint(template, items.length)}
@@ -233,11 +233,11 @@ export default function QuickConfiguration({
   // 获取模式显示名称
   const getModeDisplayName = (mode: string): string => {
     const modeNames = {
-      'slot-machine': '老虎机',
-      'card-flip': '翻牌',
-      'bullet-screen': '弹幕',
-      'grid-lottery': '宫格',
-      'blinking-name-picker': '闪烁'
+      'slot-machine': t('quickConfig.modes.slotMachine'),
+      'card-flip': t('quickConfig.modes.cardFlip'),
+      'bullet-screen': t('quickConfig.modes.bulletScreen'),
+      'grid-lottery': t('quickConfig.modes.gridLottery'),
+      'blinking-name-picker': t('quickConfig.modes.blinkingNamePicker')
     }
     return modeNames[mode as keyof typeof modeNames] || mode
   }
@@ -250,22 +250,22 @@ export default function QuickConfiguration({
 
     if (typeof quantity === 'number') {
       if (quantity > itemCount && !template.allowRepeat) {
-        return `建议至少 ${quantity} 个参与者`
+        return t('quickConfig.recommendAtLeast', { count: quantity })
       }
       if (quantity === 1 && itemCount > 20) {
-        return '适合大量参与者的单选场景'
+        return t('quickConfig.suitableForLargeGroup')
       }
       if (quantity > 1 && itemCount < 5) {
-        return '参与者较少，可能不太适合'
+        return t('quickConfig.fewParticipants')
       }
     }
     
-    return `适合 ${itemCount} 个参与者`
+    return t('quickConfig.suitableForParticipants', { count: itemCount })
   }
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* 标题和说明 */}
+      {/* Title and description */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
           <Zap className="w-6 h-6 text-purple-600" />
@@ -276,17 +276,17 @@ export default function QuickConfiguration({
         </p>
       </div>
 
-      {/* 参与者信息 */}
+      {/* Participant info */}
       {items.length > 0 && (
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription>
-            当前名单包含 <strong>{items.length}</strong> 个参与者，系统将根据人数智能调整配置参数
-          </AlertDescription>
+          <AlertDescription dangerouslySetInnerHTML={{
+            __html: t('quickConfig.currentListInfo', { count: items.length })
+          }} />
         </Alert>
       )}
 
-      {/* 智能推荐 */}
+      {/* Smart recommendations */}
       {showRecommendations && recommendations.length > 0 && items.length > 0 && (
         <div>
           <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -301,7 +301,7 @@ export default function QuickConfiguration({
         </div>
       )}
 
-      {/* 常用配置 */}
+      {/* Frequently used configs */}
       {mostUsed.length > 0 && (
         <div>
           <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -316,7 +316,7 @@ export default function QuickConfiguration({
         </div>
       )}
 
-      {/* 所有配置 */}
+      {/* All templates */}
       <div>
         <h3 className="font-semibold text-gray-800 mb-3">{t('quickConfig.allTemplates')}</h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -326,22 +326,22 @@ export default function QuickConfiguration({
         </div>
       </div>
 
-      {/* 使用提示 */}
+      {/* Usage hint */}
       {items.length === 0 && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            请先添加参与者名单，然后选择合适的配置模板。系统会根据参与者数量自动调整配置参数。
+            {t('quickConfig.addParticipantsHint')}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* 加载状态 */}
+      {/* Loading state */}
       {isApplying && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-xl flex items-center gap-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-            <span className="font-medium">正在应用配置...</span>
+            <span className="font-medium">{t('quickConfig.applyingConfig')}</span>
           </div>
         </div>
       )}

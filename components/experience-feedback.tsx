@@ -185,22 +185,22 @@ export default function ExperienceFeedback({
         <label className="text-sm font-medium text-gray-700">
           {t('experienceFeedback.recommendQuestion')}
         </label>
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             variant={feedback.wouldRecommend === true ? "default" : "outline"}
             onClick={() => handleRecommendation(true)}
-            className={feedback.wouldRecommend === true ? "bg-green-600 hover:bg-green-700" : ""}
+            className={`flex-1 sm:flex-none whitespace-nowrap ${feedback.wouldRecommend === true ? "bg-green-600 hover:bg-green-700" : ""}`}
           >
-            <ThumbsUp className="w-4 h-4 mr-2" />
-            {t('experienceFeedback.recommend')}
+            <ThumbsUp className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t('experienceFeedback.recommend')}</span>
           </Button>
           <Button
             variant={feedback.wouldRecommend === false ? "default" : "outline"}
             onClick={() => handleRecommendation(false)}
-            className={feedback.wouldRecommend === false ? "bg-red-600 hover:bg-red-700" : ""}
+            className={`flex-1 sm:flex-none whitespace-nowrap ${feedback.wouldRecommend === false ? "bg-red-600 hover:bg-red-700" : ""}`}
           >
-            <ThumbsDown className="w-4 h-4 mr-2" />
-            {t('experienceFeedback.notRecommend')}
+            <ThumbsDown className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t('experienceFeedback.notRecommend')}</span>
           </Button>
         </div>
       </div>
@@ -280,7 +280,7 @@ export default function ExperienceFeedback({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle className="sr-only">
             {t('experienceFeedback.title')}

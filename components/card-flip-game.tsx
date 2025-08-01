@@ -234,23 +234,23 @@ export function CardFlipGame({
     try {
       // 增强的输入验证
       if (!Array.isArray(items)) {
-        throw new Error('名称列表必须是数组格式')
+        throw new Error(t('cardFlip.invalidArrayFormat'))
       }
       
       if (items.length === 0) {
-        throw new Error(t('drawingComponents.cardFlip.emptyList'))
+        throw new Error(t('cardFlip.emptyList'))
       }
       
       if (!Number.isInteger(quantity) || quantity <= 0) {
-        throw new Error('抽取数量必须是大于0的整数')
+        throw new Error(t('cardFlip.invalidQuantity'))
       }
       
       if (quantity > gameConfig.maxCards) {
-        throw new Error(`抽取数量不能超过${gameConfig.maxCards}张卡牌`)
+        throw new Error(t('cardFlip.quantityTooLarge', { max: gameConfig.maxCards }))
       }
       
       if (!allowRepeat && quantity > items.length) {
-        throw new Error('Quantity exceeds available items when repeat is disabled')
+        throw new Error(t('cardFlip.quantityExceedsItems'))
       }
 
       // 验证名称格式
@@ -261,7 +261,7 @@ export function CardFlipGame({
       )
       
       if (invalidItems.length > 0) {
-        throw new Error(`发现${invalidItems.length}个无效名称，请检查名称格式`)
+        throw new Error(t('cardFlip.invalidNames', { count: invalidItems.length }))
       }
       
       const winners: ListItem[] = []
@@ -281,7 +281,7 @@ export function CardFlipGame({
       
       for (let i = 0; i < quantity; i++) {
         if (availableItems.length === 0) {
-          console.warn(`只能选择${i}个中奖者，少于配置的${quantity}个`)
+          console.warn(t('cardFlip.fewerWinnersThanExpected', { actual: i, expected: quantity }))
           break
         }
         
@@ -301,7 +301,7 @@ export function CardFlipGame({
       }
       
       if (winners.length === 0) {
-        throw new Error('未能选择任何中奖者，请检查名称列表')
+        throw new Error(t('cardFlip.noWinnersSelected'))
       }
       
       if (winners.length < quantity) {
@@ -354,24 +354,24 @@ export function CardFlipGame({
       
       // 预先验证游戏状态
       if (gameState.gamePhase !== 'idle' && gameState.gamePhase !== 'finished') {
-        console.warn(t('drawingComponents.cardFlip.gameInProgress'))
+        console.warn(t('cardFlip.gameInProgress'))
         return
       }
 
       // 验证必要的游戏参数
       if (!items || items.length === 0) {
-        setError(t('drawingComponents.cardFlip.cannotStartGame'))
+        setError(t('cardFlip.cannotStartGame'))
         return
       }
 
       if (actualQuantity <= 0) {
-        setError('抽取数量必须大于0')
+        setError(t('cardFlip.invalidQuantity'))
         return
       }
 
       // 验证不允许重复时的名称数量
       if (!allowRepeat && quantity > items.length) {
-        setError('Quantity exceeds available items when repeat is disabled')
+        setError(t('cardFlip.quantityExceedsItems'))
         return
       }
 
@@ -795,7 +795,7 @@ export function CardFlipGame({
   // 初始化游戏 - 只在autoStart为true时自动开始
   useEffect(() => {
     if (items.length === 0) {
-      console.warn(t('drawingComponents.cardFlip.emptyList'))
+      console.warn(t('cardFlip.emptyList'))
       return
     }
     
@@ -828,17 +828,17 @@ export function CardFlipGame({
   const renderGameStatus = () => {
     switch (gameState.gamePhase) {
       case 'shuffling':
-        return <div className="text-lg font-medium text-blue-600">{t('drawingComponents.cardFlip.shuffling')}</div>
+        return <div className="text-lg font-medium text-blue-600">{t('cardFlip.shuffling')}</div>
       case 'dealing':
-        return <div className="text-lg font-medium text-green-600">{t('drawingComponents.cardFlip.dealing')}</div>
+        return <div className="text-lg font-medium text-green-600">{t('cardFlip.dealing')}</div>
       case 'waiting':
-        return <div className="text-lg font-medium text-purple-600">{t('drawingComponents.cardFlip.waiting')}</div>
+        return <div className="text-lg font-medium text-purple-600">{t('cardFlip.waiting')}</div>
       case 'revealing':
-        return <div className="text-lg font-medium text-orange-600">{t('drawingComponents.cardFlip.revealing')}</div>
+        return <div className="text-lg font-medium text-orange-600">{t('cardFlip.revealing')}</div>
       case 'finished':
-        return <div className="text-lg font-medium text-red-600">{t('drawingComponents.cardFlip.finished')}</div>
+        return <div className="text-lg font-medium text-red-600">{t('cardFlip.finished')}</div>
       default:
-        return <div className="text-lg font-medium text-gray-600">{t('drawingComponents.cardFlip.ready')}</div>
+        return <div className="text-lg font-medium text-gray-600">{t('cardFlip.ready')}</div>
     }
   }
 
@@ -851,7 +851,7 @@ export function CardFlipGame({
             <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
           <div className={cn("text-xl font-semibold text-red-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
-            {t('drawingComponents.cardFlip.gameError')}
+            {t('cardFlip.gameError')}
           </div>
           <div className={cn("text-red-600", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
             {error}
@@ -863,7 +863,7 @@ export function CardFlipGame({
             }}
             className={cn("bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors", `px-[${dynamicSpacing.spacing.responsive('md')}px] py-[${dynamicSpacing.spacing.responsive('sm')}px]`)}
           >
-            {t('drawingComponents.cardFlip.restart')}
+            {t('cardFlip.restart')}
           </button>
         </div>
       </div>
@@ -875,7 +875,7 @@ export function CardFlipGame({
       <div className={cn("flex flex-col items-center justify-center", dynamicSpacing.cssClasses.container.padding, className)}>
         <div className="text-center">
           <div className={cn("text-xl font-semibold text-gray-700", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
-            {t('drawingComponents.cardFlip.emptyList')}
+            {t('cardFlip.emptyList')}
           </div>
           <div className="text-gray-500">
             {t('drawingComponents.cardFlip.emptyListMessage')}
@@ -917,17 +917,17 @@ export function CardFlipGame({
       )}>
         {/* 面板标题 */}
         <div className={cn("text-base font-semibold text-gray-800", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}>
-          游戏信息
+          {t('cardFlip.gameInfo')}
         </div>
         
         {/* 核心信息网格 - 始终显示的基本信息 */}
         <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('sm')}px]`)}>
           <div className="bg-blue-50 rounded-lg p-3">
-            <div className="text-xs text-blue-600 font-medium mb-1">抽取数量</div>
+            <div className="text-xs text-blue-600 font-medium mb-1">{t('cardFlip.drawQuantityLabel')}</div>
             <div className="text-lg font-bold text-blue-800">{optimizedGameInfo.essential.drawQuantity}</div>
           </div>
           <div className="bg-green-50 rounded-lg p-3">
-            <div className="text-xs text-green-600 font-medium mb-1">总名称</div>
+            <div className="text-xs text-green-600 font-medium mb-1">{t('cardFlip.totalNamesLabel')}</div>
             <div className="text-lg font-bold text-green-800">{optimizedGameInfo.essential.totalItems}</div>
           </div>
         </div>
@@ -936,11 +936,11 @@ export function CardFlipGame({
         {optimizedGameInfo.displayMode === 'detailed' && (
           <div className={cn("grid grid-cols-2 gap-4", `mb-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
             <div className="bg-purple-50 rounded-lg p-3">
-              <div className="text-xs text-purple-600 font-medium mb-1">总卡牌</div>
+              <div className="text-xs text-purple-600 font-medium mb-1">{t('cardFlip.totalCardsLabel')}</div>
               <div className="text-lg font-bold text-purple-800">{actualQuantity}</div>
             </div>
             <div className="bg-orange-50 rounded-lg p-3">
-              <div className="text-xs text-orange-600 font-medium mb-1">已翻开</div>
+              <div className="text-xs text-orange-600 font-medium mb-1">{t('cardFlip.revealedLabel')}</div>
               <div className="text-lg font-bold text-orange-800">{gameState.revealedCards.size}</div>
             </div>
           </div>
@@ -949,7 +949,7 @@ export function CardFlipGame({
         {/* 条件显示剩余卡牌指示器 - 只在游戏完成且卡牌数量较多时显示 */}
         {optimizedGameInfo.optional.remainingCards !== undefined && (
           <div className="bg-gray-50 rounded-lg p-2">
-            <div className="text-xs text-gray-600 font-medium mb-1">剩余卡牌</div>
+            <div className="text-xs text-gray-600 font-medium mb-1">{t('cardFlip.remainingCardsLabel')}</div>
             <div className="text-sm font-semibold text-gray-800">
               {optimizedGameInfo.optional.remainingCards}
             </div>
@@ -970,10 +970,10 @@ export function CardFlipGame({
             disabled={isLoading || items.length === 0}
             className={cn("bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105", `px-[${dynamicSpacing.spacing.responsive('xl')}px] py-[${dynamicSpacing.spacing.responsive('md')}px]`)}
           >
-            🎲 开始抽奖
+            {t('cardFlip.startDrawing')}
           </button>
           <p className={cn("text-sm text-gray-500", `mt-[${dynamicSpacing.spacing.responsive('xs')}px]`)}>
-{t('cardFlip.clickToStart')}
+            {t('cardFlip.clickToStart')}
           </p>
         </div>
       )}
@@ -1042,7 +1042,7 @@ export function CardFlipGame({
         {gameState.gamePhase === 'idle' && (
           <div className="text-center text-gray-400 z-10">
             <div className="text-4xl mb-2">🎴</div>
-            <div className="text-sm">卡牌将在这里显示</div>
+            <div className="text-sm">{t('cardFlip.cardsWillShowHere')}</div>
           </div>
         )}
       </div>

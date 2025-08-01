@@ -1,18 +1,449 @@
 {
   "common": {
     "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "close": "关闭",
+    "retry": "重试",
+    "refresh": "刷新",
     "language": "语言",
+    "switchLanguage": "切换语言",
+    "current": "当前",
+    "languageHelp": "语言偏好会自动保存",
     "locale": "zh"
   },
   "navigation": {
     "home": "首页",
-    "createList": "创建名单"
+    "createList": "创建名单",
+    "listLibrary": "名单库",
+    "features": "功能特色",
+    "modes": "抽奖模式",
+    "useCases": "使用场景",
+    "drawConfig": "抽奖配置"
   },
   "home": {
     "title": "让抽奖变得更有趣",
+    "subtitle": "告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式",
+    "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。",
     "startButton": "立即开始抽奖",
+    "demoButton": "查看演示",
+    "quickExperience": "快速体验",
+    "experienceDescription": "选择一个场景，30秒体验趣抽的魅力",
+    "newExperienceBadge": "🎉 全新多模式抽奖体验",
+    "newUserTip": "💡 新用户？点击\"快速体验\"即可瞬间感受趣抽魅力，无需创建名单！",
+    "newUserTipBold": "新用户？",
     "hero": {
-      "title": "让抽奖变得更有趣"
+      "title": "让抽奖变得更有趣",
+      "subtitle": "告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式，",
+      "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。"
+    },
+    "features": {
+      "title": "为什么选择趣抽？",
+      "subtitle": "我们重新定义了在线抽奖体验，让每一次抽奖都充满期待和乐趣",
+      "items": {
+        "modes": {
+          "title": "多种抽奖模式",
+          "description": "5种创新动画效果，告别单调转盘"
+        },
+        "management": {
+          "title": "便捷名单管理",
+          "description": "支持手动输入、批量导入、本地存储"
+        },
+        "rules": {
+          "title": "灵活抽奖规则",
+          "description": "自定义抽取数量、允许/禁止重复中奖"
+        },
+        "sharing": {
+          "title": "结果分享保存",
+          "description": "一键复制、导出文件、连续抽奖"
+        }
+      }
+    },
+    "quickExperienceSection": {
+      "title": "立即体验趣抽",
+      "subtitle": "无需创建名单，选择场景即可立即开始体验我们的创新抽奖模式",
+      "advantages": {
+        "quick": {
+          "title": "30秒快速体验",
+          "description": "预设示例数据，无需准备"
+        },
+        "templates": {
+          "title": "多种场景模板",
+          "description": "课堂、企业、聚会等场景专业模板"
+        },
+        "complete": {
+          "title": "完整功能展示",
+          "description": "体验所有抽奖模式的完整功能和动画效果"
+        }
+      }
+    },
+    "modes": {
+      "title": "五种创新抽奖模式",
+      "subtitle": "每种模式都有独特的动画效果和音效，为不同场景提供最佳抽奖体验"
+    },
+    "useCases": {
+      "title": "使用场景",
+      "subtitle": "从教育到企业，从娱乐到决策，趣抽能满足各种抽奖需求",
+      "items": {
+        "classroom": {
+          "title": "课堂教学",
+          "description": "随机点名、分组、提问，让课堂更有趣"
+        },
+        "corporate": {
+          "title": "企业活动",
+          "description": "年会抽奖、团建活动、现场互动"
+        },
+        "party": {
+          "title": "朋友聚会",
+          "description": "决策选择、游戏选择、聚会娱乐"
+        }
+      }
+    },
+    "cta": {
+      "title": "准备开始您的趣抽之旅了吗？",
+      "subtitle": "无需注册，无需下载，打开浏览器即可使用。支持PC、平板、手机多平台。",
+      "startButton": "免费开始使用",
+      "learnMoreButton": "了解更多功能"
+    },
+    "footer": {
+      "copyright": "© 2025 趣抽 - 让抽奖变得更有趣 | 多模式趣味抽奖网站"
+    }
+  },
+  "cardFlip": {
+    "title": "卡牌抽取",
+    "description": "点击卡牌翻转，体验优雅的抽奖过程",
+    "back": "返回",
+    "loading": "加载中...",
+    "modeName": "卡牌抽取",
+    "soundInitFailed": "音效系统初始化失败",
+    "soundMayNotWork": "音效可能无法正常工作",
+    "configLost": "配置丢失",
+    "reconfigureRequired": "请重新配置抽奖设置",
+    "configError": "配置错误",
+    "configFormatError": "配置数据格式错误",
+    "modeError": "模式错误",
+    "cardFlipOnly": "此页面仅支持卡牌抽取模式",
+    "insufficientNames": "名称数量不足",
+    "minThreeNames": "卡牌抽取至少需要3个名称",
+    "quantityError": "数量错误",
+    "quantityRange": "抽取数量必须在1-10之间",
+    "loadFailed": "加载失败",
+    "configLoadError": "配置加载失败，请重新配置",
+    "cannotDrawAgain": "无法再次抽奖",
+    "insufficientRemaining": "需要{{needed}}个名称，仅剩{{remaining}}个",
+    "soundSettings": "音效设置",
+    "soundSettingsDescription": "调整音效和音量",
+    "masterVolume": "主音量",
+    "testSound": "测试音效",
+    "shuffle": "洗牌",
+    "deal": "发牌",
+    "flip": "翻牌",
+    "reveal": "揭示",
+    "soundStatus": "音效状态",
+    "ready": "就绪",
+    "initializing": "初始化中",
+    "namesCount": "{{count}}个名称",
+    "drawQuantity": "抽取{{quantity}}个",
+    "remaining": "剩余{{count}}个",
+    "gameInfo": "游戏信息",
+    "drawQuantityLabel": "抽取数量",
+    "totalNamesLabel": "总名称",
+    "totalCardsLabel": "总卡牌",
+    "revealedLabel": "已翻开",
+    "remainingCardsLabel": "剩余卡牌",
+    "startDrawing": "🎲 开始抽奖",
+    "clickToStart": "点击按钮开始卡牌抽奖",
+    "cardsWillShowHere": "卡牌将在这里显示",
+    "shuffling": "洗牌中...",
+    "dealing": "发牌中...",
+    "waiting": "点击卡牌进行翻转",
+    "revealing": "翻转中...",
+    "finished": "抽奖完成",
+    "gameError": "游戏错误",
+    "restart": "重新开始游戏",
+    "emptyList": "名单列表为空",
+    "cannotStartGame": "无法开始游戏，名单为空",
+    "gameInProgress": "游戏正在进行中",
+    "invalidArrayFormat": "名称列表必须是数组格式",
+    "invalidQuantity": "抽取数量必须是大于0的整数",
+    "quantityTooLarge": "抽取数量不能超过{{max}}张卡牌",
+    "quantityExceedsItems": "不允许重复时数量超过可用项目",
+    "invalidNames": "发现{{count}}个无效名称，请检查名称格式",
+    "noWinnersSelected": "未能选择任何中奖者，请检查名称列表",
+    "fewerWinnersThanExpected": "实际选择了{{actual}}个中奖者，少于配置的{{expected}}个",
+    "gameStartFailed": "游戏启动失败：{{error}}",
+    "dealCardsFailed": "发牌失败，请重试",
+    "selectWinnersFailed": "选择中奖者失败：{{error}}"
+  },
+  "gridLottery": {
+    "title": "多宫格抽奖",
+    "description": "经典宫格跳跃，单次抽取一位幸运儿",
+    "back": "返回",
+    "backToHome": "返回首页",
+    "loading": "加载中...",
+    "modeDisplayName": "多宫格抽奖",
+    "welcomeExperience": "欢迎体验\"{{name}}\"",
+    "demoDescription": "这是演示数据，您可以直接开始抽奖体验",
+    "configLost": "配置丢失",
+    "reconfigureRequired": "请重新配置抽奖设置",
+    "modeError": "模式错误",
+    "gridLotteryOnly": "此页面仅支持多宫格抽奖模式",
+    "loadFailed": "加载失败",
+    "configLoadError": "配置加载失败，请重新配置",
+    "configError": "配置错误",
+    "configReminder": "配置提醒",
+    "singleDraw": "单次抽取",
+    "itemCount": "{{count}}个名称",
+    "gridSize": "{{size}}宫格",
+    "readyToStart": "准备开始",
+    "countdown": "{{count}}",
+    "lightJumping": "灯光跳跃中",
+    "drawComplete": "抽奖完成",
+    "lightJumpingDescription": "灯光正在跳跃选择获奖者...",
+    "startDraw": "开始抽奖",
+    "countdownInProgress": "倒计时进行中",
+    "drawingInProgress": "抽奖进行中",
+    "winner": "获奖者：{{name}}"
+  },
+  "blinkingNamePicker": {
+    "title": "闪烁点名",
+    "loading": "加载中...",
+    "configLoadFailed": "配置加载失败，请重新配置",
+    "backToConfig": "返回配置",
+    "backToHome": "返回首页",
+    "backToConfigPage": "返回抽奖配置",
+    "restart": "重新开始",
+    "restartTooltip": "重新开始抽奖",
+    "participants": "参与者：{{count}}人",
+    "drawCount": "抽取：{{count}}项",
+    "allowRepeat": "允许重复",
+    "noRepeat": "不允许重复",
+    "experienceDataError": "体验数据错误",
+    "experienceDataErrorDescription": "体验模式配置无效，请重新选择",
+    "experienceTemplateError": "体验模板错误",
+    "experienceTemplateErrorDescription": "体验模板数据无效，请重新选择",
+    "welcomeExperience": "欢迎体验\"{{name}}\"",
+    "welcomeExperienceDescription": "这是演示数据，您可以直接开始抽奖体验",
+    "loadFailed": "加载失败",
+    "loadFailedDescription": "配置加载错误，请重试"
+  },
+  "bulletScreen": {
+    "title": "弹幕滚动",
+    "back": "返回",
+    "loading": "加载中...",
+    "modeDisplayName": "弹幕滚动",
+    "configLost": "配置丢失",
+    "reconfigureRequired": "请重新配置抽奖设置",
+    "modeError": "模式错误",
+    "bulletScreenOnly": "此页面仅支持弹幕模式",
+    "loadFailed": "加载失败",
+    "configLoadError": "配置加载失败，请重新配置",
+    "itemCount": "{{count}}个名称",
+    "drawQuantity": "抽取{{quantity}}个",
+    "readyToStart": "准备开始",
+    "scrolling": "滚动中",
+    "aboutToStop": "即将停止",
+    "drawComplete": "抽奖完成",
+    "scrollingInProgress": "弹幕滚动进行中...",
+    "startDraw": "开始抽奖",
+    "scrollingStatus": "滚动进行中",
+    "resultWillShow": "结果即将显示"
+  },
+  "experienceFeedback": {
+    "title": "体验反馈",
+    "description": "请对您的体验进行反馈，帮助我们改进产品",
+    "ratingQuestion": "您对\"{{templateName}}\"的体验如何？",
+    "ratingDescription": "请为本次体验评分",
+    "ratingInstructions": "点击星星进行评分",
+    "ratingLabels": {
+      "1": "非常不满意",
+      "2": "不满意",
+      "3": "一般",
+      "4": "满意",
+      "5": "非常满意"
+    },
+    "detailsTitle": "告诉我们更多",
+    "detailsDescription": "您的建议对我们很重要（可选）",
+    "recommendQuestion": "您会向朋友推荐趣抽吗？",
+    "recommend": "会推荐",
+    "notRecommend": "不会推荐",
+    "commentsLabel": "其他想法或建议",
+    "commentsPlaceholder": "分享您的体验感受、建议或遇到的问题...",
+    "backButton": "返回",
+    "submitButton": "提交反馈",
+    "submitting": "提交中...",
+    "thanksTitle": "感谢您的反馈！",
+    "thanksDescription": "您的反馈将帮助我们为更多用户提供更好的体验",
+    "completionMessage": "🎉 体验完成！接下来您可以：",
+    "createOwnList": "创建自己的名单",
+    "tryAnotherTemplate": "尝试其他场景",
+    "skipFeedback": "跳过反馈",
+    "feedbackSuccess": "感谢您的反馈！",
+    "feedbackSuccessDescription": "您的反馈将帮助我们改进产品体验",
+    "submitFailed": "提交失败",
+    "submitFailedDescription": "反馈提交失败，请稍后重试"
+  },
+  "drawConfig": {
+    "title": "抽奖配置",
+    "back": "返回",
+    "loading": "加载中...",
+    "itemsCount": "{{count}}位参与者",
+    "currentList": "当前名单：{{name}}",
+    "itemsPreview": "共{{count}}位参与者：{{preview}}",
+    "configurationSettings": "抽奖配置",
+    "configurationSettingsDescription": "选择快速配置模板或详细抽奖参数设置",
+    "quickConfigTab": "快速配置",
+    "detailedConfig": "详细配置",
+    "selectMode": "选择抽奖模式",
+    "selectModeDescription": "选择最适合您场景的抽奖动画模式",
+    "drawSettings": "抽奖设置",
+    "drawSettingsDescription": "配置抽奖参数以满足您的具体需求",
+    "drawQuantity": "抽取数量",
+    "quantityPlaceholder": "请输入数量",
+    "allowRepeat": "允许重复中奖",
+    "allowRepeatDescription": "是否允许同一人多次中奖",
+    "startDraw": "开始抽奖",
+    "saveToLibrary": "保存到名单库",
+    "saving": "保存中...",
+    "pleaseCreateList": "请先创建名单",
+    "pleaseCreateListDescription": "未找到参与者名单，请先创建名单",
+    "loadFailed": "加载失败",
+    "loadFailedDescription": "名单数据加载失败，请重试",
+    "listEmpty": "名单为空",
+    "listEmptyDescription": "保存前请先添加参与者",
+    "listEmptyDrawDescription": "开始抽奖前请先添加参与者",
+    "saveSuccess": "保存成功",
+    "saveSuccessDescription": "名单\"{{name}}\"已保存到名单库",
+    "saveSuccessWithDuplicates": "{{message}}（已去除{{duplicates}}个重复项）",
+    "saveFailed": "保存失败",
+    "saveFailedDescription": "保存时发生错误，请重试",
+    "configError": "配置错误",
+    "gridLotteryOnlyOne": "多宫格抽奖模式每次只能抽取一位获奖者",
+    "nameCountHint": "检测到大量名单",
+    "nameCountHintDescription": "您有{{count}}位参与者，多宫格抽奖在6-15人时视觉效果最佳",
+    "gridLotteryTip": "多宫格抽奖提示",
+    "gridLotteryTipDescription": "您有{{count}}位参与者，建议增加更多人员以获得更好的宫格布局效果",
+    "quickConfigApplied": "快速配置已应用",
+    "quickConfigAppliedDescription": "已应用{{mode}}模式，抽取数量{{quantity}}",
+    "gridLotteryFeatures": "多宫格抽奖模式特色",
+    "gridLotteryFeature1": "单次抽取模式 - 每轮只产生一位获奖者",
+    "gridLotteryFeature2": "经典宫格跳跃动画配合倒计时",
+    "gridLotteryFeature3": "自动支持6/9/12/15宫格布局",
+    "gridLotteryFeature4": "完美适配电视节目式抽奖活动",
+    "gridLotteryFeature5": "营造悬念和仪式感氛围",
+    "oneWinner": "1位获奖者",
+    "fixedQuantity": "固定",
+    "gridLotteryQuantityDescription": "多宫格抽奖模式始终抽取一位获奖者，保持经典单人中奖体验",
+    "gridLotteryRepeatDescription": "多宫格抽奖专注于单人获奖选择，重复设置影响较小",
+    "saveHint": "保存提醒",
+    "saveHintDescription": "您有{{count}}位参与者，可能会影响宫格布局显示效果"
+  },
+  "quickConfig": {
+    "title": "快速配置",
+    "description": "选择预设配置模板，一键设置抽奖参数，省时省力",
+    "recommended": "推荐",
+    "applied": "已应用",
+    "smartRecommendations": "智能推荐",
+    "frequentConfigs": "常用配置",
+    "allTemplates": "所有模板",
+    "cannotApply": "无法应用配置",
+    "addParticipantsFirst": "请先添加参与者",
+    "configApplied": "配置已应用",
+    "configAppliedDesc": "已应用\"{{name}}\"配置，抽取数量{{quantity}}",
+    "applyFailed": "应用失败",
+    "applyError": "配置应用失败，请重试",
+    "drawQuantity": "抽取数量",
+    "allowRepeat": "允许重复",
+    "notAllow": "不允许",
+    "drawMode": "抽奖模式",
+    "intelligent": "智能",
+    "currentListInfo": "当前名单包含<strong>{{count}}</strong>个参与者，系统将根据人数智能调整配置参数",
+    "addParticipantsHint": "请先添加参与者名单，然后选择合适的配置模板。系统会根据参与者数量自动调整配置参数。",
+    "applyingConfig": "正在应用配置...",
+    "suitableForParticipants": "适合{{count}}个参与者",
+    "recommendAtLeast": "建议至少{{count}}个参与者",
+    "suitableForLargeGroup": "适合大量参与者的单选场景",
+    "fewParticipants": "参与者较少，可能不太适合",
+    "modes": {
+      "slotMachine": "老虎机",
+      "cardFlip": "翻牌",
+      "bulletScreen": "弹幕",
+      "gridLottery": "宫格",
+      "blinkingNamePicker": "闪烁"
+    }
+  },
+  "drawingModes": {
+    "slotMachine": {
+      "title": "老虎机式",
+      "name": "老虎机式",
+      "shortTitle": "老虎机式",
+      "description": "经典滚轮动画，紧张刺激的抽奖体验",
+      "features": [
+        "经典老虎机滚轮效果",
+        "可配置滚动速度和持续时间",
+        "支持多个获奖者显示",
+        "音效增强体验"
+      ]
+    },
+    "cardFlip": {
+      "title": "卡牌抽取式",
+      "name": "卡牌抽取式",
+      "shortTitle": "卡牌抽取式",
+      "description": "优雅翻牌动画，如同魔术师的表演",
+      "features": [
+        "精美的卡牌翻转动画",
+        "洗牌和发牌过程展示",
+        "可自定义卡牌样式",
+        "支持批量卡牌揭示"
+      ]
+    },
+    "bulletScreen": {
+      "title": "弹幕滚动式",
+      "name": "弹幕滚动式",
+      "shortTitle": "弹幕滚动式",
+      "description": "快速滚动定格，动态选择过程",
+      "altDescription": "动态弹幕效果，现代化抽奖方式",
+      "features": [
+        "流畅的弹幕滚动效果",
+        "可调节弹幕速度和密度",
+        "支持彩色弹幕显示",
+        "现代化视觉体验"
+      ]
+    },
+    "gridLottery": {
+      "title": "多宫格抽奖",
+      "name": "多宫格抽奖",
+      "shortTitle": "多宫格抽奖",
+      "description": "电视节目风格，灯光跳跃定格，仪式感十足",
+      "altDescription": "经典宫格跳跃，单次抽取一位幸运儿",
+      "features": [
+        "经典宫格灯光跳跃",
+        "支持6/9/12/15宫格布局",
+        "单次抽取，结果唯一",
+        "倒计时增加紧张感"
+      ]
+    },
+    "blinkingNamePicker": {
+      "title": "闪烁点名式",
+      "name": "闪烁点名式",
+      "shortTitle": "闪烁点名式",
+      "description": "快速闪烁定格，公平随机点名体验",
+      "altDescription": "快速闪烁高亮，适合课堂点名",
+      "features": [
+        "快速闪烁高亮效果",
+        "可配置闪烁速度和颜色",
+        "支持多选",
+        "适合教学和团队场景"
+      ]
     }
   }
 }
