@@ -438,6 +438,7 @@
     "recommendAtLeast": "Recommend at least {{count}} participants",
     "suitableForLargeGroup": "Suitable for large group single selection scenarios",
     "fewParticipants": "Few participants, may not be suitable",
+    "yes": "Yes",
     "modes": {
       "slotMachine": "Slot Machine",
       "cardFlip": "Card Flip",
@@ -445,5 +446,181 @@
       "gridLottery": "Grid",
       "blinkingNamePicker": "Blinking"
     }
+  },
+  "quickConfigTemplates": {
+    "classroomNaming": {
+      "name": "Classroom Name Calling",
+      "description": "Randomly select students to answer questions or participate in activities",
+      "tags": ["Education", "Interactive", "Single Selection", "Fair"]
+    },
+    "annualLottery": {
+      "name": "Annual Meeting Lottery",
+      "description": "Annual meeting lottery event with ceremonial atmosphere",
+      "tags": ["Corporate", "Annual Meeting", "Lottery", "Celebration"]
+    },
+    "teamGrouping": {
+      "name": "Team Grouping",
+      "description": "Randomly assign team members for fair grouping",
+      "tags": ["Team", "Grouping", "Collaboration", "Automatic"]
+    },
+    "prizeMultiple": {
+      "name": "Multiple Prizes",
+      "description": "Draw multiple prizes simultaneously to increase winning chances",
+      "tags": ["Prizes", "Multiple Selection", "Card Flip", "Surprise"]
+    },
+    "luckyDraw": {
+      "name": "Lucky Draw",
+      "description": "Classic slot machine style lottery, exciting and fun",
+      "tags": ["Entertainment", "Classic", "Slot Machine", "Exciting"]
+    },
+    "gameSelection": {
+      "name": "Game Selection",
+      "description": "Randomly select game items or activity content",
+      "tags": ["Games", "Selection", "Decision", "Repeatable"]
+    },
+    "presentationOrder": {
+      "name": "Presentation Order",
+      "description": "Determine the order of presentations or displays",
+      "tags": ["Presentation", "Order", "Sorting", "Automatic"]
+    },
+    "mysteryGift": {
+      "name": "Mystery Gift",
+      "description": "Card flip style mystery gift drawing, full of surprises",
+      "tags": ["Mystery", "Gift", "Card Flip", "Surprise"]
+    }
+  },
+  "experienceTemplates": {
+    "classroomNaming": {
+      "name": "Classroom Random Name Calling",
+      "description": "Randomly select students to answer questions or participate in activities",
+      "tags": ["Education", "Interactive", "Random", "Fair"]
+    },
+    "prizeDrawing": {
+      "name": "Prize Drawing",
+      "description": "Fair and just prize drawing activity",
+      "tags": ["Lottery", "Prize", "Fair", "Incentive"]
+    },
+    "partyGame": {
+      "name": "Party Game Selection",
+      "description": "Randomly select party games to add fun",
+      "tags": ["Entertainment", "Party", "Games", "Interactive"]
+    },
+    "teamGrouping": {
+      "name": "Team Random Grouping",
+      "description": "Fair distribution of team members",
+      "tags": ["Team", "Grouping", "Collaboration", "Fair"]
+    },
+    "departmentLottery": {
+      "name": "Department Lottery Activity",
+      "description": "Internal department lottery activity",
+      "tags": ["Corporate", "Department", "Lottery", "Team Building"]
+    },
+    "annualMeeting": {
+      "name": "Annual Meeting Lottery",
+      "description": "Annual meeting live lottery activity",
+      "tags": ["Annual Meeting", "Lottery", "Celebration", "Reward"]
+    },
+    "sampleData": {
+      "students": {
+        "张三": "Zhang San",
+        "李四": "Li Si",
+        "王五": "Wang Wu",
+        "赵六": "Zhao Liu",
+        "陈七": "Chen Qi",
+        "刘八": "Liu Ba",
+        "杨九": "Yang Jiu",
+        "黄十": "Huang Shi",
+        "周小明": "Zhou Xiaoming",
+        "吴小红": "Wu Xiaohong",
+        "郑小华": "Zheng Xiaohua",
+        "孙小丽": "Sun Xiaoli",
+        "马小强": "Ma Xiaoqiang",
+        "朱小芳": "Zhu Xiaofang",
+        "胡小军": "Hu Xiaojun"
+      },
+      "employees": {
+        "张经理": "Manager Zhang",
+        "李主管": "Supervisor Li",
+        "王工程师": "Engineer Wang",
+        "赵设计师": "Designer Zhao",
+        "陈分析师": "Analyst Chen",
+        "刘专员": "Specialist Liu",
+        "杨助理": "Assistant Yang",
+        "黄顾问": "Consultant Huang",
+        "周产品经理": "Product Manager Zhou",
+        "吴运营专员": "Operations Specialist Wu",
+        "郑技术总监": "Technical Director Zheng",
+        "孙市场经理": "Marketing Manager Sun"
+      },
+      "prizes": {
+        "iPhone 15 Pro": "iPhone 15 Pro",
+        "MacBook Air": "MacBook Air",
+        "iPad Pro": "iPad Pro",
+        "AirPods Pro": "AirPods Pro",
+        "Apple Watch": "Apple Watch",
+        "小米电视": "Xiaomi TV",
+        "戴森吹风机": "Dyson Hair Dryer",
+        "星巴克礼品卡": "Starbucks Gift Card",
+        "京东购物卡": "JD Shopping Card",
+        "健身房年卡": "Gym Annual Membership"
+      },
+      "teamMembers": {
+        "小明": "Xiao Ming",
+        "小红": "Xiao Hong",
+        "小华": "Xiao Hua",
+        "小丽": "Xiao Li",
+        "小强": "Xiao Qiang",
+        "小芳": "Xiao Fang",
+        "小军": "Xiao Jun",
+        "小燕": "Xiao Yan",
+        "小龙": "Xiao Long",
+        "小梅": "Xiao Mei",
+        "小刚": "Xiao Gang",
+        "小娟": "Xiao Juan"
+      },
+      "games": {
+        "真心话大冒险": "Truth or Dare",
+        "狼人杀": "Werewolf",
+        "剧本杀": "Script Murder",
+        "KTV唱歌": "KTV Singing",
+        "桌游大战": "Board Game Battle",
+        "电影欣赏": "Movie Appreciation",
+        "美食制作": "Food Making",
+        "户外烧烤": "Outdoor BBQ"
+      },
+      "annualPrizes": {
+        "特等奖：海外旅游": "Grand Prize: Overseas Travel",
+        "一等奖：笔记本电脑": "First Prize: Laptop Computer",
+        "二等奖：智能手机": "Second Prize: Smartphone",
+        "三等奖：平板电脑": "Third Prize: Tablet",
+        "优秀奖：蓝牙耳机": "Excellence Award: Bluetooth Headphones",
+        "参与奖：保温杯": "Participation Award: Thermos Cup",
+        "幸运奖：购物卡": "Lucky Prize: Shopping Card",
+        "惊喜奖：神秘礼品": "Surprise Prize: Mystery Gift"
+      }
+    }
+  },
+  "modeConfig": {
+    "gridLottery": {
+      "description": "Grid lottery can only draw 1 item at a time",
+      "helpText": "Grid mode selects a single winner through light jumping and freezing"
+    },
+    "cardFlip": {
+      "description": "Card mode supports up to 10 cards",
+      "helpText": "Card layout limitation, supports up to 10 cards"
+    },
+    "slotMachine": {
+      "description": "Slot machine mode supports up to 12 reels",
+      "helpText": "Avoid reels being too narrow affecting visual effect"
+    },
+    "bulletScreen": {
+      "description": "Bullet screen mode supports up to 20 lines",
+      "helpText": "Vertical space limitation, avoid bullets being too dense"
+    },
+    "blinkingNamePicker": {
+      "description": "Blinking name picker mode supports up to 50 items",
+      "helpText": "Supports virtual scrolling, can handle more items"
+    },
+    "maxQuantity": "Maximum {{max}} items"
   }
 }

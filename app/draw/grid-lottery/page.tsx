@@ -47,6 +47,8 @@ export default function GridLotteryDrawPage() {
   const [isExperienceMode, setIsExperienceMode] = useState(false)
   const [experienceSession, setExperienceSession] = useState<any>(null)
   const [showExperienceFeedback, setShowExperienceFeedback] = useState(false)
+  const [gameCompleted, setGameCompleted] = useState(false) // 跟踪游戏是否已完成
+  const [resultViewed, setResultViewed] = useState(false) // 跟踪结果是否已被查看
 
   const animationRef = useRef<NodeJS.Timeout | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
@@ -141,8 +143,8 @@ export default function GridLotteryDrawPage() {
 
   const initializeGrid = (config: DrawingConfig) => {
     // 验证配置
-    const validation = validateGridConfiguration(config.items, config.allowRepeat)
-    
+    const validation = validateGridConfiguration(config.items, config.allowRepeat, t)
+
     if (!validation.isValid) {
       validation.errors.forEach(error => {
         toast({
@@ -315,6 +317,8 @@ export default function GridLotteryDrawPage() {
       countdown: 0
     })
 
+    setGameCompleted(true) // 标记游戏已完成
+
     // 播放获奖音效
     playSound("win")
 
@@ -361,6 +365,7 @@ export default function GridLotteryDrawPage() {
     
     // 重置状态
     setShowResult(false)
+    setGameCompleted(false) // 重置游戏完成状态
     setGameState(prev => ({
       ...prev,
       phase: 'idle',
@@ -372,6 +377,29 @@ export default function GridLotteryDrawPage() {
 
   const handleGoHome = () => {
     router.push("/")
+  }
+
+  const handleRestartGame = () => {
+    setShowResult(false)
+    setGameCompleted(false)
+    setResultViewed(false) // 重置结果查看状态
+    // 重新初始化宫格布局（重新洗牌）
+    if (config) {
+      initializeGrid(config)
+    }
+    setGameState(prev => ({
+      ...prev,
+      phase: 'idle',
+      currentHighlight: -1,
+      winner: null,
+      countdown: 3
+    }))
+  }
+
+  const handleCloseResult = () => {
+    setShowResult(false)
+    setResultViewed(true) // 标记结果已被查看
+    // 保持 gameCompleted 为 true，这样用户可以看到重新开始按钮
   }
 
   const getDrawResult = (): DrawResult => ({
@@ -570,11 +598,60 @@ export default function GridLotteryDrawPage() {
               </Button>
             )}
 
-            {gameState.phase === "finished" && !showResult && (
+            {gameState.phase === "finished" && !showResult && !resultViewed && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
                 <p className="text-2xl font-bold text-gray-800 mb-4">{t('gridLottery.drawComplete')}</p>
-                <p className="text-gray-600">{t('gridLottery.winner', { name: gameState.winner?.name })}</p>
+
+                {/* 统一的获奖者展示样式 */}
+                <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-4 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('gridLottery.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <span className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm">
+                      {gameState.winner?.name}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-gray-600 text-sm">{t('gridLottery.detailsWillShow')}</p>
+              </div>
+            )}
+
+            {/* 结果已查看后的状态 */}
+            {gameState.phase === "finished" && !showResult && resultViewed && (
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎊</div>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('gridLottery.drawComplete')}</p>
+                <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('gridLottery.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <span className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm">
+                      {gameState.winner?.name}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 集成的操作按钮 */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleRestartGame}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-purple-600 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">🔄</span>
+                    {t('gridLottery.restart')}
+                  </button>
+                  <button
+                    onClick={() => router.push('/draw-config')}
+                    className="bg-white text-gray-700 font-medium text-lg rounded-xl shadow-lg hover:bg-gray-50 border border-gray-300 transition-all duration-200 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">⚙️</span>
+                    {t('gridLottery.backToConfig')}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -585,7 +662,7 @@ export default function GridLotteryDrawPage() {
       <DrawResultModal
         result={getDrawResult()}
         isOpen={showResult}
-        onClose={() => setShowResult(false)}
+        onClose={handleCloseResult}
         onDrawAgain={handleDrawAgain}
         onGoHome={handleGoHome}
       />
@@ -601,6 +678,30 @@ export default function GridLotteryDrawPage() {
       )}
 
       <Toaster />
+
+      {/* 浮动操作栏 - 备选方案（当前已注释） */}
+      {/*
+      {gameCompleted && !showResult && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 z-40">
+          <div className="max-w-md mx-auto flex gap-3">
+            <button
+              onClick={handleRestartGame}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:from-purple-600 hover:to-pink-700 transition-all duration-200 px-6 py-3 flex items-center justify-center gap-2"
+            >
+              <span className="text-lg">🔄</span>
+              {t('gridLottery.restart')}
+            </button>
+            <button
+              onClick={() => router.push('/draw-config')}
+              className="flex-1 bg-white text-gray-700 font-medium rounded-xl shadow-lg hover:bg-gray-50 border border-gray-300 transition-all duration-200 px-6 py-3 flex items-center justify-center gap-2"
+            >
+              <span className="text-lg">⚙️</span>
+              {t('gridLottery.backToConfig')}
+            </button>
+          </div>
+        </div>
+      )}
+      */}
     </div>
   )
 }

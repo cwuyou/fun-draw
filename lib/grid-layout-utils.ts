@@ -146,8 +146,9 @@ export function createGridCells(items: ListItem[], gridSize: number): GridCell[]
  * @returns 验证结果
  */
 export function validateGridConfiguration(
-  items: ListItem[], 
-  allowRepeat: boolean
+  items: ListItem[],
+  allowRepeat: boolean,
+  t?: (key: string, params?: any) => string
 ): {
   isValid: boolean
   errors: string[]
@@ -156,24 +157,29 @@ export function validateGridConfiguration(
 } {
   const errors: string[] = []
   const warnings: string[] = []
-  
+
   if (items.length === 0) {
-    errors.push('多宫格抽奖需要至少1个参与项目')
-  }
-  
-  const recommendedGridSize = determineOptimalGridSize(items.length)
-  
-  if (items.length > 15) {
-    warnings.push(`项目数量超过15个（${items.length}个），将随机选择15个填充宫格`)
-  }
-  
-  if (items.length < recommendedGridSize && !allowRepeat) {
-    warnings.push(
-      `项目数量（${items.length}个）少于推荐宫格数量（${recommendedGridSize}个），` +
-      `空余宫格将显示占位符。建议启用"允许重复"以获得更好的视觉效果。`
+    errors.push(
+      t ? t('gridLottery.validation.needAtLeastOne') : '多宫格抽奖需要至少1个参与项目'
     )
   }
-  
+
+  const recommendedGridSize = determineOptimalGridSize(items.length)
+
+  if (items.length > 15) {
+    warnings.push(
+      t ? t('gridLottery.validation.overLimit', { count: items.length }) : `项目数量超过15个（${items.length}个），将随机选择15个填充宫格`
+    )
+  }
+
+  if (items.length < recommendedGridSize && !allowRepeat) {
+    warnings.push(
+      t
+        ? t('gridLottery.validation.lessThanRecommended', { count: items.length, recommended: recommendedGridSize })
+        : `项目数量（${items.length}个）少于推荐宫格数量（${recommendedGridSize}个），空余宫格将显示占位符。建议启用"允许重复"以获得更好的视觉效果。`
+    )
+  }
+
   return {
     isValid: errors.length === 0,
     errors,

@@ -68,11 +68,14 @@ export function parseTextToItems(text: string): ListItem[] {
 }
 
 // 名称生成工具函数
-export function generateDefaultTempName(): string {
-  return "临时名单"
+export function generateDefaultTempName(t?: (key: string) => string): string {
+  if (t) {
+    return t('common.tempListName')
+  }
+  return "临时名单" // 降级到中文
 }
 
-export function generateTimestampName(): string {
+export function generateTimestampName(t?: (key: string) => string): string {
   const now = new Date()
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
@@ -80,8 +83,9 @@ export function generateTimestampName(): string {
   const hour = String(now.getHours()).padStart(2, '0')
   const minute = String(now.getMinutes()).padStart(2, '0')
   const second = String(now.getSeconds()).padStart(2, '0')
-  
-  return `名单_${year}-${month}-${day}_${hour}-${minute}-${second}`
+  const prefix = t ? t('common.listPrefix') : '名单'
+
+  return `${prefix}_${year}-${month}-${day}_${hour}-${minute}-${second}`
 }
 
 export function ensureUniqueName(baseName: string, existingNames: string[]): string {
@@ -102,16 +106,16 @@ export function ensureUniqueName(baseName: string, existingNames: string[]): str
   return finalName
 }
 
-export function generateUniqueListName(customName?: string): string {
+export function generateUniqueListName(customName?: string, t?: (key: string) => string): string {
   // 如果提供了自定义名称且不为空，直接使用
   if (customName && customName.trim()) {
     const trimmedName = customName.trim()
     const existingNames = getSavedLists().map(list => list.name)
     return ensureUniqueName(trimmedName, existingNames)
   }
-  
-  // 否则生成时间戳名称
-  const timestampName = generateTimestampName()
+
+  // 否则生成时间戳名称（受语言影响的前缀）
+  const timestampName = generateTimestampName(t)
   const existingNames = getSavedLists().map(list => list.name)
   return ensureUniqueName(timestampName, existingNames)
 }

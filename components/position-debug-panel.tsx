@@ -30,11 +30,16 @@ interface PositionDebugPanelProps {
   className?: string
 }
 
-export function PositionDebugPanel({ 
-  isVisible = false, 
+export function PositionDebugPanel({
+  isVisible = false,
   onToggle,
-  className = '' 
+  className = ''
 }: PositionDebugPanelProps) {
+  // 只在开发模式下显示
+  if (process.env.NODE_ENV !== 'development') {
+    return null
+  }
+
   const [debugSummary, setDebugSummary] = useState<any>(null)
   const [calculationHistory, setCalculationHistory] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'summary' | 'history' | 'settings'>('summary')

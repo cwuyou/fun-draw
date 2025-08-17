@@ -22,9 +22,7 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import QuickExperience from "@/components/quick-experience"
-import ExperienceGuide from "@/components/experience-guide"
-import { useState, useEffect } from "react"
-import { isFirstTimeUser } from "@/lib/experience-manager"
+import { useState } from "react"
 import { ExperienceTemplate } from "@/types"
 import LanguageSwitcher from "@/components/language-switcher"
 import { useTranslation } from "@/hooks/use-translation"
@@ -32,36 +30,13 @@ import { useTranslation } from "@/hooks/use-translation"
 export default function HomePage() {
   const router = useRouter()
   const { t } = useTranslation()
-  const [showGuide, setShowGuide] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    // 检查是否为首次用户，如果是则显示引导
-    const checkFirstTime = async () => {
-      try {
-        const isFirst = isFirstTimeUser()
-        if (isFirst) {
-          // 延迟显示引导，让页面先加载完成
-          setTimeout(() => {
-            setShowGuide(true)
-          }, 1000)
-        }
-      } catch (error) {
-        console.error('Failed to check first time user:', error)
-      }
-    }
 
-    checkFirstTime()
-  }, [])
 
   const handleExperienceStart = (template: ExperienceTemplate) => {
     // 体验开始的回调处理
     console.log('Experience started with template:', template.name)
-  }
-
-  const handleGuideTemplateSelect = (template: ExperienceTemplate) => {
-    // 从引导中选择模板的处理
-    handleExperienceStart(template)
   }
   const drawingModes = [
     {
@@ -440,12 +415,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* 新用户引导 */}
-      <ExperienceGuide
-        isOpen={showGuide}
-        onClose={() => setShowGuide(false)}
-        onTemplateSelect={handleGuideTemplateSelect}
-      />
+
     </div>
   )
 }

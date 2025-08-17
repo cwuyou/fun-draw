@@ -764,7 +764,7 @@ export function BlinkingNamePicker({
     <div 
       className={cn("flex flex-col", className)}
       role="application"
-      aria-label="闪烁点名游戏"
+      aria-label={t('drawingComponents.blinkingNamePicker.gameAriaLabel')}
       aria-describedby="game-instructions"
     >
       {/* 隐藏的游戏说明，供屏幕阅读器使用 */}
@@ -837,19 +837,19 @@ export function BlinkingNamePicker({
                     // 可以添加一个toast提示
                     console.log('结果已复制到剪贴板')
                   }).catch(() => {
-                    console.error('复制失败')
+                    console.error(t('drawingComponents.blinkingNamePicker.actions.copyFailed'))
                   })
                 }}
                 className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                title="复制结果"
+                title={t('drawingComponents.blinkingNamePicker.actions.copyTitle')}
               >
-                📋 复制
+                📋 {t('drawingComponents.blinkingNamePicker.actions.copy')}
               </button>
               
               {/* 分享结果 */}
               <button
                 onClick={() => {
-                  const text = `闪烁点名结果：${gameState.selectedItems.map(item => item.name).join(', ')}`
+                  const text = `${t('drawingComponents.blinkingNamePicker.actions.shareMessagePrefix')}${gameState.selectedItems.map(item => item.name).join(', ')}`
                   if (navigator.share) {
                     navigator.share({
                       title: '闪烁点名结果',
@@ -863,9 +863,9 @@ export function BlinkingNamePicker({
                   }
                 }}
                 className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                title="分享结果"
+                title={t('drawingComponents.blinkingNamePicker.actions.shareTitle')}
               >
-                📤 分享
+                📤 {t('drawingComponents.blinkingNamePicker.actions.share')}
               </button>
             </div>
           </div>
@@ -902,17 +902,17 @@ export function BlinkingNamePicker({
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-blue-600">{gameState.totalRounds}</div>
-                  <div className="text-xs text-gray-500">总轮次</div>
+                  <div className="text-xs text-gray-500">{t('drawingComponents.blinkingNamePicker.stats.totalRounds')}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-purple-600">{items.length}</div>
-                  <div className="text-xs text-gray-500">候选名称</div>
+                  <div className="text-xs text-gray-500">{t('drawingComponents.blinkingNamePicker.stats.candidateNames')}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="text-2xl font-bold text-orange-600">
                     {Math.round((Date.now() - gameState.startTime) / 1000)}s
                   </div>
-                  <div className="text-xs text-gray-500">用时</div>
+                  <div className="text-xs text-gray-500">{t('drawingComponents.blinkingNamePicker.stats.duration')}</div>
                 </div>
               </div>
             </div>
@@ -923,7 +923,7 @@ export function BlinkingNamePicker({
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-blue-700">
-                  还需要选择 {getRemainingRounds()} 个名称
+                  {t('drawingComponents.blinkingNamePicker.continuePrompt', { count: getRemainingRounds() })}
                 </div>
                 <button
                   onClick={() => {
@@ -934,8 +934,8 @@ export function BlinkingNamePicker({
                     }, 200)
                   }}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  继续选择
+>
+                  {t('drawingComponents.blinkingNamePicker.continueButton')}
                 </button>
               </div>
             </div>

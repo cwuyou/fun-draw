@@ -33,6 +33,8 @@ export default function CardFlipDrawPage() {
   const [gameKey, setGameKey] = useState(0) // 用于重置游戏组件
   const [drawnItems, setDrawnItems] = useState<Set<string>>(new Set()) // 跟踪已抽取的名称
   const [soundInitialized, setSoundInitialized] = useState(false)
+  const [gameCompleted, setGameCompleted] = useState(false) // 跟踪游戏是否已完成
+  const [resultViewed, setResultViewed] = useState(false) // 跟踪结果是否已被查看
 
   useEffect(() => {
     loadDrawConfig()
@@ -164,6 +166,7 @@ export default function CardFlipDrawPage() {
 
   const handleGameComplete = (gameWinners: ListItem[]) => {
     setWinners(gameWinners)
+    setGameCompleted(true) // 标记游戏已完成
 
     // 如果不允许重复中奖，将中奖者添加到已抽取列表
     if (!config?.allowRepeat) {
@@ -196,12 +199,27 @@ export default function CardFlipDrawPage() {
 
     setShowResult(false)
     setWinners([])
+    setGameCompleted(false) // 重置游戏完成状态
     // 通过改变key来重置游戏组件到idle状态，等待用户手动开始
     setGameKey(prev => prev + 1)
   }
 
   const handleGoHome = () => {
     router.push("/")
+  }
+
+  const handleRestartGame = () => {
+    setShowResult(false)
+    setWinners([])
+    setGameCompleted(false)
+    setResultViewed(false) // 重置结果查看状态
+    setGameKey(prev => prev + 1)
+  }
+
+  const handleCloseResult = () => {
+    setShowResult(false)
+    setResultViewed(true) // 标记结果已被查看
+    // 保持 gameCompleted 为 true，这样用户可以看到重新开始按钮
   }
 
   const getDrawResult = (): DrawResult => ({
@@ -405,6 +423,74 @@ export default function CardFlipDrawPage() {
               />
             </div>
 
+            {/* 游戏完成后的状态显示 */}
+            {gameCompleted && !showResult && !resultViewed && (
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('cardFlip.drawComplete')}</p>
+
+                {/* 统一的获奖者展示样式 */}
+                <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-4 mb-4 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('cardFlip.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-gray-600 text-sm">{t('cardFlip.detailsWillShow')}</p>
+              </div>
+            )}
+
+            {/* 结果已查看后的状态 */}
+            {gameCompleted && !showResult && resultViewed && (
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4">🎊</div>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('cardFlip.drawComplete')}</p>
+                <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('cardFlip.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 集成的操作按钮 */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleRestartGame}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">🔄</span>
+                    {t('cardFlip.restart')}
+                  </button>
+                  <button
+                    onClick={() => router.push('/draw-config')}
+                    className="bg-white text-gray-700 font-medium text-lg rounded-xl shadow-lg hover:bg-gray-50 border border-gray-300 transition-all duration-200 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">⚙️</span>
+                    {t('cardFlip.backToConfig')}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 装饰性元素 */}
             <div className="text-center">
               <div className="inline-flex items-center gap-4 px-8 py-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-lg">
@@ -420,7 +506,7 @@ export default function CardFlipDrawPage() {
         <DrawResultModal
           result={getDrawResult()}
           isOpen={showResult}
-          onClose={() => setShowResult(false)}
+          onClose={handleCloseResult}
           onDrawAgain={handleDrawAgain}
           onGoHome={handleGoHome}
         />

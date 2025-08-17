@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { soundManager } from '@/lib/sound-manager'
 import { useAnimationPerformance } from '@/lib/animation-performance'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/hooks/use-translation'
 
 interface CardDeckProps {
   totalCards: number
@@ -30,6 +31,7 @@ export function CardDeck({
   const [shuffleProgress, setShuffleProgress] = useState(0)
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const animationFrameRef = useRef<number | null>(null)
+  const { t } = useTranslation()
 
   // 使用动画性能管理器
   const {
@@ -248,7 +250,7 @@ export function CardDeck({
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
           </div>
           <div className="text-xs text-gray-500 mt-1 text-center">
-            洗牌中...
+            {t('cardFlip.shuffling')}
           </div>
         </div>
       )}

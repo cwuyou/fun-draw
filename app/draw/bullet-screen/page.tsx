@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { soundManager } from "@/lib/sound-manager"
 import { loadAndMigrateConfig } from "@/lib/config-migration"
+import { getCurrentExperienceSession } from "@/lib/experience-manager"
+import type { ExperienceSession } from "@/types"
 
 type DrawState = "idle" | "scrolling" | "slowing" | "finished"
 
@@ -32,6 +34,10 @@ export default function BulletScreenDrawPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [progress, setProgress] = useState(0)
   const [completedReels, setCompletedReels] = useState(0)
+  const [isExperienceMode, setIsExperienceMode] = useState(false)
+  const [experienceSession, setExperienceSession] = useState<ExperienceSession | null>(null)
+  const [gameCompleted, setGameCompleted] = useState(false) // 跟踪游戏是否已完成
+  const [resultViewed, setResultViewed] = useState(false) // 跟踪结果是否已被查看
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -60,7 +66,24 @@ export default function BulletScreenDrawPage() {
 
   const loadDrawConfig = () => {
     try {
-      // 使用迁移函数加载配置
+      // 检查是否为体验模式
+      const experienceSession = getCurrentExperienceSession()
+      if (experienceSession && experienceSession.isDemo) {
+        if (experienceSession.config.mode === "bullet-screen") {
+          setIsExperienceMode(true)
+          setExperienceSession(experienceSession)
+          setConfig(experienceSession.config)
+
+          // 显示体验开始提示
+          toast({
+            title: t('bulletScreen.welcomeExperience', { name: experienceSession.template.name }),
+            description: t('bulletScreen.demoDescription'),
+          })
+          return
+        }
+      }
+
+      // 常规模式：使用迁移函数加载配置
       const migratedConfig = loadAndMigrateConfig("draw-config")
       if (!migratedConfig) {
         toast({
@@ -144,14 +167,16 @@ export default function BulletScreenDrawPage() {
       if (newCompletedReels >= config!.quantity) {
         console.log("所有弹幕完成，设置状态为finished")
         setDrawState("finished")
-        
+        setGameCompleted(true) // 标记游戏已完成
+
         // 停止滚动音效，播放中奖音效
         soundManager.stop("bullet-scroll")
         playSound("win")
 
+        // 立即显示页面结果，延迟弹出详细对话框
         setTimeout(() => {
           setShowResult(true)
-        }, 1000)
+        }, 2000) // 延长到2秒，让用户先看到页面结果
       }
       
       return newCompletedReels
@@ -167,6 +192,8 @@ export default function BulletScreenDrawPage() {
     
     // 重置所有状态
     setShowResult(false)
+    setGameCompleted(false) // 重置游戏完成状态
+    setResultViewed(false) // 重置结果查看状态
     setDrawState("idle")
     setWinners([])
     setProgress(0)
@@ -175,6 +202,22 @@ export default function BulletScreenDrawPage() {
 
   const handleGoHome = () => {
     router.push("/")
+  }
+
+  const handleRestartGame = () => {
+    setShowResult(false)
+    setGameCompleted(false)
+    setResultViewed(false) // 重置结果查看状态
+    setDrawState("idle")
+    setWinners([])
+    setProgress(0)
+    setCompletedReels(0)
+  }
+
+  const handleCloseResult = () => {
+    setShowResult(false)
+    setResultViewed(true) // 标记结果已被查看
+    // 保持 gameCompleted 为 true，这样用户可以看到重新开始按钮
   }
 
   const getDrawResult = (): DrawResult => ({
@@ -313,11 +356,70 @@ export default function BulletScreenDrawPage() {
               </Button>
             )}
 
-            {drawState === "finished" && !showResult && (
+            {drawState === "finished" && !showResult && !resultViewed && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
                 <p className="text-2xl font-bold text-gray-800 mb-4">{t('bulletScreen.drawComplete')}</p>
-                <p className="text-gray-600">{t('bulletScreen.resultWillShow')}</p>
+
+                {/* 立即显示获奖者信息 */}
+                <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-4 mb-4 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('bulletScreen.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-gray-600 text-sm">{t('bulletScreen.detailsWillShow')}</p>
+              </div>
+            )}
+
+            {/* 结果已查看后的状态 */}
+            {drawState === "finished" && !showResult && resultViewed && (
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎊</div>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('bulletScreen.drawComplete')}</p>
+                <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('bulletScreen.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 集成的操作按钮 */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleRestartGame}
+                    className="bg-gradient-to-r from-green-500 to-blue-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">🔄</span>
+                    {t('bulletScreen.restart')}
+                  </button>
+                  <button
+                    onClick={() => router.push('/draw-config')}
+                    className="bg-white text-gray-700 font-medium text-lg rounded-xl shadow-lg hover:bg-gray-50 border border-gray-300 transition-all duration-200 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">⚙️</span>
+                    {t('bulletScreen.backToConfig')}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -328,7 +430,7 @@ export default function BulletScreenDrawPage() {
       <DrawResultModal
         result={getDrawResult()}
         isOpen={showResult}
-        onClose={() => setShowResult(false)}
+        onClose={handleCloseResult}
         onDrawAgain={handleDrawAgain}
         onGoHome={handleGoHome}
       />

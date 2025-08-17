@@ -181,27 +181,28 @@ export default function QuickConfiguration({
         <CardContent className="pt-0">
           <div className="space-y-3">
             {/* Configuration info */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Target className="w-3 h-3 text-gray-400" />
-                <span className="text-gray-500">{t('quickConfig.drawQuantity')}：</span>
-                <span className="font-medium text-purple-600">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <Target className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <span className="text-gray-500 flex-shrink-0">{t('quickConfig.drawQuantity')}：</span>
+                <span className="font-medium text-purple-600 truncate">
                   {displayQuantity === 'auto' ? t('quickConfig.intelligent') : displayQuantity}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-3 h-3 text-gray-400" />
-                <span className="text-gray-500">{t('quickConfig.allowRepeat')}：</span>
-                <span className="font-medium">
-                  {template.allowRepeat ? t('quickConfig.allowRepeat') : t('quickConfig.notAllow')}
+              <div className="flex items-center gap-2 min-w-0">
+                <Users className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <span className="text-gray-500 flex-shrink-0">{t('quickConfig.allowRepeat')}：</span>
+                <span className="font-medium truncate">
+                  {template.allowRepeat ? t('quickConfig.yes') : t('quickConfig.notAllow')}
                 </span>
               </div>
             </div>
 
             {/* Mode info */}
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Sparkles className="w-3 h-3" />
-              <span>{t('quickConfig.drawMode')}：{getModeDisplayName(template.mode)}</span>
+            <div className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
+              <Sparkles className="w-3 h-3 flex-shrink-0" />
+              <span className="flex-shrink-0">{t('quickConfig.drawMode')}：</span>
+              <span className="truncate">{getModeDisplayName(template.mode)}</span>
             </div>
 
             {/* Tags */}

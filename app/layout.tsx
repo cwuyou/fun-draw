@@ -1,6 +1,13 @@
 import type { Metadata } from 'next'
 import { LanguageProvider } from '@/contexts/language-context'
+import LanguageHtmlUpdater from '@/components/language-html-updater'
+import LanguageHydrationGate from '@/components/language-hydration-gate'
 import './globals.css'
+
+// 在开发环境下导入翻译检查工具
+if (process.env.NODE_ENV === 'development') {
+  import('@/lib/dev-translation-check')
+}
 
 export const metadata: Metadata = {
   title: '趣抽 - Fun Draw',
@@ -17,7 +24,10 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body>
         <LanguageProvider defaultLanguage="zh">
-          {children}
+          <LanguageHtmlUpdater />
+          <LanguageHydrationGate>
+            {children}
+          </LanguageHydrationGate>
         </LanguageProvider>
       </body>
     </html>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { GameCard, CardStyle } from '@/types'
 import { useAnimationPerformance } from '@/lib/animation-performance'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/hooks/use-translation'
 
 interface PlayingCardProps {
   card: GameCard
@@ -14,16 +15,17 @@ interface PlayingCardProps {
   className?: string
 }
 
-export function PlayingCard({ 
-  card, 
-  isRevealed, 
-  onFlip, 
-  style, 
+export function PlayingCard({
+  card,
+  isRevealed,
+  onFlip,
+  style,
   disabled,
-  className 
+  className
 }: PlayingCardProps) {
   const [isFlipping, setIsFlipping] = useState(false)
   const [showInstantFeedback, setShowInstantFeedback] = useState(false)
+  const { t } = useTranslation()
 
   // 使用动画性能管理器
   const {
@@ -100,7 +102,7 @@ export function PlayingCard({
       onKeyDown={handleKeyDown}
       tabIndex={disabled ? -1 : 0}
       role="button"
-      aria-label={isRevealed ? `已翻开: ${card.content?.name || '空卡'}` : '点击翻牌'}
+      aria-label={isRevealed ? `已翻开: ${card.content?.name || t('cardFlip.emptyCard')}` : '点击翻牌'}
       data-testid={card.id}
       style={{
         width: `${touchWidth}px`,
@@ -136,7 +138,7 @@ export function PlayingCard({
           )}
         >
           <div className="text-white text-xs font-bold opacity-80">
-            {style.name}
+            {t(`cardFlip.cardStyles.${style.id}`)}
           </div>
         </div>
 
@@ -168,7 +170,7 @@ export function PlayingCard({
                   "text-yellow-600 mt-1 font-medium",
                   cardWidth < 88 ? "text-xs" : "text-xs"
                 )}>
-                  中奖！
+                  {t('cardFlip.winner')}
                 </div>
               )}
             </>
@@ -177,7 +179,7 @@ export function PlayingCard({
               "text-gray-400",
               cardWidth < 88 ? "text-xs" : "text-sm"
             )}>
-              空卡
+              {t('cardFlip.emptyCard')}
             </div>
           )}
         </div>

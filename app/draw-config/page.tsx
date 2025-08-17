@@ -18,6 +18,7 @@ import { getModeSpecificConfig, getMaxQuantityForMode, validateModeConfig } from
 import { preprocessConfigForSave } from "@/lib/config-migration"
 import { Toaster } from "@/components/ui/toaster"
 import QuickConfiguration from "@/components/quick-configuration"
+import { clearCurrentExperienceSession } from "@/lib/experience-manager"
 
 export default function DrawConfigPage() {
   const router = useRouter()
@@ -36,7 +37,7 @@ export default function DrawConfigPage() {
   console.log("DrawConfigPage 组件渲染");
 
   // 获取当前模式的特定配置
-  const modeConfig = getModeSpecificConfig(selectedMode, items.length, allowRepeat)
+  const modeConfig = getModeSpecificConfig(selectedMode, items.length, allowRepeat, t)
 
   // 处理快速配置选择
   const handleQuickConfigSelect = (config: DrawingConfig) => {
@@ -59,11 +60,11 @@ export default function DrawConfigPage() {
   // 获取模式显示名称
   const getModeDisplayName = (mode: DrawingMode): string => {
     const modeNames = {
-      'slot-machine': t('drawingModes.slotMachine.name'),
-      'card-flip': t('drawingModes.cardFlip.name'),
-      'bullet-screen': t('drawingModes.bulletScreen.name'),
-      'grid-lottery': t('drawingModes.gridLottery.name'),
-      'blinking-name-picker': t('drawingModes.blinkingNamePicker.name')
+      'slot-machine': t('drawingModes.slotMachine.shortTitle') || t('drawingModes.slotMachine.title'),
+      'card-flip': t('drawingModes.cardFlip.shortTitle') || t('drawingModes.cardFlip.title'),
+      'bullet-screen': t('drawingModes.bulletScreen.shortTitle') || t('drawingModes.bulletScreen.title'),
+      'grid-lottery': t('drawingModes.gridLottery.shortTitle') || t('drawingModes.gridLottery.title'),
+      'blinking-name-picker': t('drawingModes.blinkingNamePicker.shortTitle') || t('drawingModes.blinkingNamePicker.title')
     }
     return modeNames[mode] || mode
   }
@@ -79,7 +80,7 @@ export default function DrawConfigPage() {
       setQuantity(1)
     } else if (previousMode === 'grid-lottery') {
       // 从多宫格模式切换到其他模式：重置为合理的默认值
-      const newModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat)
+      const newModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat, t)
       if (newModeConfig.quantityEditable) {
         // 如果新模式支持编辑数量，设置为1作为起始值
         setQuantity(1)
@@ -87,7 +88,7 @@ export default function DrawConfigPage() {
     }
     
     // 如果切换到的模式有固定数量值，应用该值
-    const targetModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat)
+    const targetModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat, t)
     if (!targetModeConfig.quantityEditable && typeof targetModeConfig.quantityValue === 'number') {
       setQuantity(targetModeConfig.quantityValue)
     }
@@ -230,9 +231,11 @@ export default function DrawConfigPage() {
   // 使用 useEffect 来处理客户端数据加载
   useEffect(() => {
     console.log("DrawConfigPage useEffect 执行");
+    // 进入配置页时，确保清除体验会话，防止使用模板示例数据
+    try { clearCurrentExperienceSession() } catch {}
     // 组件挂载时加载数据
     loadListData()
-    
+
     // 组件卸载时清理数据
     return () => {
       console.log("DrawConfigPage 组件卸载");
@@ -314,9 +317,9 @@ export default function DrawConfigPage() {
       }
       
       // 如果是临时名单，生成一个新的名称；否则使用当前名称
-      const finalName = listName === generateDefaultTempName() 
-        ? generateUniqueListName() 
-        : generateUniqueListName(listName)
+      const finalName = listName === generateDefaultTempName(t)
+        ? generateUniqueListName(undefined, t)
+        : generateUniqueListName(listName, t)
 
       const savedList = saveList({
         name: finalName,
@@ -413,7 +416,7 @@ export default function DrawConfigPage() {
     const processedConfig = preprocessConfigForSave(config)
 
     // 使用新的验证系统
-    const validationResult = validateModeConfig(processedConfig)
+    const validationResult = validateModeConfig(processedConfig, t)
     
     if (!validationResult.isValid) {
       toast({
@@ -440,6 +443,9 @@ export default function DrawConfigPage() {
     }
 
     localStorage.setItem("draw-config", JSON.stringify(processedConfig))
+
+    // 为避免体验模式残留，显式清除一次
+    try { clearCurrentExperienceSession() } catch {}
 
     // 根据选择的模式跳转到对应页面
     router.push(`/draw/${selectedMode}`)
@@ -623,7 +629,7 @@ export default function DrawConfigPage() {
                               id="quantity"
                               type="number"
                               min="1"
-                              max={getMaxQuantityForMode(selectedMode, allowRepeat, items.length)}
+                              max={getMaxQuantityForMode(selectedMode, allowRepeat, items.length, t)}
                               value={quantity}
                               onChange={(e) => {
                                 const inputValue = e.target.value
@@ -641,7 +647,7 @@ export default function DrawConfigPage() {
                                   return
                                 }
                                 
-                                const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length)
+                                const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length, t)
                                 
                                 // 允许用户输入，但在合理范围内
                                 if (numValue >= 1 && numValue <= maxValue) {
@@ -701,7 +707,7 @@ export default function DrawConfigPage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {/* 只有当前是临时名单时才显示保存按钮 */}
-            {listName === generateDefaultTempName() && (
+            {listName === generateDefaultTempName(t) && (
               <Button
                 size="lg"
                 onClick={handleSaveCurrentList}

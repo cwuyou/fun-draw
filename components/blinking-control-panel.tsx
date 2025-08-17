@@ -149,13 +149,13 @@ export function BlinkingControlPanel({
             {/* 轮次信息 */}
             {gameState.totalRounds > 1 && (
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">进度:</span>
+                <span className="text-gray-500">{t('blinkingNamePicker.progressLabel')}</span>
                 <span className="font-medium text-gray-700">
                   {gameState.selectedItems.length} / {gameState.totalRounds}
                 </span>
                 {getRemainingRounds() > 0 && (
                   <span className="text-gray-400">
-                    (还需 {getRemainingRounds()} 个)
+                    {t('blinkingNamePicker.remainingCount', { count: getRemainingRounds() })}
                   </span>
                 )}
               </div>
@@ -186,7 +186,7 @@ export function BlinkingControlPanel({
             {/* 速度指示器 */}
             {(gameState.phase === 'blinking' || gameState.phase === 'slowing') && (
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>速度:</span>
+                <span>{t('blinkingNamePicker.speedLabel')}</span>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }, (_, i) => (
                     <div
@@ -323,7 +323,7 @@ export function BlinkingControlPanel({
               {/* 最终速度 */}
               <div>
                 <label className="block text-xs text-gray-600 mb-1">
-                  最终速度 ({tempConfig.finalSpeed}ms)
+                  {t('blinkingNamePicker.finalSpeed', { speed: tempConfig.finalSpeed })}
                 </label>
                 <input
                   type="range"
@@ -342,7 +342,7 @@ export function BlinkingControlPanel({
               {/* 减速时长 */}
               <div>
                 <label className="block text-xs text-gray-600 mb-1">
-                  减速时长 ({tempConfig.accelerationDuration / 1000}s)
+                  {t('blinkingNamePicker.accelerationDuration', { seconds: Math.round(tempConfig.accelerationDuration / 1000) })}
                 </label>
                 <input
                   type="range"
@@ -361,7 +361,7 @@ export function BlinkingControlPanel({
               {/* 发光强度 */}
               <div>
                 <label className="block text-xs text-gray-600 mb-1">
-                  发光强度 ({Math.round(tempConfig.glowIntensity * 100)}%)
+                  {t('blinkingNamePicker.glowIntensity', { percent: Math.round(tempConfig.glowIntensity * 100) })}
                 </label>
                 <input
                   type="range"
@@ -380,13 +380,13 @@ export function BlinkingControlPanel({
 
             {/* 颜色主题选择 */}
             <div className="mt-4">
-              <label className="block text-xs text-gray-600 mb-2">闪烁颜色主题</label>
+              <label className="block text-xs text-gray-600 mb-2">{t('blinkingNamePicker.colorTheme')}</label>
               <div className="flex gap-2 flex-wrap">
                 {[
-                  { name: '经典', colors: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'] },
-                  { name: '彩虹', colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'] },
-                  { name: '冷色', colors: ['#06b6d4', '#3b82f6', '#8b5cf6', '#10b981'] },
-                  { name: '暖色', colors: ['#ef4444', '#f97316', '#eab308', '#f59e0b'] }
+                  { name: t('blinkingNamePicker.theme.classic'), colors: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'] },
+                  { name: t('blinkingNamePicker.theme.rainbow'), colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'] },
+                  { name: t('blinkingNamePicker.theme.cool'), colors: ['#06b6d4', '#3b82f6', '#8b5cf6', '#10b981'] },
+                  { name: t('blinkingNamePicker.theme.warm'), colors: ['#ef4444', '#f97316', '#eab308', '#f59e0b'] }
                 ].map((theme) => (
                   <button
                     key={theme.name}
@@ -410,13 +410,13 @@ export function BlinkingControlPanel({
                 onClick={resetSettings}
                 className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
               >
-                取消
+                {t('common.cancel')}
               </button>
               <button
                 onClick={applySettings}
                 className="px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                应用
+                {t('common.confirm')}
               </button>
             </div>
           </div>

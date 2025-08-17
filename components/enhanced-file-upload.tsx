@@ -388,8 +388,7 @@ export default function EnhancedFileUpload({
                     <span className="font-medium text-green-600">{t('fileUpload.itemsCount', { count: processingState.result.items.length })}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">{t('fileUpload.processingTime')}</span>
-                    <span className="font-medium">{processingState.result.processingTime}ms</span>
+                    <span className="text-gray-500">{t('fileUpload.processingTime', { time: `${processingState.result.processingTime}ms` })}</span>
                   </div>
                 </div>
 

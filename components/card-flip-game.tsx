@@ -106,13 +106,13 @@ interface CardFlipGameProps {
 // 默认卡牌样式
 const DEFAULT_CARD_STYLE: CardStyle = {
   id: 'classic',
-  name: '经典蓝',
+  name: 'Classic Blue', // 这个name字段现在不会被直接使用，而是通过翻译键
   backDesign: 'bg-gradient-to-br from-blue-600 to-blue-800',
   frontTemplate: 'bg-white border-2 border-blue-300',
-  colors: { 
-    primary: '#2563eb', 
-    secondary: '#1d4ed8', 
-    accent: '#3b82f6' 
+  colors: {
+    primary: '#2563eb',
+    secondary: '#1d4ed8',
+    accent: '#3b82f6'
   }
 }
 
@@ -892,7 +892,7 @@ export function CardFlipGame({
         <div className="text-center">
           <div className={cn("animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto", `mb-[${dynamicSpacing.spacing.responsive('md')}px]`)}></div>
           <div className="text-lg text-gray-600">
-            正在准备游戏...
+            {t('cardFlip.loading')}
           </div>
         </div>
       </div>

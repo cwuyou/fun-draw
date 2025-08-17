@@ -37,6 +37,8 @@ export default function SlotMachineDrawPage() {
   const [isExperienceMode, setIsExperienceMode] = useState(false)
   const [experienceSession, setExperienceSession] = useState<any>(null)
   const [showExperienceFeedback, setShowExperienceFeedback] = useState(false)
+  const [gameCompleted, setGameCompleted] = useState(false) // 跟踪游戏是否已完成
+  const [resultViewed, setResultViewed] = useState(false) // 跟踪结果是否已被查看
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -167,11 +169,13 @@ export default function SlotMachineDrawPage() {
       if (newCompletedReels >= config!.quantity) {
         console.log("所有滚轮完成，设置状态为finished")
         setDrawState("finished")
-        
+        setGameCompleted(true) // 标记游戏已完成
+
         // 停止摇奖音效，播放中奖音效
         soundManager.stop("spin")
         playSound("win")
 
+        // 立即显示页面结果，延迟弹出详细对话框
         setTimeout(() => {
           setShowResult(true)
           
@@ -198,6 +202,8 @@ export default function SlotMachineDrawPage() {
     
     // 重置所有状态
     setShowResult(false)
+    setGameCompleted(false) // 重置游戏完成状态
+    setResultViewed(false) // 重置结果查看状态
     setDrawState("idle")
     setWinners([])
     setProgress(0)
@@ -206,6 +212,22 @@ export default function SlotMachineDrawPage() {
 
   const handleGoHome = () => {
     router.push("/")
+  }
+
+  const handleRestartGame = () => {
+    setShowResult(false)
+    setGameCompleted(false)
+    setResultViewed(false)
+    setDrawState("idle")
+    setWinners([])
+    setProgress(0)
+    setCompletedReels(0)
+  }
+
+  const handleCloseResult = () => {
+    setShowResult(false)
+    setResultViewed(true) // 标记结果已被查看
+    // 保持 gameCompleted 为 true，这样用户可以看到重新开始按钮
   }
 
   const getDrawResult = (): DrawResult => ({
@@ -350,11 +372,70 @@ export default function SlotMachineDrawPage() {
               </Button>
             )}
 
-            {drawState === "finished" && !showResult && (
+            {drawState === "finished" && !showResult && !resultViewed && (
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
                 <p className="text-2xl font-bold text-gray-800 mb-4">{t('slotMachine.drawComplete')}</p>
-                <p className="text-gray-600">{t('slotMachine.resultWillShow')}</p>
+
+                {/* 立即显示获奖者信息 */}
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-4 mb-4 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('slotMachine.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-gray-600 text-sm">{t('slotMachine.detailsWillShow')}</p>
+              </div>
+            )}
+
+            {/* 结果已查看后的状态 */}
+            {drawState === "finished" && !showResult && resultViewed && (
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎰</div>
+                <p className="text-2xl font-bold text-gray-800 mb-4">{t('slotMachine.drawComplete')}</p>
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    🏆 {t('slotMachine.winnersAnnouncement')}
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {winners.map((winner, index) => (
+                      <span
+                        key={index}
+                        className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-800 shadow-sm"
+                      >
+                        {winner.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 集成的操作按钮 */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleRestartGame}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:from-yellow-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-105 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">🔄</span>
+                    {t('slotMachine.restart')}
+                  </button>
+                  <button
+                    onClick={() => router.push('/draw-config')}
+                    className="bg-white text-gray-700 font-medium text-lg rounded-xl shadow-lg hover:bg-gray-50 border border-gray-300 transition-all duration-200 px-8 py-3 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">⚙️</span>
+                    {t('slotMachine.backToConfig')}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -365,7 +446,7 @@ export default function SlotMachineDrawPage() {
       <DrawResultModal
         result={getDrawResult()}
         isOpen={showResult}
-        onClose={() => setShowResult(false)}
+        onClose={handleCloseResult}
         onDrawAgain={handleDrawAgain}
         onGoHome={handleGoHome}
       />

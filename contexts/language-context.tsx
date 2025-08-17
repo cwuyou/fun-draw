@@ -1,16 +1,17 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { 
-  LanguageCode, 
-  LanguageContextType, 
-  LanguageProviderProps, 
-  TranslationFile, 
+import {
+  LanguageCode,
+  LanguageContextType,
+  LanguageProviderProps,
+  TranslationFile,
   TranslationParams,
   TranslationError,
   LanguagePreference,
   LANGUAGE_STORAGE_KEYS
 } from '@/types'
+import { TranslationChecker } from '@/lib/translation-validator'
 
 /**
  * 语言上下文
@@ -195,11 +196,115 @@ const defaultTranslations: Partial<TranslationFile> = {
     startFailed: 'Start Failed',
     startFailedDescription: 'Unable to start experience mode, please try again later'
   }
+,
+  blinkingNamePicker: {
+    title: 'Blinking Name Picker',
+    loading: 'Loading...',
+    backToConfig: 'Back to Config',
+    backToHome: 'Back to Home',
+    backToConfigPage: 'Back to Config Page',
+    participants: '{{count}} participants',
+    drawCount: 'Draw {{count}} items',
+    allowRepeat: 'Allow repeat',
+    noRepeat: 'No repeat',
+    restartTooltip: 'Restart game',
+    restart: 'Restart',
+    startBlinking: 'Start Blinking',
+    startBlinkingTooltip: 'Start blinking name picker draw',
+    pause: 'Pause',
+    pauseBlinkingTooltip: 'Pause blinking, can resume to continue',
+    resumeBlinking: 'Resume Blinking',
+    resumeBlinkingTooltip: 'Resume blinking draw',
+    continueNextRound: 'Continue Next Round',
+    continueNextRoundTooltip: 'Continue drawing remaining {{count}} names',
+    turnOffSound: 'Turn off sound',
+    turnOnSound: 'Turn on sound',
+    settings: 'Settings',
+    blinkingSettings: 'Blinking Settings',
+    initialSpeed: 'Initial Speed ({{speed}}ms)'
+,
+      welcomeExperience: 'Welcome to experience "{{name}}"',
+      welcomeExperienceDescription: 'This is demo data, you can start drawing experience directly',
+      progressLabel: 'Progress:',
+      remainingCount: '(Remaining {{count}})',
+      speedLabel: 'Speed:',
+      finalSpeed: 'Final Speed ({{speed}}ms)',
+      accelerationDuration: 'Deceleration Duration ({{seconds}}s)',
+      glowIntensity: 'Glow Intensity ({{percent}}%)',
+      colorTheme: 'Blinking Color Theme',
+      theme: {
+        classic: 'Classic',
+        rainbow: 'Rainbow',
+        cool: 'Cool',
+        warm: 'Warm'
+      }
+
+  },
+  bulletScreen: {
+    title: 'Bullet Screen Scrolling',
+    shortTitle: 'Bullet Screen',
+    description: 'Fast scrolling freeze, dynamic selection process',
+    back: 'Back',
+    backToHome: 'Back to Home',
+    configLost: 'Configuration Lost',
+    reconfigureRequired: 'Please reconfigure drawing parameters',
+    modeError: 'Mode Error',
+    bulletScreenOnly: 'This page only supports bullet screen mode',
+    loadFailed: 'Load Failed',
+    configLoadError: 'Unable to load drawing configuration',
+    itemCount: '{{count}} names',
+    drawQuantity: 'Draw {{quantity}} items',
+    readyToStart: 'Ready to Start',
+    scrolling: 'Bullet Screen Scrolling...',
+    aboutToStop: 'About to Stop...',
+    drawComplete: 'Draw Complete!',
+    scrollingInProgress: 'Bullet screen scrolling in progress, please wait...',
+    startDraw: 'Start Draw',
+    scrollingStatus: 'Scrolling...',
+    resultWillShow: 'Results will be displayed soon...',
+    modeDisplayName: 'Bullet Screen'
+  },
+  gridLottery: {
+    title: 'Multi-Grid Lottery',
+    description: 'Single draw mode - Light jumping to select one winner',
+    back: 'Back',
+    backToHome: 'Back to Home',
+    singleDraw: 'Single Draw',
+    itemCount: '{{count}} names',
+    gridSize: '{{size}} grid',
+    readyToStart: 'Ready to Start',
+    countdown: 'Countdown {{count}}',
+    lightJumping: 'Light Jumping...',
+    drawComplete: 'Draw Complete!',
+    lightJumpingDescription: 'Light is jumping rapidly, about to freeze...',
+    startDraw: 'Start Draw',
+    countdownInProgress: 'Countdown in progress...',
+    drawingInProgress: 'Drawing in progress...',
+    winner: 'Winner: {{name}}',
+    modeDisplayName: 'Multi-Grid Lottery (Single Draw)',
+    loadFailed: 'Load Failed',
+    configLoadError: 'Unable to load drawing configuration',
+    configError: 'Configuration Error',
+    configReminder: 'Configuration Reminder'
+  },
+  drawingComponents: {
+    blinkingNamePicker: {
+      controlPanel: {
+        idle: { text: 'Ready to Start', description: 'Click "Start Blinking" to begin drawing' },
+        blinking: { text: 'Blinking Selection in Progress...', description: 'Fast blinking in progress, click "Stop" to select immediately' },
+        slowing: { text: 'About to Stop...', description: 'Blinking speed is slowing down, result will be selected soon' },
+        paused: { text: 'Paused', description: 'Blinking is paused, click "Resume Blinking" or press spacebar to continue' },
+        stopped: { text: 'Selection Complete', description: 'One name has been selected, click "Continue" for next round or "Restart"' },
+        finished: { text: 'All Complete', description: 'All rounds completed, you can view results or restart' }
+      }
+    }
+  }
 }
 
 /**
  * 加载翻译文件
  */
+const TRANSLATION_VERSION = (typeof process !== 'undefined' && process.env && (process.env.NEXT_PUBLIC_TRANSLATION_VERSION || process.env.NEXT_PUBLIC_BUILD_ID)) || 'v1'
 const loadTranslation = async (language: LanguageCode): Promise<TranslationFile> => {
   // 检查缓存
   if (translationCache.has(language)) {
@@ -207,25 +312,28 @@ const loadTranslation = async (language: LanguageCode): Promise<TranslationFile>
   }
 
   try {
-    const response = await fetch(`/locales/${language}.json`)
+    // 通过版本号参数 + no-store 禁用缓存，避免老缓存导致英文回退
+    const url = `/locales/${language}.json?v=${encodeURIComponent(String(TRANSLATION_VERSION))}`
+    const response = await fetch(url, { cache: 'no-store' })
     if (!response.ok) {
       throw new Error(`Failed to load translation for ${language}`)
     }
-    
+
     const translation: TranslationFile = await response.json()
-    
+
     // 缓存翻译内容
     translationCache.set(language, translation)
-    
+
     return translation
   } catch (error) {
     console.error(`Failed to load translation for ${language}:`, error)
-    
+
     // 如果是中文加载失败，使用默认翻译
     if (language === 'zh') {
+      console.warn('Chinese translation failed, using default translations as fallback')
       return defaultTranslations as TranslationFile
     }
-    
+
     // 如果是英文加载失败，直接使用默认翻译，不尝试加载中文
     console.error('English translation failed, using default translations')
     return defaultTranslations as TranslationFile
@@ -246,7 +354,7 @@ const getNestedValue = (obj: any, path: string): string | undefined => {
  */
 const interpolateParams = (text: string, params?: TranslationParams): string => {
   if (!params) return text
-  
+
   return Object.entries(params).reduce((result, [key, value]) => {
     const placeholder = `{{${key}}}`
     return result.replace(new RegExp(placeholder, 'g'), String(value))
@@ -266,9 +374,9 @@ const getUserLanguagePreference = (): LanguageCode => {
   } catch (error) {
     console.error('Failed to load language preference:', error)
   }
-  
-  // 暂时默认使用英文，避免中文翻译文件编码问题
-  return 'en'
+
+  // 默认使用中文，除非用户在语言切换器中明确选择了英文
+  return 'zh'
 }
 
 /**
@@ -290,9 +398,9 @@ const saveUserLanguagePreference = (language: LanguageCode): void => {
 /**
  * 语言提供者组件
  */
-export function LanguageProvider({ 
-  children, 
-  defaultLanguage = 'en' 
+export function LanguageProvider({
+  children,
+  defaultLanguage = 'en'
 }: LanguageProviderProps) {
   const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>(defaultLanguage)
   const [translations, setTranslations] = useState<TranslationFile | null>(null)
@@ -303,24 +411,59 @@ export function LanguageProvider({
    * 翻译函数
    */
   const t = useCallback((key: string, params?: TranslationParams): string => {
-    if (!translations) {
-      // 如果翻译未加载，返回键名作为降级
-      return key
+    // 优先使用已加载的翻译
+    if (translations) {
+      const value = getNestedValue(translations, key)
+
+      if (value === undefined) {
+        // 记录缺失的翻译键
+        if (process.env.NODE_ENV === 'development') {
+          TranslationChecker.getInstance().recordKeyUsage(key, false)
+          console.warn(`Translation key not found: ${key}`)
+        }
+
+        // 尝试从默认翻译中获取
+        const defaultValue = getNestedValue(defaultTranslations, key)
+        if (defaultValue && typeof defaultValue === 'string') {
+          return interpolateParams(defaultValue, params)
+        }
+
+        // 最终降级：返回键名
+        return key
+      }
+
+      // 记录成功找到的翻译键
+      if (process.env.NODE_ENV === 'development') {
+        TranslationChecker.getInstance().recordKeyUsage(key, true)
+      }
+
+      if (typeof value !== 'string') {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Translation value is not a string: ${key}`, value)
+        }
+        return key
+      }
+
+      try {
+        return interpolateParams(value, params)
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Error interpolating params for key ${key}:`, error)
+        }
+        return value // 返回未插值的原始值
+      }
     }
 
-    const value = getNestedValue(translations, key)
-    
-    if (value === undefined) {
-      console.warn(`Translation key not found: ${key}`)
-      return key
+    // 翻译尚未加载时，优先使用默认英文翻译，避免页面显示键名
+    const defaultValue = getNestedValue(defaultTranslations, key)
+    if (defaultValue && typeof defaultValue === 'string') {
+      return interpolateParams(defaultValue, params)
     }
 
-    if (typeof value !== 'string') {
-      console.warn(`Translation value is not a string: ${key}`)
-      return key
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Translation not loaded yet for key: ${key}`)
     }
-
-    return interpolateParams(value, params)
+    return key
   }, [translations])
 
   /**
@@ -357,17 +500,17 @@ export function LanguageProvider({
       try {
         // 获取用户偏好语言
         const preferredLanguage = getUserLanguagePreference()
-        
+
         // 加载翻译文件
         const initialTranslations = await loadTranslation(preferredLanguage)
-        
+
         setTranslations(initialTranslations)
         setCurrentLanguage(preferredLanguage)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to initialize language'
         setError(errorMessage)
         console.error('Failed to initialize language:', err)
-        
+
         // 使用默认翻译作为降级
         setTranslations(defaultTranslations as TranslationFile)
         setCurrentLanguage('en')
@@ -399,11 +542,11 @@ export function LanguageProvider({
  */
 export function useLanguageContext(): LanguageContextType {
   const context = useContext(LanguageContext)
-  
+
   if (context === undefined) {
     throw new Error('useLanguageContext must be used within a LanguageProvider')
   }
-  
+
   return context
 }
 
@@ -432,4 +575,59 @@ export const clearTranslationCache = (): void => {
  */
 export const getCachedLanguages = (): LanguageCode[] => {
   return Array.from(translationCache.keys())
+}
+
+/**
+ * 验证翻译键是否存在（开发环境工具）
+ */
+export const validateTranslationKey = (key: string, language?: LanguageCode): boolean => {
+  if (process.env.NODE_ENV !== 'development') {
+    return true
+  }
+
+  const targetLanguage = language || 'zh'
+  const translations = translationCache.get(targetLanguage)
+
+  if (!translations) {
+    console.warn(`Translation cache not found for language: ${targetLanguage}`)
+    return false
+  }
+
+  const value = getNestedValue(translations, key)
+  const exists = value !== undefined && typeof value === 'string'
+
+  if (!exists) {
+    console.warn(`Translation key validation failed: ${key} (${targetLanguage})`)
+  }
+
+  return exists
+}
+
+/**
+ * 批量验证翻译键（开发环境工具）
+ */
+export const validateTranslationKeys = (keys: string[], languages: LanguageCode[] = ['zh', 'en']): void => {
+  if (process.env.NODE_ENV !== 'development') {
+    return
+  }
+
+  console.group('Translation Key Validation')
+
+  let totalMissing = 0
+
+  languages.forEach(language => {
+    const missing = keys.filter(key => !validateTranslationKey(key, language))
+    if (missing.length > 0) {
+      console.warn(`Missing keys in ${language}:`, missing)
+      totalMissing += missing.length
+    }
+  })
+
+  if (totalMissing === 0) {
+    console.log('✅ All translation keys are valid')
+  } else {
+    console.warn(`⚠️ Found ${totalMissing} missing translation keys`)
+  }
+
+  console.groupEnd()
 }

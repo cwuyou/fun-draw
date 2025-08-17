@@ -13,35 +13,35 @@ export interface CardStyle {
 export const CARD_STYLES: CardStyle[] = [
   {
     id: 'classic',
-    name: '经典蓝',
+    name: 'Classic Blue', // 这个name字段现在不会被直接使用，而是通过翻译键
     backDesign: 'bg-gradient-to-br from-blue-600 to-blue-800',
     frontTemplate: 'bg-white border-2 border-blue-300',
-    colors: { 
-      primary: '#2563eb', 
-      secondary: '#1d4ed8', 
-      accent: '#3b82f6' 
+    colors: {
+      primary: '#2563eb',
+      secondary: '#1d4ed8',
+      accent: '#3b82f6'
     }
   },
   {
     id: 'elegant',
-    name: '优雅紫',
+    name: 'Elegant Purple', // 这个name字段现在不会被直接使用，而是通过翻译键
     backDesign: 'bg-gradient-to-br from-purple-600 to-purple-800',
     frontTemplate: 'bg-white border-2 border-purple-300',
-    colors: { 
-      primary: '#7c3aed', 
-      secondary: '#6d28d9', 
-      accent: '#8b5cf6' 
+    colors: {
+      primary: '#7c3aed',
+      secondary: '#6d28d9',
+      accent: '#8b5cf6'
     }
   },
   {
     id: 'royal',
-    name: '皇家金',
+    name: 'Royal Gold', // 这个name字段现在不会被直接使用，而是通过翻译键
     backDesign: 'bg-gradient-to-br from-yellow-500 to-yellow-700',
     frontTemplate: 'bg-white border-2 border-yellow-300',
-    colors: { 
-      primary: '#eab308', 
-      secondary: '#ca8a04', 
-      accent: '#facc15' 
+    colors: {
+      primary: '#eab308',
+      secondary: '#ca8a04',
+      accent: '#facc15'
     }
   }
 ]

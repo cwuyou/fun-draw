@@ -188,7 +188,7 @@ describe('Grid Layout Utils', () => {
     it('should return valid for normal configuration', () => {
       const items = createTestItems(5)
       const result = validateGridConfiguration(items, false)
-      
+
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
       expect(result.recommendedGridSize).toBe(6)
