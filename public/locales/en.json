@@ -36,7 +36,7 @@
     "title": "Make Drawing More Fun",
     "subtitle": "Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes",
     "description": "Whether it's classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method.",
-    "startButton": "Start Drawing Now",
+    "startButton": "Start Drawing",
     "demoButton": "View Demo",
     "quickExperience": "Quick Experience",
     "experienceDescription": "Choose a scenario and experience the charm of Fun Draw in 30 seconds",
@@ -119,6 +119,15 @@
     "footer": {
       "copyright": "© 2025 Fun Draw - Make Drawing More Fun | Multi-Mode Fun Drawing Website"
     }
+  },
+  "startMode": {
+    "appliedTitle": "Default configuration applied",
+    "appliedDesc": "Using list \"{{list}}\", mode: {{mode}}, draw quantity: {{qty}}. You can adjust settings on the config page anytime.",
+    "defaultList": "Current List",
+    "noListTitle": "No available list",
+    "noListDesc": "You can use sample data to experience, or create a list first.",
+    "useSample": "Use sample data",
+    "goCreateList": "Go to create list"
   },
   "quickExperience": {
     "title": "Quick Experience",
@@ -829,7 +838,9 @@
     "gridLotteryQuantityDescription": "Grid lottery mode always draws exactly one winner to maintain the classic single-winner experience",
     "gridLotteryRepeatDescription": "Grid lottery focuses on single winner selection, repeat setting has minimal impact",
     "saveHint": "Save Reminder",
-    "saveHintDescription": "You have {{count}} participants, which may affect grid layout display effect"
+    "saveHintDescription": "You have {{count}} participants, which may affect grid layout display effect",
+    "quickStarting": "Starting Draw",
+    "quickStartingDescription": "Using {{mode}} mode, drawing {{quantity}} winners"
   },
   "quickConfig": {
     "title": "Quick Configuration",

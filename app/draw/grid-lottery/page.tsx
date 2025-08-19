@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Play, Pause, ArrowLeft, Volume2, VolumeX, Hash, Users, Timer } from "lucide-react"
+import { PageHeader } from "@/contexts/header-context"
+import { Play, Pause, Volume2, VolumeX, Hash, Users, Timer } from "lucide-react"
 import type { DrawingConfig, ListItem, GridLotteryState, GridLotteryPhase, GridCell } from "@/types"
 import type { DrawResult } from "@/lib/draw-utils"
 import { performDraw } from "@/lib/draw-utils"
@@ -425,43 +427,25 @@ export default function GridLotteryDrawPage() {
   const gridRows = getGridRows(gridSize)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (isExperienceMode) {
-                  router.push("/") // 体验模式返回首页
-                } else {
-                  router.back() // 常规模式返回上一页
-                }
-              }}
-              className="text-gray-600 hover:text-indigo-600"
-              disabled={gameState.phase === "spinning" || gameState.phase === "countdown"}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {isExperienceMode ? t('gridLottery.backToHome') : t('gridLottery.back')}
-            </Button>
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <Hash className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">{t('gridLottery.title')}</h1>
-                <p className="text-sm text-gray-600">{t('gridLottery.description')}</p>
-              </div>
-              <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 text-sm border border-indigo-200">
-                <Hash className="w-3 h-3 mr-1" />
-{t('gridLottery.singleDraw')}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-4 sm:pt-6">
+      {/* GlobalHeader：保留统计徽章与音量开关；“抽奖配置”为文字链接 */}
+      <PageHeader
+        title={t('gridLottery.title')}
+        rightNav={(
+          <Link href="/draw-config" className="text-gray-600 hover:text-indigo-600" title={t('blinkingNamePicker.backToConfigPage')}>
+            {t('drawConfig.title')}
+          </Link>
+        )}
+        actions={(
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
+              <Users className="w-3 h-3" />
+              <span className="ml-1">{t('gridLottery.itemCount', { count: config.items.length })}</span>
+            </Badge>
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+              <Hash className="w-3 h-3" />
+              <span className="ml-1">{t('gridLottery.gridSize', { size: gridSize })}</span>
+            </Badge>
             <Button
               variant="ghost"
               size="sm"
@@ -470,21 +454,9 @@ export default function GridLotteryDrawPage() {
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
-
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
-                <Users className="w-3 h-3 mr-1" />
-{t('gridLottery.itemCount', { count: config.items.length })}
-              </Badge>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                <Hash className="w-3 h-3 mr-1" />
-{t('gridLottery.gridSize', { size: gridSize })}
-              </Badge>
-            </div>
           </div>
-        </div>
-      </header>
-
+        )}
+      />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* 状态显示 */}

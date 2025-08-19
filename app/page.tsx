@@ -23,51 +23,80 @@ import {
 import { useRouter } from "next/navigation"
 import QuickExperience from "@/components/quick-experience"
 import { useState } from "react"
-import { ExperienceTemplate } from "@/types"
+import { ExperienceTemplate, DrawingMode } from "@/types"
 import LanguageSwitcher from "@/components/language-switcher"
 import { useTranslation } from "@/hooks/use-translation"
+import { prepareModeConfig, prepareDemoModeConfigForMode } from "@/lib/start-mode"
+import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
+
+
+type PendingMode = { href: string; mode: DrawingMode; title: string }
 
 export default function HomePage() {
   const router = useRouter()
   const { t } = useTranslation()
+  const { toast } = useToast()
+  const [showNoListDialog, setShowNoListDialog] = useState(false)
+  const [pendingMode, setPendingMode] = useState<PendingMode | null>(null)
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-
 
   const handleExperienceStart = (template: ExperienceTemplate) => {
     // 体验开始的回调处理
     console.log('Experience started with template:', template.name)
   }
-  const drawingModes = [
+
+  const drawingModes: Array<{ icon: JSX.Element; title: string; description: string; color: string; href: string; mode: DrawingMode; }> = [
     {
       icon: <Dices className="w-8 h-8" />,
       title: t('drawingModes.slotMachine.shortTitle'),
       description: t('drawingModes.slotMachine.description'),
       color: "bg-red-500",
+      href: "/draw/slot-machine",
+      mode: 'slot-machine',
     },
     {
       icon: <CreditCard className="w-8 h-8" />,
       title: t('drawingModes.cardFlip.shortTitle'),
       description: t('drawingModes.cardFlip.description'),
       color: "bg-blue-500",
+      href: "/draw/card-flip",
+      mode: 'card-flip',
     },
     {
       icon: <MessageSquare className="w-8 h-8" />,
       title: t('drawingModes.bulletScreen.title'),
       description: t('drawingModes.bulletScreen.description'),
       color: "bg-green-500",
+      href: "/draw/bullet-screen",
+      mode: 'bullet-screen',
     },
     {
       icon: <Hash className="w-8 h-8" />,
       title: t('drawingModes.gridLottery.shortTitle'),
       description: t('drawingModes.gridLottery.description'),
       color: "bg-indigo-500",
+      href: "/draw/grid-lottery",
+      mode: 'grid-lottery',
     },
     {
       icon: <Sparkles className="w-8 h-8" />,
       title: t('drawingModes.blinkingNamePicker.title'),
       description: t('drawingModes.blinkingNamePicker.description'),
       color: "bg-pink-500",
+      href: "/draw/blinking-name-picker",
+      mode: 'blinking-name-picker',
     },
   ]
 
@@ -141,9 +170,14 @@ export default function HomePage() {
             <Link href="#use-cases" className="text-gray-600 hover:text-purple-600 transition-colors">
               {t('navigation.useCases')}
             </Link>
+            <Link href="/draw" className="ml-2">
+              <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
+                {t('home.startButton')}
+              </Button>
+            </Link>
             <LanguageSwitcher variant="compact" className="ml-2" />
           </nav>
-          
+
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <LanguageSwitcher variant="compact" />
@@ -157,41 +191,41 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t bg-white">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
-              <Link 
-                href="/create-list" 
+              <Link
+                href="/create-list"
                 className="text-gray-600 hover:text-purple-600 transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('navigation.createList')}
               </Link>
-              <Link 
-                href="/list-library" 
+              <Link
+                href="/list-library"
                 className="text-gray-600 hover:text-purple-600 transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('navigation.listLibrary')}
               </Link>
-              <Link 
-                href="#features" 
+              <Link
+                href="#features"
                 className="text-gray-600 hover:text-purple-600 transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('navigation.features')}
               </Link>
-              <Link 
-                href="#modes" 
+              <Link
+                href="#modes"
                 className="text-gray-600 hover:text-purple-600 transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('navigation.modes')}
               </Link>
-              <Link 
-                href="#use-cases" 
+              <Link
+                href="#use-cases"
                 className="text-gray-600 hover:text-purple-600 transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -217,26 +251,37 @@ export default function HomePage() {
             {t('home.hero.description')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg"
-              onClick={() => router.push("/create-list")}
-            >
-              <Play className="w-5 h-5 mr-2" />
-              {t('home.startButton')}
-            </Button>
-            <QuickExperience 
+            <QuickExperience
               onExperienceStart={handleExperienceStart}
               variant="button"
-              className="px-8 py-3 text-lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             />
+            <Button
+              size="lg"
+              variant="outline"
+              className="px-8 py-3 text-lg border-2 border-purple-300 text-purple-700 hover:border-purple-400 transition-all duration-300"
+              onClick={() => router.push("/create-list")}
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              {t('navigation.createList')}
+            </Button>
           </div>
-          
+
           {/* 新用户提示 */}
-          <div className="mt-8 max-w-2xl mx-auto">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
-              <p className="text-sm text-purple-700 text-center">
-                💡 <strong>{t('home.newUserTipBold')}</strong> {t('home.newUserTip').replace('💡 新用户？', '').trim()}
+          <div className="mt-8 max-w-3xl mx-auto">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200 shadow-sm">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-purple-800">{t('home.newUserTipBold')}</h3>
+              </div>
+              <p className="text-purple-700 text-center leading-relaxed">
+                {t('home.newUserTip')}
+                <br />
+                <span className="text-sm text-purple-600 mt-2 inline-block">
+                  🎯 {t('home.useCases.items.classroom.title')} • 🎉 {t('home.useCases.items.corporate.title')} • 👥 {t('home.useCases.items.party.title')}
+                </span>
               </p>
             </div>
           </div>
@@ -271,7 +316,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Experience Section */}
+      {/* Quick Experience Section - MVP: remove to reduce duplication; Hero provides primary quick start */}
+      {/*
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
@@ -281,50 +327,14 @@ export default function HomePage() {
                 {t('home.quickExperienceSection.subtitle')}
               </p>
             </div>
-            
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              {/* 左侧：快速体验卡片 */}
-              <QuickExperience 
-                onExperienceStart={handleExperienceStart}
-                variant="card"
-              />
-              
-              {/* 右侧：体验优势 */}
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Play className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{t('home.quickExperienceSection.advantages.quick.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.quickExperienceSection.advantages.quick.description')}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{t('home.quickExperienceSection.advantages.templates.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.quickExperienceSection.advantages.templates.description')}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Heart className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{t('home.quickExperienceSection.advantages.complete.title')}</h3>
-                    <p className="text-gray-600 text-sm">{t('home.quickExperienceSection.advantages.complete.description')}</p>
-                  </div>
-                </div>
-              </div>
+              <QuickExperience onExperienceStart={handleExperienceStart} variant="card" />
+              <div className="space-y-6">...</div>
             </div>
           </div>
         </div>
       </section>
+      */}
 
       {/* Drawing Modes Section */}
       <section id="modes" className="py-16 px-4">
@@ -337,22 +347,52 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {drawingModes.map((mode, index) => (
-              <Card
+              <Link
+                href={mode.href}
                 key={index}
-                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm group"
+                className="block"
+                onClick={(e) => {
+                  try {
+                    const raw = localStorage.getItem('selected-draw-list') || localStorage.getItem('temp-draw-list')
+                    const data = raw ? JSON.parse(raw) : null
+                    const hasList = data && Array.isArray(data.items) && data.items.length > 0
+                    if (!hasList) {
+                      // 无名单：弹出对话框
+                      e.preventDefault()
+                      setPendingMode({ href: mode.href, mode: mode.mode, title: mode.title })
+                      setShowNoListDialog(true)
+                      return
+                    }
+
+                    // 有名单：准备默认配置并直达
+                    const result = prepareModeConfig(mode.mode)
+                    if (result.config) {
+                      e.preventDefault()
+                      toast({
+                        title: t('startMode.appliedTitle'),
+                        description: t('startMode.appliedDesc', {
+                          list: result.listName || t('startMode.defaultList'),
+                          mode: mode.title,
+                          qty: (result.config as any).quantity ?? 1,
+                        }),
+                      })
+                      window.location.href = mode.href
+                    }
+                  } catch {}
+                }}
               >
-                <CardHeader className="text-center">
-                  <div
-                    className={`w-16 h-16 ${mode.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <div className="text-white">{mode.icon}</div>
-                  </div>
-                  <CardTitle className="text-xl text-gray-800">{mode.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <CardDescription className="text-gray-600 text-base">{mode.description}</CardDescription>
-                </CardContent>
-              </Card>
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm group">
+                  <CardHeader className="text-center">
+                    <div className={`w-16 h-16 ${mode.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className="text-white">{mode.icon}</div>
+                    </div>
+                    <CardTitle className="text-xl text-gray-800">{mode.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <CardDescription className="text-gray-600 text-base">{mode.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -387,7 +427,7 @@ export default function HomePage() {
             {t('home.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
+            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold" onClick={() => router.push('/draw')}>
               <Heart className="w-5 h-5 mr-2" />
               {t('home.cta.startButton')}
             </Button>
@@ -395,12 +435,58 @@ export default function HomePage() {
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white/10 px-8 py-3 text-lg bg-transparent"
+              onClick={() => {
+                const el = document.getElementById('features');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               {t('home.cta.learnMoreButton')}
             </Button>
           </div>
         </div>
       </section>
+
+      {/* 无名单弹窗：示例数据 or 创建名单 */}
+      <AlertDialog open={showNoListDialog} onOpenChange={setShowNoListDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('startMode.noListTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('startMode.noListDesc')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowNoListDialog(false)}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!pendingMode) return
+                const demo = prepareDemoModeConfigForMode(pendingMode.mode, t)
+                if (demo.config) {
+                  toast({
+                    title: t('quickExperience.experienceStart'),
+                    description: t('quickExperience.experienceStartDescription', { name: demo.templateName || '' })
+                  })
+                  window.location.href = pendingMode.href
+                }
+              }}
+            >
+              {t('startMode.useSample')}
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                setShowNoListDialog(false)
+                router.push('/create-list')
+              }}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {t('startMode.goCreateList')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       {/* Footer */}
       <footer className="py-8 px-4 bg-gray-900 text-gray-300">
@@ -414,8 +500,6 @@ export default function HomePage() {
           <p className="text-sm text-gray-400">{t('home.footer.copyright')}</p>
         </div>
       </footer>
-
-
     </div>
   )
 }

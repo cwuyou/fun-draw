@@ -36,7 +36,7 @@
     "title": "让抽奖变得更有趣",
     "subtitle": "告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式",
     "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。",
-    "startButton": "立即开始抽奖",
+    "startButton": "开始抽奖",
     "demoButton": "查看演示",
     "quickExperience": "快速体验",
     "experienceDescription": "选择一个场景，30秒体验趣抽的魅力",
@@ -119,6 +119,15 @@
     "footer": {
       "copyright": "© 2025 趣抽 - 让抽奖变得更有趣 | 多模式趣味抽奖网站"
     }
+  },
+  "startMode": {
+    "appliedTitle": "已应用默认配置",
+    "appliedDesc": "已使用名单“{{list}}”，模式：{{mode}}，抽取数量：{{qty}}。您可随时在配置页调整设置。",
+    "defaultList": "当前名单",
+    "noListTitle": "没有可用名单",
+    "noListDesc": "您可以使用示例数据体验，或先去创建名单。",
+    "useSample": "使用示例数据体验",
+    "goCreateList": "去创建名单"
   },
   "quickExperience": {
     "title": "快速体验",
@@ -764,7 +773,9 @@
     "gridLotteryQuantityDescription": "多宫格抽奖模式始终抽取一位获奖者，保持经典单人中奖体验",
     "gridLotteryRepeatDescription": "多宫格抽奖专注于单人获奖选择，重复设置影响较小",
     "saveHint": "保存提醒",
-    "saveHintDescription": "您有{{count}}位参与者，可能会影响宫格布局显示效果"
+    "saveHintDescription": "您有{{count}}位参与者，可能会影响宫格布局显示效果",
+    "quickStarting": "正在启动抽奖",
+    "quickStartingDescription": "使用{{mode}}模式，抽取{{quantity}}个获奖者"
   },
   "quickConfig": {
     "title": "快速配置",

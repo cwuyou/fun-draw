@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { Plus, Upload, Type, FileText, Trash2, Save, Play, ArrowLeft, Users } from "lucide-react"
+import { Plus, Upload, Type, FileText, Trash2, Save, Play, Users } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { ListItem } from "@/types"
 import { saveList, parseTextToItems, isNameEmpty, generateUniqueListName, generateDefaultTempName } from "@/lib/storage"
@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import EnhancedFileUpload from "@/components/enhanced-file-upload"
 import SmartContentPaste from "@/components/smart-content-paste"
+import { PageHeader } from '@/contexts/header-context'
+
 
 export default function CreateListPage() {
   const router = useRouter()
@@ -161,7 +163,7 @@ export default function CreateListPage() {
 
     // 显示导入结果
     const addedCount = uniqueItems.length - items.length
-    const description = duplicateCount > 0 
+    const description = duplicateCount > 0
       ? t('createList.fileImportSuccessWithDuplicates', { added: addedCount, duplicates: duplicateCount })
       : t('createList.fileImportSuccessDescription', { added: addedCount })
 
@@ -183,7 +185,7 @@ export default function CreateListPage() {
 
     // 显示添加结果
     const addedCount = uniqueItems.length - items.length
-    const description = duplicateCount > 0 
+    const description = duplicateCount > 0
       ? t('createList.batchAddSuccessWithDuplicates', { added: addedCount, duplicates: duplicateCount })
       : t('createList.batchAddSuccessDescription', { added: addedCount })
 
@@ -312,29 +314,16 @@ export default function CreateListPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-purple-600"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('createList.back')}
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-800">{t('createList.title')}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-              <Users className="w-3 h-3 mr-1" />
-              {t('createList.itemsCount', { count: items.length })}
-            </Badge>
-          </div>
-        </div>
-      </header>
+      {/* Inject page header into GlobalHeader */}
+      <PageHeader
+        title={t('createList.title')}
+        actions={
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+            <Users className="w-3 h-3 mr-1" />
+            {t('createList.itemsCount', { count: items.length })}
+          </Badge>
+        }
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

@@ -29,17 +29,29 @@ export function BulletScreenReel({ items, isScrolling, finalResult, onScrollComp
   // 创建扩展的名称列表用于无缝滚动
   const extendedItems = [...items, ...items, ...items, ...items]
 
+  // 初始化显示名单
+  useEffect(() => {
+    if (items.length > 0 && currentItems.length === 0 && scrollPhase === "idle") {
+      const visibleCount = Math.min(6, items.length)
+      const staticItems = items.slice(0, visibleCount)
+      setCurrentItems(staticItems)
+    }
+  }, [items, currentItems.length, scrollPhase])
+
   // 重置状态的 effect
   useEffect(() => {
     if (!isScrolling && !finalResult) {
-      setCurrentItems([])
+      // 在准备状态下显示一些静态名单，而不是空数组
+      const visibleCount = Math.min(6, items.length)
+      const staticItems = items.slice(0, visibleCount)
+      setCurrentItems(staticItems)
       setScrollPhase("idle")
       setHighlightedIndex(-1)
       setHasCompleted(false)
       setScrollSpeed(200)
       stopScrolling()
     }
-  }, [isScrolling, finalResult])
+  }, [isScrolling, finalResult, items])
 
   // 当 finalResult 变化时重置完成状态
   useEffect(() => {

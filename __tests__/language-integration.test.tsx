@@ -35,7 +35,7 @@ const mockTranslations = {
     },
     home: {
       title: '让抽奖变得更有趣',
-      startButton: '立即开始抽奖'
+      startButton: '开始抽奖'
     }
   },
   en: {
@@ -111,7 +111,7 @@ describe('Language Integration Tests', () => {
       // Wait for initial load
       await waitFor(() => {
         expect(getByTestId('page-title')).toHaveTextContent('让抽奖变得更有趣')
-        expect(getByTestId('start-button')).toHaveTextContent('立即开始抽奖')
+        expect(getByTestId('start-button')).toHaveTextContent('开始抽奖')
         expect(getByTestId('loading')).toHaveTextContent('加载中...')
       })
 

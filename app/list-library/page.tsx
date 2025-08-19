@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Edit, Trash2, Play, ArrowLeft, Users, Calendar, FileText } from "lucide-react"
+import { Plus, Search, Trash2, Play, Users, Calendar, FileText } from "lucide-react"
 import type { SavedList } from "@/types"
 import { getSavedLists, deleteList } from "@/lib/storage"
 import { useToast } from "@/hooks/use-toast"
+import { PageHeader } from '@/contexts/header-context'
+
 
 export default function ListLibraryPage() {
   const router = useRouter()
@@ -92,7 +94,7 @@ export default function ListLibraryPage() {
     if ((event.target as HTMLElement).closest('button')) {
       return
     }
-    
+
     const newSelected = new Set(selectedLists)
     if (newSelected.has(id)) {
       newSelected.delete(id)
@@ -125,39 +127,18 @@ export default function ListLibraryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-purple-600"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('listLibrary.back')}
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-800">{t('listLibrary.title')}</h1>
-          </div>
+      {/* Inject page header into GlobalHeader */}
+      <PageHeader
+        title={t('listLibrary.title')}
+        actions={
           <div className="flex items-center gap-2">
             {filteredLists.length > 0 && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleSelectAll}
-                  className="text-gray-600"
-                >
+                <Button variant="outline" size="sm" onClick={toggleSelectAll} className="text-gray-600">
                   {selectedLists.size === filteredLists.length ? t('listLibrary.deselectAll') : t('listLibrary.selectAll')}
                 </Button>
                 {selectedLists.size > 0 && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleBatchDelete}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
+                  <Button variant="destructive" size="sm" onClick={handleBatchDelete} className="bg-red-500 hover:bg-red-600">
                     {t('listLibrary.deleteSelected', { count: selectedLists.size })}
                   </Button>
                 )}
@@ -168,8 +149,8 @@ export default function ListLibraryPage() {
               {t('listLibrary.newList')}
             </Button>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
@@ -269,14 +250,6 @@ export default function ListLibraryPage() {
                       >
                         <Play className="w-3 h-3 mr-1" />
                         {t('listLibrary.use')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => router.push(`/edit-list/${list.id}`)}
-                        className="border-gray-200 text-gray-600 hover:bg-gray-50"
-                      >
-                        <Edit className="w-3 h-3" />
                       </Button>
                       <Button
                         size="sm"

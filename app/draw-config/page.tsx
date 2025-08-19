@@ -19,6 +19,8 @@ import { preprocessConfigForSave } from "@/lib/config-migration"
 import { Toaster } from "@/components/ui/toaster"
 import QuickConfiguration from "@/components/quick-configuration"
 import { clearCurrentExperienceSession } from "@/lib/experience-manager"
+import { PageHeader } from '@/contexts/header-context'
+
 
 export default function DrawConfigPage() {
   const router = useRouter()
@@ -44,18 +46,20 @@ export default function DrawConfigPage() {
     setSelectedMode(config.mode)
     setQuantity(config.quantity)
     setAllowRepeat(config.allowRepeat)
-    
+
     toast({
       title: t('drawConfig.quickConfigApplied'),
-      description: t('drawConfig.quickConfigAppliedDescription', { 
-        mode: getModeDisplayName(config.mode), 
-        quantity: config.quantity 
+      description: t('drawConfig.quickConfigAppliedDescription', {
+        mode: getModeDisplayName(config.mode),
+        quantity: config.quantity
       }),
     })
-    
+
     // 切换到详细配置标签页以便用户查看和微调
     setConfigMode('detailed')
   }
+
+
 
   // 获取模式显示名称
   const getModeDisplayName = (mode: DrawingMode): string => {
@@ -73,7 +77,7 @@ export default function DrawConfigPage() {
   const handleModeChange = (newMode: DrawingMode) => {
     const previousMode = selectedMode
     setSelectedMode(newMode)
-    
+
     // 模式切换时的状态重置逻辑
     if (newMode === 'grid-lottery') {
       // 多宫格模式：强制设置数量为1
@@ -86,7 +90,7 @@ export default function DrawConfigPage() {
         setQuantity(1)
       }
     }
-    
+
     // 如果切换到的模式有固定数量值，应用该值
     const targetModeConfig = getModeSpecificConfig(newMode, items.length, allowRepeat, t)
     if (!targetModeConfig.quantityEditable && typeof targetModeConfig.quantityValue === 'number') {
@@ -146,16 +150,16 @@ export default function DrawConfigPage() {
 
     try {
       console.log("开始加载名单数据...");
-      
+
       // 尝试从临时名单加载（优先检查临时名单）
       const tempList = localStorage.getItem("temp-draw-list")
       console.log("临时名单数据:", tempList);
-      
+
       if (tempList) {
         try {
           const list = JSON.parse(tempList)
           console.log("解析临时名单:", list);
-          
+
           if (list && list.name && Array.isArray(list.items)) {
             console.log("临时名单有效，设置数据...");
             setListName(list.name)
@@ -181,12 +185,12 @@ export default function DrawConfigPage() {
       // 尝试从选中的名单加载
       const selectedList = localStorage.getItem("selected-draw-list")
       console.log("选中的名单数据:", selectedList);
-      
+
       if (selectedList) {
         try {
           const list = JSON.parse(selectedList)
           console.log("解析选中的名单:", list);
-          
+
           if (list && list.name && Array.isArray(list.items)) {
             console.log("选中的名单有效，设置数据...");
             setListName(list.name)
@@ -207,10 +211,10 @@ export default function DrawConfigPage() {
         title: t('drawConfig.pleaseCreateList'),
         description: t('drawConfig.pleaseCreateListDescription'),
       })
-      
+
       // 使用客户端导航
       setTimeout(() => {
-        router.push("/create-list");
+        router.replace("/create-list");
       }, 100);
 
     } catch (error) {
@@ -220,10 +224,10 @@ export default function DrawConfigPage() {
         description: t('drawConfig.loadFailedDescription'),
         variant: "destructive",
       })
-      
+
       // 使用客户端导航
       setTimeout(() => {
-        router.push("/create-list");
+        router.replace("/create-list");
       }, 100);
     }
   }
@@ -299,14 +303,14 @@ export default function DrawConfigPage() {
     try {
       // 保存前先去重
       const { uniqueItems, duplicateCount } = removeDuplicateItems(items)
-      
+
       // 多宫格模式的数据验证和清理
       if (selectedMode === 'grid-lottery') {
         // 确保数量设置为1
         if (quantity !== 1) {
           setQuantity(1)
         }
-        
+
         // 检查名称数量并给出相应提示
         if (uniqueItems.length > 15) {
           toast({
@@ -315,7 +319,7 @@ export default function DrawConfigPage() {
           })
         }
       }
-      
+
       // 如果是临时名单，生成一个新的名称；否则使用当前名称
       const finalName = listName === generateDefaultTempName(t)
         ? generateUniqueListName(undefined, t)
@@ -329,15 +333,15 @@ export default function DrawConfigPage() {
       // 更新当前显示的数据
       setItems(uniqueItems)
       setListName(savedList.name)
-      
+
       // 清除临时数据，因为已经正式保存了
       localStorage.removeItem("temp-draw-list")
 
       // 显示保存结果
-      const description = duplicateCount > 0 
-        ? t('drawConfig.saveSuccessWithDuplicates', { 
-            message: t('drawConfig.saveSuccessDescription', { name: savedList.name }), 
-            duplicates: duplicateCount 
+      const description = duplicateCount > 0
+        ? t('drawConfig.saveSuccessWithDuplicates', {
+            message: t('drawConfig.saveSuccessDescription', { name: savedList.name }),
+            duplicates: duplicateCount
           })
         : t('drawConfig.saveSuccessDescription', { name: savedList.name })
 
@@ -369,7 +373,7 @@ export default function DrawConfigPage() {
 
     // 确保quantity是有效数字
     const numQuantity = typeof quantity === 'string' ? Number.parseInt(quantity) || 1 : quantity
-    
+
     // 如果quantity无效，先设置为有效值
     if (typeof quantity === 'string' || quantity < 1) {
       setQuantity(numQuantity)
@@ -417,14 +421,14 @@ export default function DrawConfigPage() {
 
     // 使用新的验证系统
     const validationResult = validateModeConfig(processedConfig, t)
-    
+
     if (!validationResult.isValid) {
       toast({
         title: t('drawConfig.configError'),
         description: validationResult.errors[0],
         variant: "destructive",
       })
-      
+
       // 如果有修正配置，应用它
       if (validationResult.correctedConfig) {
         if (validationResult.correctedConfig.quantity !== undefined) {
@@ -464,29 +468,16 @@ export default function DrawConfigPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/")}
-              className="text-gray-600 hover:text-purple-600"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('drawConfig.back')}
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-800">{t('drawConfig.title')}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-              <Users className="w-3 h-3 mr-1" />
-              {t('drawConfig.itemsCount', { count: items.length })}
-            </Badge>
-          </div>
-        </div>
-      </header>
+      {/* Inject page header into GlobalHeader */}
+      <PageHeader
+        title={t('drawConfig.title')}
+        actions={
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+            <Users className="w-3 h-3 mr-1" />
+            {t('drawConfig.itemsCount', { count: items.length })}
+          </Badge>
+        }
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -498,7 +489,7 @@ export default function DrawConfigPage() {
                 {t('drawConfig.currentList', { name: listName })}
               </CardTitle>
               <CardDescription>
-                {t('drawConfig.itemsPreview', { 
+                {t('drawConfig.itemsPreview', {
                   count: items.length,
                   preview: items
                     .slice(0, 5)
@@ -582,7 +573,7 @@ export default function DrawConfigPage() {
                       {t('drawConfig.drawSettings')}
                     </h3>
                     <p className="text-gray-600 mb-4">{t('drawConfig.drawSettingsDescription')}</p>
-                    
+
                     <div className="space-y-6">
                       {/* 多宫格模式特殊说明 */}
                       {selectedMode === 'grid-lottery' && (
@@ -633,22 +624,22 @@ export default function DrawConfigPage() {
                               value={quantity}
                               onChange={(e) => {
                                 const inputValue = e.target.value
-                                
+
                                 // 允许空值，让用户可以清空输入框
                                 if (inputValue === '') {
                                   setQuantity('')
                                   return
                                 }
-                                
+
                                 const numValue = Number.parseInt(inputValue)
-                                
+
                                 // 如果输入的不是有效数字，保持当前值
                                 if (isNaN(numValue)) {
                                   return
                                 }
-                                
+
                                 const maxValue = getMaxQuantityForMode(selectedMode, allowRepeat, items.length, t)
-                                
+
                                 // 允许用户输入，但在合理范围内
                                 if (numValue >= 1 && numValue <= maxValue) {
                                   setQuantity(numValue)
@@ -719,7 +710,7 @@ export default function DrawConfigPage() {
                 {isSaving ? t('drawConfig.saving') : t('drawConfig.saveToLibrary')}
               </Button>
             )}
-            
+
             <Button
               size="lg"
               onClick={handleStartDraw}

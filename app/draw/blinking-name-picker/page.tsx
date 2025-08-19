@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "@/hooks/use-translation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, RotateCcw } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Settings } from "lucide-react"
 import { BlinkingNamePicker } from "@/components/blinking-name-picker"
 import { DrawResultModal } from "@/components/draw-result-modal"
 import type { DrawingConfig, ListItem } from "@/types"
@@ -16,6 +18,7 @@ import { soundManager } from "@/lib/sound-manager"
 import { getCurrentExperienceSession } from "@/lib/experience-manager"
 import ExperienceFeedback from "@/components/experience-feedback"
 import ErrorBoundary from "@/components/error-boundary"
+import { PageHeader } from "@/contexts/header-context"
 
 export default function BlinkingNamePickerPage() {
   const router = useRouter()
@@ -149,13 +152,7 @@ export default function BlinkingNamePickerPage() {
     setGameKey(prev => prev + 1) // 强制重新渲染组件，实现重启
   }
 
-  const handleReset = () => {
-    setWinners([])
-    setShowResult(false)
-    // 确保在重新开始时停止所有音效
-    soundManager.stopAll()
-    setGameKey(prev => prev + 1) // 强制重新渲染组件，实现完全重置
-  }
+
 
   const handleGoHome = () => {
     router.push("/")
@@ -193,54 +190,30 @@ export default function BlinkingNamePickerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                soundManager.stopAll() // 返回前停止所有音效
-                if (isExperienceMode) {
-                  router.push("/") // 体验模式返回首页
-                } else {
-                  router.push("/draw-config") // 常规模式返回配置页面
-                }
-              }}
-              className="text-gray-600 hover:text-purple-600 transition-all duration-200"
-              title={isExperienceMode ? t('blinkingNamePicker.backToHome') : t('blinkingNamePicker.backToConfigPage')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {isExperienceMode ? t('blinkingNamePicker.backToHome') : t('blinkingNamePicker.backToConfig')}
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
-              <h1 className="text-2xl font-bold text-gray-800">{t('blinkingNamePicker.title')}</h1>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 pt-4 sm:pt-6">
+      {/* GlobalHeader：抽奖配置紧邻“名单库”；保留统计与重启 */}
+      <PageHeader
+        title={t('blinkingNamePicker.title')}
+        rightNav={(
+          <Link href="/draw-config" className="text-gray-600 hover:text-purple-600 transition-all duration-200" title={t('blinkingNamePicker.backToConfigPage')}>
+            {t('drawConfig.title')}
+          </Link>
+        )}
+        actions={(
           <div className="flex items-center gap-2">
             {config && (
-              <div className="hidden sm:flex items-center gap-4 text-sm text-gray-600 mr-4">
-                <span>{t('blinkingNamePicker.participants', { count: config.items.length })}</span>
-                <span>{t('blinkingNamePicker.drawCount', { count: config.quantity })}</span>
-                <span>{config.allowRepeat ? t('blinkingNamePicker.allowRepeat') : t('blinkingNamePicker.noRepeat')}</span>
-              </div>
+              <>
+                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  <span className="ml-1">{t('blinkingNamePicker.participants', { count: config.items.length })}</span>
+                </Badge>
+                <Badge variant="secondary" className="bg-pink-100 text-pink-700">
+                  <span className="ml-1">{t('blinkingNamePicker.drawCount', { count: config.quantity })}</span>
+                </Badge>
+              </>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="text-gray-600 hover:text-purple-600 transition-all duration-200"
-              title={t('blinkingNamePicker.restartTooltip')}
-            >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              {t('blinkingNamePicker.restart')}
-            </Button>
           </div>
-        </div>
-      </header>
+        )}
+      />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">

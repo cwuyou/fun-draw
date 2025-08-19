@@ -1,13 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ArrowLeft, Volume2, VolumeX, Volume1, Spade, Users, Hash, Settings } from "lucide-react"
+import { Volume2, VolumeX, Spade, Users, Hash } from "lucide-react"
 import type { DrawingConfig, ListItem } from "@/types"
 import type { DrawResult } from "@/lib/draw-utils"
 import { CardFlipGame } from "@/components/card-flip-game"
@@ -18,6 +17,10 @@ import { Toaster } from "@/components/ui/toaster"
 import { useTranslation } from "@/hooks/use-translation"
 import { soundManager } from "@/lib/sound-manager"
 import { loadAndMigrateConfig } from "@/lib/config-migration"
+import { prepareDemoModeConfigForMode } from "@/lib/start-mode"
+
+
+import { PageHeader } from "@/contexts/header-context"
 
 export default function CardFlipDrawPage() {
   const router = useRouter()
@@ -31,6 +34,7 @@ export default function CardFlipDrawPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [masterVolume, setMasterVolume] = useState(0.7)
   const [gameKey, setGameKey] = useState(0) // 用于重置游戏组件
+
   const [drawnItems, setDrawnItems] = useState<Set<string>>(new Set()) // 跟踪已抽取的名称
   const [soundInitialized, setSoundInitialized] = useState(false)
   const [gameCompleted, setGameCompleted] = useState(false) // 跟踪游戏是否已完成
@@ -184,8 +188,9 @@ export default function CardFlipDrawPage() {
   }
 
   const handleDrawAgain = () => {
+    if (!config) return
     // 检查是否有足够的剩余名称进行下一轮抽奖
-    if (!config?.allowRepeat) {
+    if (!config.allowRepeat) {
       const remainingItems = config.items.filter(item => !drawnItems.has(item.id))
       if (remainingItems.length < config.quantity) {
         toast({
@@ -240,159 +245,40 @@ export default function CardFlipDrawPage() {
     )
   }
 
+
   return (
     <CardGameErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50">
-        {/* Header */}
-        <header className="border-b bg-white/80 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 pt-4 sm:pt-6">
+        {/* GlobalHeader：保留统计徽章与音量开关；“抽奖配置”为文字链接；位置紧挨“名单库” */}
+        <PageHeader
+          title={t('cardFlip.title')}
+          rightNav={(
+            <Link href="/draw-config" className="text-gray-600 hover:text-blue-600" title={t('blinkingNamePicker.backToConfigPage')}>
+              {t('drawConfig.title')}
+            </Link>
+          )}
+          actions={(
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                <Users className="w-3 h-3" />
+                <span className="ml-1">{t('cardFlip.namesCount', { count: config.items.length })}</span>
+              </Badge>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                <Hash className="w-3 h-3" />
+                <span className="ml-1">{t('cardFlip.drawQuantity', { quantity: config.quantity })}</span>
+              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.back()}
+                onClick={() => setSoundEnabled(!soundEnabled)}
                 className="text-gray-600 hover:text-blue-600"
+                title={t('common.sound')}
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-{t('cardFlip.back')}
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               </Button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                  <Spade className="w-5 h-5 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-800">{t('cardFlip.title')}</h1>
-              </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              {/* 音效控制 */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSoundEnabled(!soundEnabled)}
-                  className="text-gray-600 hover:text-blue-600"
-                >
-                  {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                </Button>
-
-                {/* 音量控制弹窗 */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-gray-600 hover:text-blue-600"
-                      disabled={!soundEnabled}
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80" align="end">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <h4 className="font-medium leading-none">{t('cardFlip.soundSettings')}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {t('cardFlip.soundSettingsDescription')}
-                        </p>
-                      </div>
-
-                      <div className="space-y-3">
-                        {/* 主音量控制 */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium">{t('cardFlip.masterVolume')}</label>
-                            <span className="text-sm text-muted-foreground">
-                              {Math.round(masterVolume * 100)}%
-                            </span>
-                          </div>
-                          <Slider
-                            value={[masterVolume]}
-                            onValueChange={(value) => setMasterVolume(value[0])}
-                            max={1}
-                            min={0}
-                            step={0.1}
-                            className="w-full"
-                            disabled={!soundEnabled}
-                          />
-                        </div>
-
-                        {/* 音效测试按钮 */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">{t('cardFlip.testSound')}</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => soundManager.play('card-shuffle')}
-                              disabled={!soundEnabled || !soundInitialized}
-                              className="text-xs"
-                            >
-                              {t('cardFlip.shuffle')}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => soundManager.play('card-deal')}
-                              disabled={!soundEnabled || !soundInitialized}
-                              className="text-xs"
-                            >
-                              {t('cardFlip.deal')}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => soundManager.play('card-flip')}
-                              disabled={!soundEnabled || !soundInitialized}
-                              className="text-xs"
-                            >
-                              {t('cardFlip.flip')}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => soundManager.play('card-reveal')}
-                              disabled={!soundEnabled || !soundInitialized}
-                              className="text-xs"
-                            >
-                              {t('cardFlip.reveal')}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* 音效状态指示 */}
-                        <div className="pt-2 border-t">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{t('cardFlip.soundStatus')}:</span>
-                            <span className={soundInitialized ? "text-green-600" : "text-orange-600"}>
-                              {soundInitialized ? t('cardFlip.ready') : t('cardFlip.initializing')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                  <Users className="w-3 h-3 mr-1" />
-{t('cardFlip.namesCount', { count: config.items.length })}
-                </Badge>
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                  <Hash className="w-3 h-3 mr-1" />
-{t('cardFlip.drawQuantity', { quantity: config.quantity })}
-                </Badge>
-                {!config.allowRepeat && drawnItems.size > 0 && (
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-{t('cardFlip.remaining', { count: config.items.length - drawnItems.size })}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
+          )}
+        />
 
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
@@ -499,8 +385,8 @@ export default function CardFlipDrawPage() {
                 <div className="text-white font-bold text-xl">🃏</div>
               </div>
             </div>
+            </div>
           </div>
-        </div>
 
         {/* 结果弹窗 */}
         <DrawResultModal
