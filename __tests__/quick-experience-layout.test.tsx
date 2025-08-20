@@ -7,7 +7,7 @@ import QuickExperience from '@/components/quick-experience'
 const mockT = vi.fn((key: string, params?: Record<string, any>) => {
   const translations: Record<string, string> = {
     'quickExperience.title': 'Quick Experience',
-    'quickExperience.description': 'Choose a scenario and experience the charm of Fun Draw in 30 seconds',
+    'quickExperience.description': 'Choose a scenario and experience the charm of Pick One in 30 seconds',
     'quickExperience.viewMoreScenes': 'View More Scenarios',
     'quickExperience.exampleCount': '{count} examples',
     'quickExperience.experienceTime': '30 seconds',

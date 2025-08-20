@@ -33,46 +33,46 @@
     "drawConfig": "Draw Config"
   },
   "home": {
-    "title": "Make Drawing More Fun",
-    "subtitle": "Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes",
-    "description": "Whether it's classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method.",
-    "startButton": "Start Drawing",
+    "title": "Pick One - Random Picker & Choice Generator",
+    "subtitle": "Professional random picker and choice generator with 5 innovative selection modes! Perfect for decisions, games, and activities.",
+    "description": "Whether it's classroom activities, team decisions, or fun gatherings, our picker wheel and random selector make selection engaging and exciting.",
+    "startButton": "Start Now",
     "demoButton": "View Demo",
     "quickExperience": "Quick Experience",
-    "experienceDescription": "Choose a scenario and experience the charm of Fun Draw in 30 seconds",
-    "newExperienceBadge": "🎉 Brand New Multi-Mode Drawing Experience",
-    "newUserTip": "💡 New user? Click \"Quick Experience\" to instantly feel the charm of Fun Draw, no need to create lists!",
+    "experienceDescription": "Choose a scenario and experience Pick One's magic in 30 seconds",
+    "newExperienceBadge": "🎉 Brand New Multi-Mode Random Picker & Choice Generator",
+    "newUserTip": "💡 New user? Click \"Quick Experience\" to instantly try Pick One, no setup needed!",
     "newUserTipBold": "New user?",
     "hero": {
-      "title": "Make Drawing More Fun",
-      "subtitle": "Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes,",
-      "description": "Whether it's classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method."
+      "title": "Interactive Random Picker & Name Picker Tool",
+      "subtitle": "Professional random picker with 5 animated drawing modes! From classroom picker to corporate lottery,",
+      "description": "Perfect for teachers, teams, and party organizers. Choose from slot machine picker, card flip picker, grid lottery, bullet screen picker, and blinking name picker modes."
     },
     "features": {
-      "title": "Why Choose Fun Draw?",
-      "subtitle": "We've redefined the online drawing experience, making every draw full of anticipation and fun",
+      "title": "Why Choose Our Random Picker Tool?",
+      "subtitle": "Professional interactive picker with animated drawing modes, perfect for classroom picker, team picker, and corporate lottery activities",
       "items": {
         "modes": {
           "title": "Multiple Drawing Modes",
-          "description": "5 innovative animation effects, say goodbye to boring wheels"
+          "description": "5 animated picker modes: slot machine picker, card flip picker, grid lottery, bullet screen picker, and blinking name picker"
         },
         "management": {
           "title": "Convenient List Management",
-          "description": "Support manual input, batch import, local storage"
+          "description": "Support manual input, batch import, local storage for your random selector and picker wheel lists"
         },
         "rules": {
           "title": "Flexible Drawing Rules",
-          "description": "Customize draw quantity, allow/disallow repeat winners"
+          "description": "Customize draw quantity, allow/disallow repeat winners for your choice generator and random picker"
         },
         "sharing": {
           "title": "Result Sharing & Saving",
-          "description": "One-click copy, export files, continuous drawing"
+          "description": "One-click copy, export files, continuous drawing for your random picker and choice generator results"
         }
       }
     },
     "quickExperienceSection": {
-      "title": "Experience Fun Draw Now",
-      "subtitle": "No need to create lists, choose a scenario and start experiencing our innovative drawing modes immediately",
+      "title": "Experience Pick One Now",
+      "subtitle": "No need to create lists, choose a scenario and start experiencing our innovative selection modes immediately",
       "advantages": {
         "quick": {
           "title": "30-Second Quick Experience",
@@ -90,34 +90,34 @@
     },
     "modes": {
       "title": "Five Innovative Drawing Modes",
-      "subtitle": "Each mode has unique animation effects and sound effects, providing the best drawing experience for different scenarios"
+      "subtitle": "Each mode has unique animation effects and sound effects, providing the best fun drawing tool experience for different scenarios"
     },
     "useCases": {
-      "title": "Use Cases",
-      "subtitle": "From education to enterprise, from entertainment to decision-making, Fun Draw can meet various drawing needs",
+      "title": "Perfect for Every Scenario",
+      "subtitle": "Our random picker and name picker tool serves teachers, teams, and party organizers with professional drawing solutions",
       "items": {
         "classroom": {
-          "title": "Classroom Teaching",
-          "description": "Random name calling, grouping, questioning, make classroom more interesting"
+          "title": "Classroom Picker for Teachers",
+          "description": "Student name picker, random grouping, and interactive questioning. Perfect teacher random picker for engaging classroom activities"
         },
         "corporate": {
-          "title": "Corporate Events",
-          "description": "Annual meeting lottery, team building activities, live interaction"
+          "title": "Corporate Lottery & Team Picker",
+          "description": "Professional team picker for meetings, corporate lottery for events, and group selector for team building activities"
         },
         "party": {
-          "title": "Friend Gatherings",
-          "description": "Decision making, game selection, party entertainment"
+          "title": "Party Picker & Group Activities",
+          "description": "Fun party picker for games, winner picker for contests, and group selector for entertainment decisions"
         }
       }
     },
     "cta": {
-      "title": "Ready to Start Your Fun Drawing Journey?",
-      "subtitle": "No registration required, no download needed, just open your browser to use. Supports PC, tablet, and mobile platforms.",
-      "startButton": "Start Using for Free",
+      "title": "Ready to Pick One?",
+      "subtitle": "No registration required, no download needed, just open your browser and start picking. Supports PC, tablet, and mobile platforms.",
+      "startButton": "Start Picking for Free",
       "learnMoreButton": "Learn More Features"
     },
     "footer": {
-      "copyright": "© 2025 Fun Draw - Make Drawing More Fun | Multi-Mode Fun Drawing Website"
+      "copyright": "© 2025 PickOne - Interactive Random Picker | Make Every Choice Fun"
     }
   },
   "startMode": {
@@ -131,10 +131,10 @@
   },
   "quickExperience": {
     "title": "Quick Experience",
-    "description": "Choose a scenario and experience the charm of Fun Draw in 30 seconds",
+    "description": "Choose a scenario and experience the charm of Pick One in 30 seconds",
     "oneClickExperience": "One-Click Experience",
     "selectScene": "Select Scene",
-    "welcomeFirstTime": "Welcome to Fun Draw! Choose a scenario to start your experience.",
+    "welcomeFirstTime": "Welcome to Pick One! Choose a scenario to start your experience.",
     "welcomeReturning": "Welcome back! Here are some recommended scenarios for you.",
     "quickStart": "Quick Start",
     "quickStartDescription": "Use the most recommended template to start immediately",
@@ -154,10 +154,10 @@
   },
   "drawingModes": {
     "slotMachine": {
-      "title": "Slot Machine",
-      "name": "Slot Machine",
-      "shortTitle": "Slot Machine",
-      "description": "Classic reel animation with thrilling drawing experience",
+      "title": "Slot Machine Picker",
+      "name": "Slot Machine Picker",
+      "shortTitle": "Slot Machine Picker",
+      "description": "Classic slot machine picker with animated reels - perfect random picker for exciting winner selection",
       "features": [
         "Classic slot machine reel effects",
         "Configurable scroll speed and duration",
@@ -166,10 +166,10 @@
       ]
     },
     "cardFlip": {
-      "title": "Card Drawing",
-      "name": "Card Drawing",
-      "shortTitle": "Card Drawing",
-      "description": "Elegant card flip animation like a magician's performance",
+      "title": "Card Flip Picker",
+      "name": "Card Flip Picker",
+      "shortTitle": "Card Flip Picker",
+      "description": "Elegant card flip picker with magical animations - interactive picker for stylish random selection",
       "features": [
         "Beautiful card flip animations",
         "Shuffle and deal process display",
@@ -178,11 +178,11 @@
       ]
     },
     "bulletScreen": {
-      "title": "Bullet Screen Scrolling",
-      "name": "Bullet Screen",
-      "shortTitle": "Bullet Screen",
-      "description": "Fast scrolling freeze, dynamic selection process",
-      "altDescription": "Dynamic bullet screen effects, modern drawing method",
+      "title": "Bullet Screen Picker",
+      "name": "Bullet Screen Picker",
+      "shortTitle": "Bullet Screen Picker",
+      "description": "Dynamic bullet screen picker with fast scrolling effects - modern animated picker for engaging selection",
+      "altDescription": "Dynamic bullet screen picker effects, modern drawing tool for interactive selection",
       "features": [
         "Smooth bullet screen scrolling effects",
         "Adjustable bullet speed and density",
@@ -191,11 +191,11 @@
       ]
     },
     "gridLottery": {
-      "title": "Multi-Grid Lottery",
-      "name": "Grid Lottery",
+      "title": "Grid Lottery Picker",
+      "name": "Grid Lottery Picker",
       "shortTitle": "Grid Lottery",
-      "description": "TV show style, light jumping freeze, full of ceremony",
-      "altDescription": "Classic grid jumping, single draw for one lucky winner",
+      "description": "Professional grid lottery picker with TV show style animations - perfect winner picker for ceremonial events",
+      "altDescription": "Classic grid lottery picker with jumping lights - single draw winner picker for special occasions",
       "features": [
         "Classic grid light jumping",
         "Support 6/9/12/15 grid layouts",
@@ -204,11 +204,11 @@
       ]
     },
     "blinkingNamePicker": {
-      "title": "Blinking Name Calling",
+      "title": "Blinking Name Picker",
       "name": "Blinking Name Picker",
       "shortTitle": "Blinking Name Picker",
-      "description": "Fast blinking freeze, fair random name calling experience",
-      "altDescription": "Fast blinking highlight, suitable for classroom name calling",
+      "description": "Professional blinking name picker for classroom and team activities - perfect student name picker for teachers",
+      "altDescription": "Fast blinking name picker with highlight effects - ideal classroom picker for student selection",
       "features": [
         "Fast blinking highlight effects",
         "Configurable blink speed and colors",
@@ -766,7 +766,7 @@
     },
     "detailsTitle": "Tell us more",
     "detailsDescription": "Your suggestions are important to us (optional)",
-    "recommendQuestion": "Would you recommend Fun Draw to friends?",
+    "recommendQuestion": "Would you recommend Pick One to friends?",
     "recommend": "Would Recommend",
     "notRecommend": "Would Not Recommend",
     "commentsLabel": "Other thoughts or suggestions",

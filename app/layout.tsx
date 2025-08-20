@@ -15,9 +15,24 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export const metadata: Metadata = {
-  title: 'Fun Draw - Make Drawing More Fun',
-  description: 'Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes for classroom teaching, corporate events, and friend gatherings.',
+  title: 'Pick One - Interactive Random Picker & Name Picker Tool | 5 Drawing Modes',
+  description: 'Professional random picker and name picker tool with 5 animated drawing modes: slot machine picker, card flip picker, grid lottery, bullet screen picker, and blinking name picker. Perfect for classroom picker, team picker, corporate lottery, and party picker activities. Free online drawing tool for teachers and groups.',
+  keywords: 'random picker, name picker, interactive picker, drawing tool, classroom picker, teacher random picker, team picker, corporate lottery, party picker, slot machine picker, card flip picker, grid lottery, bullet screen picker, blinking name picker, animated picker, multiple drawing modes, fun drawing tool, student name picker, meeting picker, group selector, winner picker, choice generator, lottery picker, picker wheel',
   generator: 'Next.js',
+  robots: 'index, follow',
+  authors: [{ name: 'Pick One Team' }],
+  viewport: 'width=device-width, initial-scale=1',
+  openGraph: {
+    title: 'Pick One - Interactive Random Picker & Name Picker Tool',
+    description: 'Professional random picker with 5 animated drawing modes. Perfect for classroom picker, team picker, and corporate lottery activities.',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pick One - Interactive Random Picker & Name Picker Tool',
+    description: 'Professional random picker with 5 animated drawing modes for classroom and team activities.',
+  }
 }
 
 export default function RootLayout({
@@ -39,6 +54,45 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', 'G-5T83DFG884');
+          `}
+        </Script>
+
+        {/* Structured Data */}
+        <Script id="structured-data" type="application/ld+json" strategy="afterInteractive">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "Pick One - Interactive Random Picker Tool",
+              "description": "Professional random picker and name picker tool with 5 animated drawing modes: slot machine picker, card flip picker, grid lottery, bullet screen picker, and blinking name picker. Perfect for classroom picker, team picker, corporate lottery, and party picker activities.",
+              "url": "https://fun-draw.com",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "featureList": [
+                "Slot Machine Picker",
+                "Card Flip Picker",
+                "Grid Lottery Picker",
+                "Bullet Screen Picker",
+                "Blinking Name Picker",
+                "Classroom Picker for Teachers",
+                "Team Picker for Groups",
+                "Corporate Lottery Tool",
+                "Party Picker for Events"
+              ],
+              "audience": {
+                "@type": "Audience",
+                "audienceType": ["Teachers", "Corporate Teams", "Event Organizers", "Students"]
+              },
+              "creator": {
+                "@type": "Organization",
+                "name": "Pick One Team"
+              }
+            }
           `}
         </Script>
 

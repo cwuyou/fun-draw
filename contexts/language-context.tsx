@@ -62,21 +62,21 @@ const defaultTranslations: Partial<TranslationFile> = {
     drawConfig: 'Draw Config'
   },
   home: {
-    title: 'Make Drawing More Fun',
-    subtitle: 'Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes',
-    description: 'Whether it\'s classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method.',
-    startButton: 'Start Drawing Now',
-    newExperienceBadge: '🎉 Brand New Multi-Mode Drawing Experience',
-    newUserTip: '💡 New user? Click "Quick Experience" to instantly feel the charm of Fun Draw, no need to create lists!',
+    title: 'Pick One with Style',
+    subtitle: 'Interactive random picker with 5 innovative selection modes! Perfect for decisions, games, and activities.',
+    description: 'Whether it\'s classroom activities, team decisions, or fun gatherings, Pick One makes random selection engaging and exciting.',
+    startButton: 'Pick One Now',
+    newExperienceBadge: '🎉 Brand New Multi-Mode Random Picker',
+    newUserTip: '💡 New user? Click "Quick Experience" to instantly try Pick One, no setup needed!',
     newUserTipBold: 'New user?',
     hero: {
-      title: 'Make Drawing More Fun',
-      subtitle: 'Say goodbye to boring wheel drawings! Fun Draw offers 5 innovative drawing animation modes,',
-      description: 'Whether it\'s classroom teaching, corporate annual meetings, or friend gatherings, you can find the most suitable drawing method.'
+      title: 'Pick One with Style',
+      subtitle: 'Interactive random picker with 5 innovative selection modes! Perfect for decisions, games, and activities.',
+      description: 'Whether it\'s classroom activities, team decisions, or fun gatherings, Pick One makes random selection engaging and exciting.'
     },
     features: {
-      title: 'Why Choose Fun Draw?',
-      subtitle: 'We\'ve redefined the online drawing experience, making every draw full of anticipation and fun',
+      title: 'Why Choose Pick One?',
+      subtitle: 'We\'ve redefined the random selection experience, making every pick full of anticipation and fun',
       items: {
         modes: {
           title: 'Multiple Drawing Modes',
@@ -97,8 +97,8 @@ const defaultTranslations: Partial<TranslationFile> = {
       }
     },
     quickExperienceSection: {
-      title: 'Experience Fun Draw Now',
-      subtitle: 'No need to create lists, choose a scenario and start experiencing our innovative drawing modes immediately',
+      title: 'Experience Pick One Now',
+      subtitle: 'No need to create lists, choose a scenario and start experiencing our innovative selection modes immediately',
       advantages: {
         quick: {
           title: '30-Second Quick Experience',
@@ -120,7 +120,7 @@ const defaultTranslations: Partial<TranslationFile> = {
     },
     useCases: {
       title: 'Use Cases',
-      subtitle: 'From education to enterprise, from entertainment to decision-making, Fun Draw can meet various drawing needs',
+      subtitle: 'From education to enterprise, from entertainment to decision-making, Pick One can meet various selection needs',
       items: {
         classroom: {
           title: 'Classroom Teaching',
@@ -137,13 +137,13 @@ const defaultTranslations: Partial<TranslationFile> = {
       }
     },
     cta: {
-      title: 'Ready to Start Your Fun Drawing Journey?',
-      subtitle: 'No registration required, no download needed, just open your browser to use. Supports PC, tablet, and mobile platforms.',
-      startButton: 'Start Using for Free',
+      title: 'Ready to Pick One?',
+      subtitle: 'No registration required, no download needed, just open your browser and start picking. Supports PC, tablet, and mobile platforms.',
+      startButton: 'Start Picking for Free',
       learnMoreButton: 'Learn More Features'
     },
     footer: {
-      copyright: '© 2025 Fun Draw - Make Drawing More Fun | Multi-Mode Fun Drawing Website'
+      copyright: '© 2025 PickOne - Interactive Random Picker | Make Every Choice Fun'
     }
   },
   drawingModes: {
@@ -175,11 +175,11 @@ const defaultTranslations: Partial<TranslationFile> = {
   },
   quickExperience: {
     title: 'Quick Experience',
-    description: 'Choose a scenario and experience the charm of Fun Draw in 30 seconds',
+    description: 'Choose a scenario and experience the charm of Pick One in 30 seconds',
     oneClickExperience: 'One-Click Experience',
     starting: 'Starting...',
     selectScene: 'Select Experience Scenario',
-    welcomeFirstTime: 'Welcome to Fun Draw! Choose a scenario to quickly experience our drawing features',
+    welcomeFirstTime: 'Welcome to Pick One! Choose a scenario to quickly experience our selection features',
     welcomeReturning: 'Choose a scenario to start the experience, each scenario has different drawing styles',
     quickStart: 'Quick Start',
     quickStartDescription: 'Use recommended scenario to start experience immediately, no selection needed',

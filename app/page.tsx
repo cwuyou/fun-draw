@@ -57,7 +57,7 @@ export default function HomePage() {
     console.log('Experience started with template:', template.name)
   }
 
-  const drawingModes: Array<{ icon: JSX.Element; title: string; description: string; color: string; href: string; mode: DrawingMode; }> = [
+  const drawingModes: Array<{ icon: React.ReactElement; title: string; description: string; color: string; href: string; mode: DrawingMode; }> = [
     {
       icon: <Dices className="w-8 h-8" />,
       title: t('drawingModes.slotMachine.shortTitle'),
@@ -151,7 +151,7 @@ export default function HomePage() {
               <Dices className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              趣抽
+              Pick One
             </h1>
           </div>
           <nav className="hidden md:flex items-center gap-6">
@@ -495,7 +495,7 @@ export default function HomePage() {
             <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <Dices className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">{t('home.title').includes('趣') ? '趣抽' : 'Fun Draw'}</span>
+            <span className="text-xl font-bold text-white">Pick One</span>
           </div>
           <p className="text-sm text-gray-400">{t('home.footer.copyright')}</p>
         </div>

@@ -21,6 +21,7 @@ import { Toaster } from "@/components/ui/toaster"
 import EnhancedFileUpload from "@/components/enhanced-file-upload"
 import SmartContentPaste from "@/components/smart-content-paste"
 import { PageHeader } from '@/contexts/header-context'
+import Link from "next/link"
 
 
 export default function CreateListPage() {
@@ -318,10 +319,15 @@ export default function CreateListPage() {
       <PageHeader
         title={t('createList.title')}
         actions={
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-            <Users className="w-3 h-3 mr-1" />
-            {t('createList.itemsCount', { count: items.length })}
-          </Badge>
+          <div className="flex items-center gap-6">
+            <Link href="/list-library" className="text-gray-600 hover:text-purple-600 transition-colors">
+              {t('navigation.listLibrary')}
+            </Link>
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+              <Users className="w-3 h-3 mr-1" />
+              {t('createList.itemsCount', { count: items.length })}
+            </Badge>
+          </div>
         }
       />
 

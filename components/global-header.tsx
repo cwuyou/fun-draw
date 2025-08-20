@@ -47,7 +47,7 @@ export default function GlobalHeader({ className, variant = "default" }: GlobalH
               <Dices className="w-5 h-5 text-white" />
             </span>
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent group-hover:opacity-80">
-              {t('home.title').includes('趣') ? '趣抽' : 'Fun Draw'}
+              Pick One
             </span>
           </Link>
           {effectiveVariant !== "minimal" && (

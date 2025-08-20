@@ -33,28 +33,28 @@
     "drawConfig": "抽奖配置"
   },
   "home": {
-    "title": "让抽奖变得更有趣",
-    "subtitle": "告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式",
-    "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。",
-    "startButton": "开始抽奖",
+    "title": "Pick One - 随机选择器和选择生成器",
+    "subtitle": "专业的随机选择器和选择生成器，提供5种创新的选择动画模式",
+    "description": "无论是课堂活动、团队决策，还是朋友聚会，我们的选择轮盘和随机选择器让选择变得有趣而精彩。",
+    "startButton": "立即开始",
     "demoButton": "查看演示",
     "quickExperience": "快速体验",
-    "experienceDescription": "选择一个场景，30秒体验趣抽的魅力",
-    "newExperienceBadge": "🎉 全新多模式抽奖体验",
-    "newUserTip": "💡 新用户？点击\"快速体验\"即可瞬间感受趣抽魅力，无需创建名单！",
+    "experienceDescription": "选择一个场景，30秒体验Pick One的魅力",
+    "newExperienceBadge": "🎉 全新多模式随机选择体验",
+    "newUserTip": "💡 新用户？点击\"快速体验\"即可瞬间感受Pick One魅力，无需创建名单！",
     "newUserTipBold": "新用户？",
     "hero": {
-      "title": "让抽奖变得更有趣",
-      "subtitle": "告别单调的转盘抽奖！趣抽为您提供5种创新的抽奖动画模式，",
-      "description": "无论是课堂教学、企业年会，还是朋友聚会，都能找到最适合的抽奖方式。"
+      "title": "专业随机选择器和点名工具",
+      "subtitle": "专业随机选择器，提供5种动画抽奖模式！从课堂点名到企业抽奖，",
+      "description": "完美适合教师、团队和聚会组织者。选择老虎机选择器、翻牌选择器、宫格抽奖、弹幕选择器和闪烁点名器模式。"
     },
     "features": {
-      "title": "为什么选择趣抽？",
-      "subtitle": "我们重新定义了在线抽奖体验，让每一次抽奖都充满期待和乐趣",
+      "title": "为什么选择我们的随机选择器工具？",
+      "subtitle": "专业的互动选择器，提供动画抽奖模式，完美适合课堂点名、团队选择和企业抽奖活动",
       "items": {
         "modes": {
           "title": "多种抽奖模式",
-          "description": "5种创新动画效果，告别单调转盘"
+          "description": "5种动画选择器模式：老虎机选择器、翻牌选择器、宫格抽奖、弹幕选择器和闪烁点名器"
         },
         "management": {
           "title": "便捷名单管理",
@@ -71,7 +71,7 @@
       }
     },
     "quickExperienceSection": {
-      "title": "立即体验趣抽",
+      "title": "立即体验Pick One",
       "subtitle": "无需创建名单，选择场景即可立即开始体验我们的创新抽奖模式",
       "advantages": {
         "quick": {
@@ -90,34 +90,34 @@
     },
     "modes": {
       "title": "五种创新抽奖模式",
-      "subtitle": "每种模式都有独特的动画效果和音效，为不同场景提供最佳抽奖体验"
+      "subtitle": "每种模式都有独特的动画效果和音效，为不同场景提供最佳趣味抽奖工具体验"
     },
     "useCases": {
-      "title": "使用场景",
-      "subtitle": "从教育到企业，从娱乐到决策，趣抽能满足各种抽奖需求",
+      "title": "适用于每个场景",
+      "subtitle": "我们的随机选择器和点名工具为教师、团队和聚会组织者提供专业的抽奖解决方案",
       "items": {
         "classroom": {
-          "title": "课堂教学",
-          "description": "随机点名、分组、提问，让课堂更有趣"
+          "title": "教师课堂选择器",
+          "description": "学生点名器、随机分组和互动提问。完美的教师随机选择器，用于引人入胜的课堂活动"
         },
         "corporate": {
-          "title": "企业活动",
-          "description": "年会抽奖、团建活动、现场互动"
+          "title": "企业抽奖和团队选择器",
+          "description": "专业的会议团队选择器、活动企业抽奖和团建活动的群组选择器"
         },
         "party": {
-          "title": "朋友聚会",
-          "description": "决策选择、游戏选择、聚会娱乐"
+          "title": "聚会选择器和群组活动",
+          "description": "游戏聚会选择器、比赛获奖者选择器和娱乐决策的群组选择器"
         }
       }
     },
     "cta": {
-      "title": "准备开始您的趣抽之旅了吗？",
+      "title": "准备开始您的Pick One之旅了吗？",
       "subtitle": "无需注册，无需下载，打开浏览器即可使用。支持PC、平板、手机多平台。",
       "startButton": "免费开始使用",
       "learnMoreButton": "了解更多功能"
     },
     "footer": {
-      "copyright": "© 2025 趣抽 - 让抽奖变得更有趣 | 多模式趣味抽奖网站"
+      "copyright": "© 2025 PickOne - 让选择变得有趣 | 多模式互动选择工具"
     }
   },
   "startMode": {
@@ -131,10 +131,10 @@
   },
   "quickExperience": {
     "title": "快速体验",
-    "description": "选择一个场景，30秒体验趣抽的魅力",
+    "description": "选择一个场景，30秒体验Pick One的魅力",
     "oneClickExperience": "一键体验",
     "selectScene": "选择体验场景",
-    "welcomeFirstTime": "欢迎体验趣抽！选择一个场景开始体验。",
+    "welcomeFirstTime": "欢迎体验Pick One！选择一个场景开始体验。",
     "welcomeReturning": "欢迎回来！为你推荐以下体验场景。",
     "quickStart": "快速开始",
     "quickStartDescription": "使用系统推荐模板立即开始",
@@ -701,7 +701,7 @@
     },
     "detailsTitle": "告诉我们更多",
     "detailsDescription": "您的建议对我们很重要（可选）",
-    "recommendQuestion": "您会向朋友推荐趣抽吗？",
+    "recommendQuestion": "您会向朋友推荐Pick One吗？",
     "recommend": "会推荐",
     "notRecommend": "不会推荐",
     "commentsLabel": "其他想法或建议",
